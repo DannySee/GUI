@@ -1,9 +1,52 @@
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QPushButton, QFrame,
                              QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QSplitter,
-                             QWidget, QScrollArea, QSplitterHandle, QLabel, QTableWidget)
-from PyQt6.QtGui import QFont, QMouseEvent, QIcon
+                             QWidget, QScrollArea, QSplitterHandle, QLabel, QTableView, QStyledItemDelegate, QHeaderView)
+from PyQt6.QtGui import QFont, QMouseEvent, QIcon, QPalette, QPainter, QColor
 from PyQt6.QtCore import Qt
+from PyQt6 import QtCore
+import data_pull as db
+
+
+class TableCellDelegate(QStyledItemDelegate):
+    def __init__(self, border_color=None):
+        super().__init__()
+        self.border_color = border_color
+
+    def paint(self, painter, option, index):
+        if self.border_color:
+            painter.save()
+            painter.setPen(QColor(self.border_color))
+            painter.drawRect(option.rect)
+            painter.restore()
+
+        super().paint(painter, option, index)
+
+
+class TableModel(QtCore.QAbstractTableModel):
+    def __init__(self, data):
+        super(TableModel, self).__init__()
+        self._data = data
+
+    def data(self, index, role):
+        if role == Qt.ItemDataRole.DisplayRole:
+            value = self._data.iloc[index.row(), index.column()]
+            return str(value)
+
+    def rowCount(self, index):
+        return self._data.shape[0]
+
+    def columnCount(self, index):
+        return self._data.shape[1]
+
+    def headerData(self, section, orientation, role):
+        # section is the index of the column/row.
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return str(self._data.columns[section])
+
+            if orientation == Qt.Orientation.Vertical:
+                return str(self._data.index[section])
 
 
 class MySplitterHandle(QSplitterHandle):
@@ -92,7 +135,142 @@ class MyWindow(QMainWindow):
 
     def setupTableView(self):
         
-        pass
+        df = db.get_cal_programs()
+        df.fillna("", inplace=True)
+
+        self.table = QTableView(self.dataScrollArea)
+        self.table.setFont(QFont("Microsoft Sans Serif", 8))
+    
+        # Create a TableCellDelegate instance with the desired border color
+        cell_delegate = TableCellDelegate("#333333")
+        self.table.setItemDelegate(cell_delegate)
+        
+        self.table.setStyleSheet("""
+            QTableView {
+                color: #BABABA; /* Set text color to #BDBDBD */
+                background-color: #1f1f1f;
+            }
+            QHeaderView::section {
+                background-color: #1f1f1f;
+                color: #BABABA; /* Set header text color to #BDBDBD */
+            }
+        """)
+
+        model = TableModel(df)
+        self.table.setModel(model)
+
+        self.dataScrollLayout = QVBoxLayout(self.dataScrollArea)
+        self.dataScrollLayout.setSpacing(4)
+        self.dataScrollLayout.setContentsMargins(10,10,10,10)
+        self.dataScrollLayout.addWidget(self.table)
+
+        self.dataScrollArea.setWidget(self.table)
+  
+
+        #self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        #self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        #self.dataScrollArea.setMaximumWidth(self.table.horizontalHeader().length())
+        #self.dataSplitter.setMaximumWidth(self.table.horizontalHeader().length())
+        
+        self.dataScrollArea.setMaximumWidth(self.table.horizontalHeader().length())
+        self.dataSplitter.setMaximumWidth(self.table.horizontalHeader().length())
+
+        self.table.horizontalScrollBar().setStyleSheet("""
+            QScrollBar:horizontal {
+                background: #1f1f1f;
+                height: 15px;
+                border: none;
+                margin: 0 15px; /* Adjust spacing for the left and right arrows */
+            }
+            QScrollBar::add-line:horizontal {
+                border: none;
+                width: 15px; /* Adjust width as required */
+                subcontrol-position: right;
+                subcontrol-origin: margin;
+                background: #3c3c3c; /* Background color for the button */
+            }
+            QScrollBar::sub-line:horizontal {
+                border: none;
+                width: 15px; /* Adjust width as required */
+                subcontrol-position: left;
+                subcontrol-origin: margin;
+                background: #3c3c3c; /* Background color for the button */
+            }
+            QScrollBar::handle:horizontal {
+                background: #3c3c3c;
+                border: none;
+                min-width: 20px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background: #555555;
+            }
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+                background: #2f2f2f;
+            }
+            QScrollBar::right-arrow:horizontal, QScrollBar::left-arrow:horizontal {
+                border: none;
+                width: 7px;
+                height: 7px;
+                background: #555555;
+            }
+            QScrollBar::right-arrow:horizontal:hover, QScrollBar::left-arrow:horizontal:hover {
+                background: #777777;
+            }
+        """)
+
+
+
+        self.table.verticalScrollBar().setStyleSheet("""
+            QScrollBar:vertical {
+                background: #1f1f1f;
+                width: 15px;
+                border: none;
+                margin: 15px 0; /* Adjust spacing for the top and bottom arrows */
+            }
+            QScrollBar::add-line:vertical {
+                border: none;
+                height: 15px; /* Adjust height as required */
+                subcontrol-position: bottom;
+                subcontrol-origin: margin;
+                background: #3c3c3c; /* Background color for the button */
+            }
+            QScrollBar::sub-line:vertical {
+                border: none;
+                height: 15px; /* Adjust height as required */
+                subcontrol-position: top;
+                subcontrol-origin: margin;
+                background: #3c3c3c; /* Background color for the button */
+            }
+            QScrollBar::handle:vertical {
+                background: #3c3c3c;
+                border: none;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #555555;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: #2f2f2f;
+            }
+            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+                border: none;
+                width: 7px;
+                height: 7px;
+                background: #555555;
+            }
+            QScrollBar::up-arrow:vertical:hover, QScrollBar::down-arrow:vertical:hover {
+                background: #777777;
+            }
+        """)
+
+
+
+
+
+
+
+
 
 
     def setupSidebarCollapse(self):
@@ -189,13 +367,12 @@ class MyWindow(QMainWindow):
 
     def setupDataFrame(self):
         
-
         self.dataFrame = QFrame(self.splitter)
         self.dataFrame.setMinimumWidth(200)
         self.dataFrame.setStyleSheet("background-color: transparent; border: none;")
 
         dataFrameLayout = QVBoxLayout(self.dataFrame)
-        dataFrameLayout.setContentsMargins(0,0,0,0)
+        dataFrameLayout.setContentsMargins(50,20,50,20)
 
         self.dataFrameBanner = QFrame(self.dataFrame)
         self.dataFrameBanner.setStyleSheet("background-color: transparent; border: none;")
@@ -217,26 +394,27 @@ class MyWindow(QMainWindow):
                 padding: 0px 0px 0px 30px;
             }
         """)
-        
 
-        self.dataScrollArea = QScrollArea(self.dataFrame)
+        self.tablViewPane = QFrame(self.dataFrame)
+        self.dataFrameBanner.setStyleSheet("background-color: transparent; border: none;")
+        dataFrameLayout.addWidget(self.tablViewPane)
+
+        self.dataSplitter = QSplitter(Qt.Orientation.Vertical, self.tablViewPane)
+        self.dataSplitter.setHandleWidth(1)
+        self.dataSplitter.setChildrenCollapsible(False)
+        self.dataSplitter.setStyleSheet("QSplitter::handle {background-color: transparent; border: none; color: #3c3c3c;}")
+        dataFrameLayout.addWidget(self.dataSplitter)
+
+
+        self.dataScrollArea = QScrollArea(self.dataSplitter)
         self.dataScrollArea.setWidgetResizable(True)
+        
         self.dataScrollArea.setStyleSheet("background-color: transparent; border: none;")
 
-        self.dataScrollWidget = QWidget(self.dataScrollArea)
-        self.dataScrollWidget.setStyleSheet("background-color: transparent; border: none;")
-
-        self.dataScrollLayout = QVBoxLayout(self.dataScrollWidget)
-        self.dataScrollLayout.setSpacing(4)
-        self.dataScrollLayout.setContentsMargins(10,10,10,10)
-
-        self.dataScrollArea.setWidget(self.dataScrollWidget)
-        self.dataScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.dataScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        self.dataScrollArea.setMinimumHeight(100)
-
-        dataFrameLayout.addWidget(self.dataScrollArea)
+        self.dataScrollArea2 = QScrollArea(self.dataSplitter)
+        self.dataScrollArea2.setWidgetResizable(True)
+          
+        self.dataScrollArea2.setStyleSheet("background-color: transparent; border: none;")
 
 
     def setupScrollArea(self):
