@@ -1,15 +1,48 @@
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QPushButton, QFrame,
                              QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QSplitter,
-                             QWidget, QScrollArea, QSplitterHandle, QLabel, QTableView, QStyledItemDelegate, QHeaderView)
+                             QWidget, QScrollArea, QSplitterHandle, QLabel, QTableView, 
+                             QStyledItemDelegate, QHeaderView, QAbstractItemView, QLineEdit,
+                             QStyle, QComboBox)
 from PyQt6.QtGui import QFont, QMouseEvent, QIcon, QPalette, QPainter, QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6 import QtCore
 import data_pull as db
 
+class CustomComboBox(QComboBox):
+    def showPopup(self):
+        super().showPopup()
+        # Ensure no item gets the focus when the popup is shown
+        self.view().setCurrentIndex(QtCore.QModelIndex())
 
 
+class CustomDelegate(QStyledItemDelegate):
+    def createEditor(self, parent, option, index):
+        editor = super().createEditor(parent, option, index)
+        if isinstance(editor, QLineEdit):
+            editor.setFont(QFont("Microsoft Sans Serif", 8))
+            palette = editor.palette()
+            palette.setColor(QPalette.ColorRole.Text, QColor("#BABABA"))
+            editor.setPalette(palette)
 
+            value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
+            editor.setText(value)
+            
+            
+            index.model().setData(index, "", Qt.ItemDataRole.EditRole)
+        return editor
+    
+    def setEditorData(self, editor, index):
+        if not isinstance(editor, QLineEdit):
+            super().setEditorData(editor, index)
+
+    
+    def setModelData(self, editor, model, index):
+        if isinstance(editor, QLineEdit):
+            model.setData(index, editor.text(), Qt.ItemDataRole.EditRole)
+        else:
+            super().setModelData(editor, model, index)
+           
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data):
@@ -26,6 +59,19 @@ class TableModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, index):
         return self._data.shape[1]
+    
+    def flags(self, index):
+        return super().flags(index) | Qt.ItemFlag.ItemIsEditable
+    
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
+        if index.isValid() and role == Qt.ItemDataRole.EditRole:
+            row, col = index.row(), index.column()
+            self._data.iat[row, col] = value  # Update the pandas DataFrame
+            self.dataChanged.emit(index, index)  # Notify listeners that data has been changed
+            return True
+        return False
+
+
 
     def headerData(self, section, orientation, role):
         # section is the index of the column/row.
@@ -126,8 +172,11 @@ class MyWindow(QMainWindow):
         df = db.get_cal_programs()
         df.fillna("", inplace=True)
 
+        
+
         self.table = QTableView(self.dataScrollArea)
-        self.table.setFont(QFont("Microsoft Sans Serif", 8))
+        self.delegate = CustomDelegate(self.table)
+        self.table.setItemDelegate(self.delegate)
     
         # Create a TableCellDelegate instance with the desired border color
         #cell_delegate = TableCellDelegate("#333333")
@@ -147,14 +196,17 @@ class MyWindow(QMainWindow):
         model = TableModel(df)
         self.table.setModel(model)
 
+        
+
         self.dataScrollLayout = QVBoxLayout(self.dataScrollArea)
         self.dataScrollLayout.setSpacing(4)
         self.dataScrollLayout.setContentsMargins(10,10,10,10)
         self.dataScrollLayout.addWidget(self.table)
+        
 
         self.dataScrollArea.setWidget(self.table)
-  
 
+ 
         #self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         #self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
@@ -291,7 +343,10 @@ class MyWindow(QMainWindow):
                                  
         """)
 
-        self.table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        #self.table.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
+
+        
+
 
 
                 
@@ -388,13 +443,57 @@ class MyWindow(QMainWindow):
 
         self.filterLayout = QVBoxLayout(self.filterWidget)
         self.filterLayout.setSpacing(4)
-        self.filterLayout.setContentsMargins(0,0,0,0)
+        self.filterLayout.setContentsMargins(10,10,10,10)
+        
 
         self.filterArea.setWidget(self.filterWidget)
         self.filterArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.filterArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.filterArea.setMinimumHeight(100)
+
+        self.combobox = CustomComboBox(self.filterWidget)
+        self.combobox.setFont(QFont("Microsoft Sans Serif", 11))
+        self.combobox.addItems(["All", "Active", "Inactive"])
+
+
+        self.combobox.setStyleSheet("""
+            QComboBox {
+                border: 1px solid gray;
+                border-radius: 3px;
+                padding: 1px 18px 1px 3px;
+                min-width: 6em;
+                color: #EEEEEE;
+            }
+
+            QComboBox:editable {
+                background: white;
+            }
+
+            QComboBox:on { /* shift the text when the popup opens */
+                padding-top: 3px;
+                padding-left: 4px;
+            }
+
+
+
+            QComboBox QAbstractItemView {
+                                    
+                border: none;
+                selection-background-color: lightgray;
+            }                       
+        """)
+
+
+        self.combobox.view().setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+
+        
+        self.filterLayout.addWidget(self.combobox)
+        self.filterLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        
+
+
 
 
     def setupDataFrame(self):
@@ -410,6 +509,16 @@ class MyWindow(QMainWindow):
         self.dataFrameBanner.setStyleSheet("background-color: transparent; border: none;")
         self.dataFrameBanner.setFixedHeight(50)
         dataFrameLayout.addWidget(self.dataFrameBanner)
+
+
+        #self.b1 = QPushButton("Button 1", self.dataFrameBanner)
+        #self.b1.setObjectName("btn1")
+        #self.b1.setFont(QFont("Microsoft Sans Serif", 11))
+        #self.b1.setStyleSheet(self.getButtonStyleSheet("text"))
+        #self.b1.clicked.connect(self.printDF)
+
+
+
 
         self.dataFrameHeader = QFrame(self.dataFrame)
         self.dataFrameHeader.setStyleSheet("background-color: transparent; border: none;")
@@ -466,6 +575,11 @@ class MyWindow(QMainWindow):
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.scrollArea.setMinimumHeight(100)
+
+
+    #def printDF(self):
+
+        #print(self.table.model()._data)
 
 
     def setupSidebarButtons(self):
