@@ -8,19 +8,7 @@ from PyQt6 import QtCore
 import data_pull as db
 
 
-class TableCellDelegate(QStyledItemDelegate):
-    def __init__(self, border_color=None):
-        super().__init__()
-        self.border_color = border_color
 
-    def paint(self, painter, option, index):
-        if self.border_color:
-            painter.save()
-            painter.setPen(QColor(self.border_color))
-            painter.drawRect(option.rect)
-            painter.restore()
-
-        super().paint(painter, option, index)
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -142,19 +130,19 @@ class MyWindow(QMainWindow):
         self.table.setFont(QFont("Microsoft Sans Serif", 8))
     
         # Create a TableCellDelegate instance with the desired border color
-        cell_delegate = TableCellDelegate("#333333")
-        self.table.setItemDelegate(cell_delegate)
+        #cell_delegate = TableCellDelegate("#333333")
+        #self.table.setItemDelegate(cell_delegate)
         
-        self.table.setStyleSheet("""
-            QTableView {
-                color: #BABABA; /* Set text color to #BDBDBD */
-                background-color: #1f1f1f;
-            }
-            QHeaderView::section {
-                background-color: #1f1f1f;
-                color: #BABABA; /* Set header text color to #BDBDBD */
-            }
-        """)
+        #self.table.setStyleSheet("""
+        #    QTableView {
+        #        color: #BABABA; /* Set text color to #BDBDBD */
+        #        background-color: #1f1f1f;
+        #    }
+        #    QHeaderView::section {
+        #        background-color: #1f1f1f;
+        #        color: #BABABA; /* Set header text color to #BDBDBD */
+        #    }
+        #""")
 
         model = TableModel(df)
         self.table.setModel(model)
@@ -263,6 +251,50 @@ class MyWindow(QMainWindow):
                 background: #777777;
             }
         """)
+
+        self.table.setStyleSheet("""
+            QTableView {
+                background-color: #1f1f1f;
+                color: #BABABA;
+                gridline-color: #333333;
+            }
+            
+            QTableView::item {
+                background-color: #1f1f1f;
+                color: #BABABA;
+                border: none;
+            }
+
+            QHeaderView::section {
+                background-color: #1f1f1f;
+                color: #BABABA;
+                border: 1px solid #333333;
+                border-left: none;
+                border-top: none;
+            }
+
+            QTableView::horizontal {
+                border-left: 1px solid #333333;
+            }
+
+            QTableView::vertical {
+                border-top: 1px solid #333333;
+                border-left: 1px solid #333333;                
+            }
+            QTableView QTableCornerButton::section {
+                background-color: #1f1f1f;
+                border-top : none;
+                border-left: none;
+                border-right: 1px solid #333333;
+                border-bottom: 1px solid #333333;  
+            }
+                                 
+        """)
+
+        self.table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+
+
+                
 
 
 
