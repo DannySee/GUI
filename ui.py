@@ -3,11 +3,15 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QPushButton, QFrame,
                              QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QSplitter,
                              QWidget, QScrollArea, QSplitterHandle, QLabel, QTableView, 
                              QStyledItemDelegate, QHeaderView, QAbstractItemView, QLineEdit,
-                             QStyle, QComboBox)
+                             QStyle, QComboBox, QGraphicsDropShadowEffect, QDialog, QProgressBar)
 from PyQt6.QtGui import QFont, QMouseEvent, QIcon, QPalette, QPainter, QColor
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
 from PyQt6 import QtCore
 import data_pull as db
+
+import time
+
+
 
 class CustomComboBox(QComboBox):
     def showPopup(self):
@@ -182,20 +186,6 @@ class MyWindow(QMainWindow):
         self.delegate = CustomDelegate(self.table)
         self.table.setItemDelegate(self.delegate)
     
-        # Create a TableCellDelegate instance with the desired border color
-        #cell_delegate = TableCellDelegate("#333333")
-        #self.table.setItemDelegate(cell_delegate)
-        
-        #self.table.setStyleSheet("""
-        #    QTableView {
-        #        color: #BABABA; /* Set text color to #BDBDBD */
-        #        background-color: #1f1f1f;
-        #    }
-        #    QHeaderView::section {
-        #        background-color: #1f1f1f;
-        #        color: #BABABA; /* Set header text color to #BDBDBD */
-        #    }
-        #""")
 
         model = TableModel(df)
         self.table.setModel(model)
@@ -462,41 +452,51 @@ class MyWindow(QMainWindow):
         self.filterLabel.setText("")
         self.filterLabel.setStyleSheet("""
             QLabel {
-                padding: 20px 0px 10px 0px;
-                color: #BDBDBD;
+                padding: 20px 0px 0px 0px;
+                color: #EEEEEE;
                 background-color: transparent;
             }
         """)
                                        
         self.filterLayout.addWidget(self.filterLabel)
+        self.filterLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
+        # make the combobox flat
         self.combobox = CustomComboBox(self.filterWidget)
         self.combobox.setFont(QFont("Microsoft Sans Serif", 11))
         self.combobox.setStyleSheet("""
             QComboBox {
-                border: 1px solid gray;
-                border-radius: 3px;
-                padding: 1px 18px 1px 3px;
-                min-width: 6em;
-                color: #EEEEEE;
-            }
-
-            QComboBox:editable {
-                background: white;
-            }
-
-            QComboBox:on { /* shift the text when the popup opens */
-                padding-top: 3px;
-                padding-left: 4px;
-            }
-
-
-
-            QComboBox QAbstractItemView {
-                                    
+                background-color: #181818;
                 border: none;
-                selection-background-color: lightgray;
-            }                       
+                border-radius: 4px;
+                padding: 8px;
+                min-width: 6em;
+                color: #BDBDBD;
+            }
+            QComboBox::drop-down {
+                width: 30px;
+                border-left: none;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+            QComboBox::down-arrow {
+                image: url(icons/menu-down.svg);
+            }
+            QComboBox:editable {
+                background: #181818;    
+            }
+            QComboBox QAbstractItemView {
+                color: #BDBDBD;
+                padding:  0px 8px 0px 8px ;
+                border: 1px solid #333333;
+                border-radius: 4px;
+            }
+            QComboBox QAbstractItemView::item {
+                color: #BDBDBD;
+                padding: 6px;
+            }
+
+                      
         """)
         self.filterLayout.addWidget(self.combobox)
         self.combobox.setVisible(False)
@@ -520,11 +520,52 @@ class MyWindow(QMainWindow):
 
     def setupComboBox(self, activeTables):
 
-        self.combobox.clear()
-        self.combobox.setVisible(True)
+
+        
+        if self.combobox.count() > 0: 
+            self.combobox.currentIndexChanged.disconnect(self.onComboBoxChanged)
+            self.combobox.clear()
+        else:
+            self.combobox.setVisible(True)
+            
+
         self.combobox.addItems(activeTables)
         self.combobox.setCurrentIndex(0)
-        #self.combobox.currentIndexChanged.connect(self.onComboBoxChanged)
+        self.combobox.currentIndexChanged.connect(self.onComboBoxChanged)
+        
+
+
+    def loadingTable(self):
+
+        self.table.hide()
+        self.textLabel = self.pageLabel.text()
+        self.pageLabel.setText("Loading....")
+        
+        #process events
+        QApplication.processEvents()
+
+
+    def tableLoaded(self):
+
+        self.table.isVisible = True
+        self.table.show()
+        self.pageLabel.setText(self.textLabel)
+
+
+
+    def onComboBoxChanged(self):
+
+        if self.combobox.currentText() != "" :
+            if self.tableLookup[self.combobox.currentText()] is not None:
+
+                self.loadingTable()
+                
+                table_name = self.tableLookup[self.combobox.currentText()]
+                df = db.pull_records(table_name)
+                model = TableModel(df)
+                self.table.setModel(model)
+
+                self.tableLoaded()
 
 
 
@@ -621,33 +662,74 @@ class MyWindow(QMainWindow):
             "btnSMS": {
                 "text":"SMS & Costing",
                 "icon":QIcon("icons/sms_costing.svg"),
-                "tables": ["SMS Agreements", "Costing"]
+                "tables":{
+                    "SMS Agreements": "SMS_Agreements",
+                    "Costing": "Costing"
+                }
             },
             "btnCAD": {
                 "text":"Customer Disputes",
                 "icon":QIcon("icons/customer_disputes.svg"),
-                "tables": ["Audit History","Account Assignments"]
+                "tables":{
+                    "Audit History": None,
+                    "Account Assignments": "CAL_Account_Assignments",
+                }
             },
             "btnCIR": {
                 "text":"Customer Incentives",
                 "icon":QIcon("icons/customer_incentives.svg"), 
-                "tables": ["REBA Tracker", "Agreements"]
+                "tables": {
+                    "REBA Tracker": None,
+                    "Agreements": None,
+                }
             },
             "btnDPM": {
                 "text":"Deviated Agreements",
                 "icon":QIcon("icons/deviated_agreements.svg"),
-                "tables": ["Agreements", "Customer Profile","Deviation Loads","Account Assignments","Org Chart"]
+                "tables": {
+                    "DPM Agreements": "CAL_Programs",
+                    "Customer Profile": "CAL_Customer_Profile",
+                    "Deviation Loads": "CAL_Deviation_Loads",
+                    "Account Assignments": "CAL_Account_Assignments",
+                    "Org Chart": "UL_Org"
+                }
             },
             "btnUSDA": {
                 "text":"USDA Agreements",
                 "icon":QIcon("icons/usda.svg"),
-                "tables": ["Agreements","Bot Tracker"]
+                "tables": {
+                    "Agreements": None,
+                    "Bot Tracker": None
+                }
             },
             "btnQA": {
                 "text":"Quality Assurance",
                 "icon":QIcon("icons/quality_assurance.svg"),
-                "tables": ["Metrics Agreement","Metrics Inquiry","Metrics Price Rule","Price Rule Tracker"]
+                "tables": {
+                    "Metrics Agreement": "Dash_Agreement",
+                    "Metrics Inquiry": "Dash_Inquiry",
+                    "Metrics Price Rule": "Dash_PriceRule",
+                    "Price Rule Tracker": "PR_Master"
+                }
             }
+        }
+
+        self.tableLookup = {
+            "SMS Agreements": None,
+            "Costing": None,
+            "Audit History": None,
+            "Account Assignments": "CAL_Account_Assignments",
+            "REBA Tracker": None,
+            "DPM Agreements": "CAL_Programs",
+            "Customer Profile": "CAL_Customer_Profile",
+            "Deviation Loads": "CAL_Deviation_Loads",
+            "Agreements": None,
+            "Bot Tracker": None,
+            "Metrics Agreement": "Dash_Agreement",
+            "Metrics Inquiry": "Dash_Inquiry",
+            "Metrics Price Rule": "Dash_PriceRule",
+            "Price Rule Tracker": "PR_Master",
+            "Org Chart": "UL_Org"
         }
         
         for team in self.teams:
@@ -702,7 +784,8 @@ class MyWindow(QMainWindow):
         self.pageLabel.adjustSize()
 
         self.filterLabel.setText(self.teams[clickedButton.objectName()]["text"])
-        self.setupComboBox(self.teams[clickedButton.objectName()]["tables"])
+        self.setupComboBox(self.teams[clickedButton.objectName()]["tables"].keys())
+        
 
         maxWidth = max(self.scrollWidget.sizeHint().width(), self.filterWidget.sizeHint().width())
 
