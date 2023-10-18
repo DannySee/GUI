@@ -129,6 +129,8 @@ class MyWindow(QMainWindow):
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
         self.splitter.setSizes([self.sidebar.minimumWidth(), self.mainFrame.width()])
+        
+        self.sidebarSplitter.setSizes([self.scrollWidget.sizeHint().height(), self.filterWidget.sizeHint().height()])
 
         self.setCentralWidget(self.mainFrame)
 
@@ -162,9 +164,11 @@ class MyWindow(QMainWindow):
             self.scrollLayout.setContentsMargins(10,10,10,10)
             self.scrollLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-            self.sidebar.setMinimumWidth(self.scrollWidget.sizeHint().width())
-            self.sidebar.setMaximumWidth(self.scrollWidget.sizeHint().width()+100)
-            self.splitter.setSizes([self.sidebar.minimumWidth(), self.mainFrame.width()])
+            maxWidth = max(self.scrollWidget.sizeHint().width(), self.filterWidget.sizeHint().width())
+
+            self.sidebar.setMinimumWidth(maxWidth)
+            self.sidebar.setMaximumWidth(maxWidth+100)
+            self.splitter.setSizes([maxWidth, self.mainFrame.width()])
 
 
     def setupTableView(self):
@@ -452,11 +456,22 @@ class MyWindow(QMainWindow):
 
         self.filterArea.setMinimumHeight(100)
 
+
+        self.filterLabel = QLabel(self.filterWidget)
+        self.filterLabel.setFont(QFont("Microsoft Sans Serif", 14, QFont.Weight.Bold))
+        self.filterLabel.setText("")
+        self.filterLabel.setStyleSheet("""
+            QLabel {
+                padding: 20px 0px 10px 0px;
+                color: #BDBDBD;
+                background-color: transparent;
+            }
+        """)
+                                       
+        self.filterLayout.addWidget(self.filterLabel)
+
         self.combobox = CustomComboBox(self.filterWidget)
         self.combobox.setFont(QFont("Microsoft Sans Serif", 11))
-        self.combobox.addItems(["All", "Active", "Inactive"])
-
-
         self.combobox.setStyleSheet("""
             QComboBox {
                 border: 1px solid gray;
@@ -483,15 +498,33 @@ class MyWindow(QMainWindow):
                 selection-background-color: lightgray;
             }                       
         """)
-
-
-        self.combobox.view().setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-
-        
         self.filterLayout.addWidget(self.combobox)
+        self.combobox.setVisible(False)
+
+        self.filterLayout.addSpacerItem(QSpacerItem(20,20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
+
+
+        self.horizontalLine = QFrame(self.filterWidget)
+        self.horizontalLine.setFrameShape(QFrame.Shape.HLine)
+        self.horizontalLine.setFrameShadow(QFrame.Shadow.Plain)
+        self.horizontalLine.setStyleSheet("background-color: #3c3c3c; border: none; padding: 10px;")
+        self.horizontalLine.setLineWidth(1)
+        self.horizontalLine.setFixedHeight(1)
+
+        self.filterLayout.addWidget(self.horizontalLine)
+
         self.filterLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
-        
+
+
+
+    def setupComboBox(self, activeTables):
+
+        self.combobox.clear()
+        self.combobox.setVisible(True)
+        self.combobox.addItems(activeTables)
+        self.combobox.setCurrentIndex(0)
+        #self.combobox.currentIndexChanged.connect(self.onComboBoxChanged)
 
 
 
@@ -585,18 +618,42 @@ class MyWindow(QMainWindow):
     def setupSidebarButtons(self):
 
         self.teams = {
-            "btnSMS": {"text":"SMS & Costing","icon":QIcon("icons/sms_costing.svg")},
-            "btnCAD": {"text":"Customer Disputes","icon":QIcon("icons/customer_disputes.svg")},
-            "btnCIR": {"text":"Customer Incentives","icon":QIcon("icons/customer_incentives.svg")},
-            "btnDPM": {"text":"Deviated Agreements","icon":QIcon("icons/deviated_agreements.svg")},
-            "btnUSDA": {"text":"USDA Agreements","icon":QIcon("icons/usda.svg")},
-            "btnQA": {"text":"Quality Assurance","icon":QIcon("icons/quality_assurance.svg")}
+            "btnSMS": {
+                "text":"SMS & Costing",
+                "icon":QIcon("icons/sms_costing.svg"),
+                "tables": ["SMS Agreements", "Costing"]
+            },
+            "btnCAD": {
+                "text":"Customer Disputes",
+                "icon":QIcon("icons/customer_disputes.svg"),
+                "tables": ["Audit History","Account Assignments"]
+            },
+            "btnCIR": {
+                "text":"Customer Incentives",
+                "icon":QIcon("icons/customer_incentives.svg"), 
+                "tables": ["REBA Tracker", "Agreements"]
+            },
+            "btnDPM": {
+                "text":"Deviated Agreements",
+                "icon":QIcon("icons/deviated_agreements.svg"),
+                "tables": ["Agreements", "Customer Profile","Deviation Loads","Account Assignments","Org Chart"]
+            },
+            "btnUSDA": {
+                "text":"USDA Agreements",
+                "icon":QIcon("icons/usda.svg"),
+                "tables": ["Agreements","Bot Tracker"]
+            },
+            "btnQA": {
+                "text":"Quality Assurance",
+                "icon":QIcon("icons/quality_assurance.svg"),
+                "tables": ["Metrics Agreement","Metrics Inquiry","Metrics Price Rule","Price Rule Tracker"]
+            }
         }
         
         for team in self.teams:
             self.createButton(team, self.teams[team]["text"])
 
-        footerSpacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        footerSpacer = QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.scrollLayout.addSpacerItem(footerSpacer)
 
     def createButton(self, objName, text):
@@ -643,6 +700,18 @@ class MyWindow(QMainWindow):
         clickedButton = self.sender()
         self.pageLabel.setText(self.teams[clickedButton.objectName()]["text"])
         self.pageLabel.adjustSize()
+
+        self.filterLabel.setText(self.teams[clickedButton.objectName()]["text"])
+        self.setupComboBox(self.teams[clickedButton.objectName()]["tables"])
+
+        maxWidth = max(self.scrollWidget.sizeHint().width(), self.filterWidget.sizeHint().width())
+
+        if maxWidth > self.sidebar.width():
+
+            self.sidebar.setMinimumWidth(maxWidth)
+            self.sidebar.setMaximumWidth(maxWidth+100)
+
+            self.splitter.setSizes([maxWidth, self.mainFrame.width()])
         
         for button in self.scrollWidget.findChildren(QPushButton):
 
