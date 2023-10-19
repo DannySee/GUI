@@ -1,33 +1,21 @@
 import sys
+import data_pull as db
+import style_sheets as style
+
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QPushButton, QFrame,
                              QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QSplitter,
                              QWidget, QScrollArea, QSplitterHandle, QLabel, QTableView, 
-                             QStyledItemDelegate, QHeaderView, QAbstractItemView, QLineEdit,
-                             QStyle, QComboBox, QGraphicsDropShadowEffect, QDialog, QProgressBar)
-from PyQt6.QtGui import QFont, QMouseEvent, QIcon, QPalette, QPainter, QColor
-from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
+                             QStyledItemDelegate, QLineEdit, QComboBox)
+from PyQt6.QtGui import QMouseEvent, QIcon
+from PyQt6.QtCore import Qt
 from PyQt6 import QtCore
-import data_pull as db
-
-import time
-
-
-
-class CustomComboBox(QComboBox):
-    def showPopup(self):
-        super().showPopup()
-        # Ensure no item gets the focus when the popup is shown
-        self.view().setCurrentIndex(QtCore.QModelIndex())
 
 
 class CustomDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         editor = super().createEditor(parent, option, index)
         if isinstance(editor, QLineEdit):
-            editor.setFont(QFont("Microsoft Sans Serif", 8))
-            palette = editor.palette()
-            palette.setColor(QPalette.ColorRole.Text, QColor("#BABABA"))
-            editor.setPalette(palette)
+            editor.setStyleSheet(style.table)
 
             value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
             editor.setText(value)
@@ -113,7 +101,7 @@ class MyWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setupMainFrame()
+        self.setupcontainer()
         self.setupSplitter()
         self.setupSidebar()
         self.setupSidebarCollapse()
@@ -130,20 +118,20 @@ class MyWindow(QMainWindow):
         # Assuming self.scrollWidget is the child widget of the QScrollArea
         self.scrollArea.setMaximumHeight(self.scrollWidget.sizeHint().height())
 
-        self.splitter.setStretchFactor(0, 0)
-        self.splitter.setStretchFactor(1, 1)
-        self.splitter.setSizes([self.sidebar.minimumWidth(), self.mainFrame.width()])
+        self.containerSplitter.setStretchFactor(0, 0)
+        self.containerSplitter.setStretchFactor(1, 1)
+        self.containerSplitter.setSizes([self.sidebar.minimumWidth(), self.container.width()])
         
         self.sidebarSplitter.setSizes([self.scrollWidget.sizeHint().height(), self.filterWidget.sizeHint().height()])
 
-        self.setCentralWidget(self.mainFrame)
+        self.setCentralWidget(self.container)
 
     def collapseSidebar(self):  
-        if self.splitter.sizes()[0] > 50:
+        if self.containerSplitter.sizes()[0] > 50:
             self.sidebar.setMaximumWidth(50)
             self.sidebar.setMinimumWidth(50)
-            self.splitter.setSizes([50, self.mainFrame.width()])
-            self.sidebarCollapse.setIcon(QIcon("icons/chevron-right.svg"))           
+            self.containerSplitter.setSizes([50, self.container.width()])
+            self.collapseButton.setIcon(QIcon("icons/chevron-right.svg"))           
         
             for button in self.scrollWidget.findChildren(QPushButton):
                 button.setToolTip(self.teams[button.objectName()]["text"])
@@ -156,7 +144,7 @@ class MyWindow(QMainWindow):
             self.scrollLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         else:
-            self.sidebarCollapse.setIcon(QIcon("icons/chevron-left.svg"))
+            self.collapseButton.setIcon(QIcon("icons/chevron-left.svg"))
 
             for button in self.scrollWidget.findChildren(QPushButton):
                 button.setToolTip("")
@@ -172,192 +160,41 @@ class MyWindow(QMainWindow):
 
             self.sidebar.setMinimumWidth(maxWidth)
             self.sidebar.setMaximumWidth(maxWidth+100)
-            self.splitter.setSizes([maxWidth, self.mainFrame.width()])
+            self.containerSplitter.setSizes([maxWidth, self.container.width()])
 
 
     def setupTableView(self):
         
-        df = db.get_cal_programs()
+        df = db.get_cal_programs("CAL_Programs")
         df.fillna("", inplace=True)
-
-        
 
         self.table = QTableView(self.dataScrollArea)
         self.delegate = CustomDelegate(self.table)
         self.table.setItemDelegate(self.delegate)
     
-
         model = TableModel(df)
         self.table.setModel(model)
-
-        
 
         self.dataScrollLayout = QVBoxLayout(self.dataScrollArea)
         self.dataScrollLayout.setSpacing(4)
         self.dataScrollLayout.setContentsMargins(10,10,10,10)
         self.dataScrollLayout.addWidget(self.table)
         
-
         self.dataScrollArea.setWidget(self.table)
 
- 
-        #self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        #self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        #self.dataScrollArea.setMaximumWidth(self.table.horizontalHeader().length())
-        #self.dataSplitter.setMaximumWidth(self.table.horizontalHeader().length())
-        
         self.dataScrollArea.setMaximumWidth(self.table.horizontalHeader().length())
         self.dataSplitter.setMaximumWidth(self.table.horizontalHeader().length())
 
-        self.table.horizontalScrollBar().setStyleSheet("""
-            QScrollBar:horizontal {
-                background: #1f1f1f;
-                height: 15px;
-                border: none;
-                margin: 0 15px; /* Adjust spacing for the left and right arrows */
-            }
-            QScrollBar::add-line:horizontal {
-                border: none;
-                width: 15px; /* Adjust width as required */
-                subcontrol-position: right;
-                subcontrol-origin: margin;
-                background: #3c3c3c; /* Background color for the button */
-            }
-            QScrollBar::sub-line:horizontal {
-                border: none;
-                width: 15px; /* Adjust width as required */
-                subcontrol-position: left;
-                subcontrol-origin: margin;
-                background: #3c3c3c; /* Background color for the button */
-            }
-            QScrollBar::handle:horizontal {
-                background: #3c3c3c;
-                border: none;
-                min-width: 20px;
-            }
-            QScrollBar::handle:horizontal:hover {
-                background: #555555;
-            }
-            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
-                background: #2f2f2f;
-            }
-            QScrollBar::right-arrow:horizontal, QScrollBar::left-arrow:horizontal {
-                border: none;
-                width: 7px;
-                height: 7px;
-                background: #555555;
-            }
-            QScrollBar::right-arrow:horizontal:hover, QScrollBar::left-arrow:horizontal:hover {
-                background: #777777;
-            }
-        """)
+        self.table.horizontalScrollBar().setStyleSheet(style.horizontal_scrollbar)
+        self.table.verticalScrollBar().setStyleSheet(style.vertical_scrollbar)
 
-
-
-        self.table.verticalScrollBar().setStyleSheet("""
-            QScrollBar:vertical {
-                background: #1f1f1f;
-                width: 15px;
-                border: none;
-                margin: 15px 0; /* Adjust spacing for the top and bottom arrows */
-            }
-            QScrollBar::add-line:vertical {
-                border: none;
-                height: 15px; /* Adjust height as required */
-                subcontrol-position: bottom;
-                subcontrol-origin: margin;
-                background: #3c3c3c; /* Background color for the button */
-            }
-            QScrollBar::sub-line:vertical {
-                border: none;
-                height: 15px; /* Adjust height as required */
-                subcontrol-position: top;
-                subcontrol-origin: margin;
-                background: #3c3c3c; /* Background color for the button */
-            }
-            QScrollBar::handle:vertical {
-                background: #3c3c3c;
-                border: none;
-                min-height: 20px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #555555;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: #2f2f2f;
-            }
-            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
-                border: none;
-                width: 7px;
-                height: 7px;
-                background: #555555;
-            }
-            QScrollBar::up-arrow:vertical:hover, QScrollBar::down-arrow:vertical:hover {
-                background: #777777;
-            }
-        """)
-
-        self.table.setStyleSheet("""
-            QTableView {
-                background-color: #1f1f1f;
-                color: #BABABA;
-                gridline-color: #333333;
-            }
-            
-            QTableView::item {
-                background-color: #1f1f1f;
-                color: #BABABA;
-                border: none;
-            }
-
-            QHeaderView::section {
-                background-color: #1f1f1f;
-                color: #BABABA;
-                border: 1px solid #333333;
-                border-left: none;
-                border-top: none;
-            }
-
-            QTableView::horizontal {
-                border-left: 1px solid #333333;
-            }
-
-            QTableView::vertical {
-                border-top: 1px solid #333333;
-                border-left: 1px solid #333333;                
-            }
-            QTableView QTableCornerButton::section {
-                background-color: #1f1f1f;
-                border-top : none;
-                border-left: none;
-                border-right: 1px solid #333333;
-                border-bottom: 1px solid #333333;  
-            }
-                                 
-        """)
-
-        #self.table.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
-
-        
-
-
-
-                
-
-
-
-
-
-
-
-
+        self.table.setStyleSheet(style.table)
 
 
     def setupSidebarCollapse(self):
 
         collapsePanel = QFrame(self.sidebar)
-        collapsePanel.setStyleSheet("background-color: transparent; border: none;")
+        collapsePanel.setStyleSheet(style.hidden)
         collapsePanel.setFixedHeight(35)
         self.sidebarLayout.addWidget(collapsePanel)
 
@@ -366,74 +203,52 @@ class MyWindow(QMainWindow):
         collapseLayout.addSpacerItem(QSpacerItem(25,25, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
         icon = QIcon("icons/chevron-left.svg")
-        self.sidebarCollapse = QPushButton(collapsePanel)
-        self.sidebarCollapse.setIcon(icon)
-        self.sidebarCollapse.setFixedWidth(25)
-        self.sidebarCollapse.setStyleSheet("""
-            QPushButton {
-                color: #EEEEEE;
-                background-color: transparent;
-                padding: 8px;
-                border: none;
-            }
-            QPushButton:hover {
-                background-color: #3c3c3c;
-                border-radius: 4px;                           
-                color: #FFFFFF;
-            }
-        """)
-        self.sidebarCollapse.clicked.connect(self.collapseSidebar)
-        collapseLayout.addWidget(self.sidebarCollapse)
+        self.collapseButton = QPushButton(self.sidebar)
+        self.collapseButton.setIcon(icon)
+        self.collapseButton.setFixedSize(25,25)
+        self.collapseButton.setStyleSheet(style.ui_button)
+        self.collapseButton.clicked.connect(self.collapseSidebar)
+        collapseLayout.addWidget(self.collapseButton)
 
         
 
-    def setupMainFrame(self):
-        self.mainFrame = QFrame(self)
-        self.mainFrame.setStyleSheet("background-color: #181818;")
-        self.layout = QVBoxLayout(self.mainFrame)
-        self.layout.setContentsMargins(0,0,0,0)
+    def setupcontainer(self):
+        self.container = QFrame(self)
+        self.container.setStyleSheet(style.dark_gray_frame)
+        self.containerLayout = QVBoxLayout(self.container)
+        self.containerLayout.setContentsMargins(0,0,0,0)
 
     def setupSplitter(self):
-        self.splitter = MySplitter(Qt.Orientation.Horizontal, self.mainFrame)
-        self.splitter.setHandleWidth(1)
-        self.splitter.setChildrenCollapsible(False)
-        self.splitter.setStyleSheet("QSplitter::handle {background-color: transparent; border: none; color: #3c3c3c;}")
+        self.containerSplitter = QSplitter(Qt.Orientation.Horizontal, self.container)
+        self.containerSplitter.setHandleWidth(1)
+        self.containerSplitter.setChildrenCollapsible(False)
+        self.containerSplitter.setStyleSheet(style.hidden_splitter)
         
-        self.layout.addWidget(self.splitter)
+        self.containerLayout.addWidget(self.containerSplitter)
 
     def setupsidebarSplitter(self):
         self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
         self.sidebarSplitter.setChildrenCollapsible(False)
         self.sidebarSplitter.setHandleWidth(1)
-        self.sidebarSplitter.setStyleSheet("""
-            QSplitter::handle {
-                background-color: #3c3c3c; 
-                border: 12px transparent;
-                color: #1f1f1f;
-            } 
-            QSplitter {
-                background-color: transparent;
-                border: none;
-            }
-        """)
+        self.sidebarSplitter.setStyleSheet(style.visible_splitter)
         self.sidebarLayout.addWidget(self.sidebarSplitter)
 
     def setupSidebar(self):
-        self.sidebar = QFrame(self.splitter)
+        self.sidebar = QFrame(self.containerSplitter)
         self.sidebar.setFrameShape(QFrame.Shape.StyledPanel)
         
-        self.sidebar.setStyleSheet("background-color: #1f1f1f; border: none;")
+        self.sidebar.setStyleSheet(style.light_gray_frame)
         self.sidebarLayout = QVBoxLayout(self.sidebar)
         self.sidebarLayout.setContentsMargins(0,0,0,0)
 
     def setupFilters(self):
         self.filterArea = QScrollArea(self.sidebarSplitter)
         self.filterArea.setWidgetResizable(True)
-        self.filterArea.setStyleSheet("background-color: transparent; border: none;")
+        self.filterArea.setStyleSheet(style.hidden)
 
 
         self.filterWidget = QWidget(self.filterArea)
-        self.filterWidget.setStyleSheet("background-color: transparent; border: none;")
+        self.filterWidget.setStyleSheet(style.hidden)
 
         self.filterLayout = QVBoxLayout(self.filterWidget)
         self.filterLayout.setSpacing(4)
@@ -448,56 +263,15 @@ class MyWindow(QMainWindow):
 
 
         self.filterLabel = QLabel(self.filterWidget)
-        self.filterLabel.setFont(QFont("Microsoft Sans Serif", 14, QFont.Weight.Bold))
         self.filterLabel.setText("")
-        self.filterLabel.setStyleSheet("""
-            QLabel {
-                padding: 20px 0px 0px 0px;
-                color: #EEEEEE;
-                background-color: transparent;
-            }
-        """)
+        self.filterLabel.setStyleSheet(style.sidebar_label)
                                        
         self.filterLayout.addWidget(self.filterLabel)
         self.filterLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
         # make the combobox flat
-        self.combobox = CustomComboBox(self.filterWidget)
-        self.combobox.setFont(QFont("Microsoft Sans Serif", 11))
-        self.combobox.setStyleSheet("""
-            QComboBox {
-                background-color: #181818;
-                border: none;
-                border-radius: 4px;
-                padding: 8px;
-                min-width: 6em;
-                color: #BDBDBD;
-            }
-            QComboBox::drop-down {
-                width: 30px;
-                border-left: none;
-                border-top-right-radius: 4px;
-                border-bottom-right-radius: 4px;
-            }
-            QComboBox::down-arrow {
-                image: url(icons/menu-down.svg);
-            }
-            QComboBox:editable {
-                background: #181818;    
-            }
-            QComboBox QAbstractItemView {
-                color: #BDBDBD;
-                padding:  0px 8px 0px 8px ;
-                border: 1px solid #333333;
-                border-radius: 4px;
-            }
-            QComboBox QAbstractItemView::item {
-                color: #BDBDBD;
-                padding: 6px;
-            }
-
-                      
-        """)
+        self.combobox = QComboBox(self.filterWidget)
+        self.combobox.setStyleSheet(style.combobox)
         self.filterLayout.addWidget(self.combobox)
         self.combobox.setVisible(False)
 
@@ -507,7 +281,7 @@ class MyWindow(QMainWindow):
         self.horizontalLine = QFrame(self.filterWidget)
         self.horizontalLine.setFrameShape(QFrame.Shape.HLine)
         self.horizontalLine.setFrameShadow(QFrame.Shadow.Plain)
-        self.horizontalLine.setStyleSheet("background-color: #3c3c3c; border: none; padding: 10px;")
+        self.horizontalLine.setStyleSheet(style.dividing_line)
         self.horizontalLine.setLineWidth(1)
         self.horizontalLine.setFixedHeight(1)
 
@@ -561,7 +335,7 @@ class MyWindow(QMainWindow):
                 self.loadingTable()
                 
                 table_name = self.tableLookup[self.combobox.currentText()]
-                df = db.pull_records(table_name)
+                df = db.get_cal_programs(table_name)
                 model = TableModel(df)
                 self.table.setModel(model)
 
@@ -572,73 +346,55 @@ class MyWindow(QMainWindow):
 
     def setupDataFrame(self):
         
-        self.dataFrame = QFrame(self.splitter)
+        self.dataFrame = QFrame(self.containerSplitter)
         self.dataFrame.setMinimumWidth(200)
-        self.dataFrame.setStyleSheet("background-color: transparent; border: none;")
+        self.dataFrame.setStyleSheet(style.hidden)
 
         dataFrameLayout = QVBoxLayout(self.dataFrame)
         dataFrameLayout.setContentsMargins(50,20,50,20)
 
         self.dataFrameBanner = QFrame(self.dataFrame)
-        self.dataFrameBanner.setStyleSheet("background-color: transparent; border: none;")
+        self.dataFrameBanner.setStyleSheet(style.hidden)
         self.dataFrameBanner.setFixedHeight(50)
         dataFrameLayout.addWidget(self.dataFrameBanner)
 
-
-        #self.b1 = QPushButton("Button 1", self.dataFrameBanner)
-        #self.b1.setObjectName("btn1")
-        #self.b1.setFont(QFont("Microsoft Sans Serif", 11))
-        #self.b1.setStyleSheet(self.getButtonStyleSheet("text"))
-        #self.b1.clicked.connect(self.printDF)
-
-
-
-
         self.dataFrameHeader = QFrame(self.dataFrame)
-        self.dataFrameHeader.setStyleSheet("background-color: transparent; border: none;")
+        self.dataFrameHeader.setStyleSheet(style.hidden)
         self.dataFrameHeader.setFixedHeight(50)
         dataFrameLayout.addWidget(self.dataFrameHeader)
 
         self.pageLabel = QLabel(self.dataFrameHeader)
-        self.pageLabel.setFont(QFont("Microsoft Sans Serif", 18))
-        self.pageLabel.setText("Welcome to Hive!")
-        self.pageLabel.setStyleSheet("""
-            QLabel {
-                color: #EEEEEE;
-                background-color: transparent;
-                padding: 0px 0px 0px 30px;
-            }
-        """)
+        self.pageLabel.setStyleSheet(style.page_label)
 
         self.tablViewPane = QFrame(self.dataFrame)
-        self.dataFrameBanner.setStyleSheet("background-color: transparent; border: none;")
+        self.dataFrameBanner.setStyleSheet(style.hidden)
         dataFrameLayout.addWidget(self.tablViewPane)
 
         self.dataSplitter = QSplitter(Qt.Orientation.Vertical, self.tablViewPane)
         self.dataSplitter.setHandleWidth(1)
         self.dataSplitter.setChildrenCollapsible(False)
-        self.dataSplitter.setStyleSheet("QSplitter::handle {background-color: transparent; border: none; color: #3c3c3c;}")
+        self.dataSplitter.setStyleSheet(style.hidden_splitter)
         dataFrameLayout.addWidget(self.dataSplitter)
 
 
         self.dataScrollArea = QScrollArea(self.dataSplitter)
         self.dataScrollArea.setWidgetResizable(True)
         
-        self.dataScrollArea.setStyleSheet("background-color: transparent; border: none;")
+        self.dataScrollArea.setStyleSheet(style.hidden)
 
         self.dataScrollArea2 = QScrollArea(self.dataSplitter)
         self.dataScrollArea2.setWidgetResizable(True)
           
-        self.dataScrollArea2.setStyleSheet("background-color: transparent; border: none;")
+        self.dataScrollArea2.setStyleSheet(style.hidden)
 
 
     def setupScrollArea(self):
         self.scrollArea = QScrollArea(self.sidebarSplitter)
         self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setStyleSheet("background-color: transparent; border: none;")
+        self.scrollArea.setStyleSheet(style.hidden)
 
         self.scrollWidget = QWidget(self.scrollArea)
-        self.scrollWidget.setStyleSheet("background-color: transparent; border: none;")
+        self.scrollWidget.setStyleSheet(style.hidden)
 
         self.scrollLayout = QVBoxLayout(self.scrollWidget)
         self.scrollLayout.setSpacing(4)
@@ -741,44 +497,21 @@ class MyWindow(QMainWindow):
     def createButton(self, objName, text):
         button = QPushButton(text, self.scrollWidget)
         button.setObjectName(objName)
-        button.setFont(QFont("Microsoft Sans Serif", 11))
         button.setStyleSheet(self.getButtonStyleSheet("text"))
         button.clicked.connect(self.onButtonClicked)
         self.scrollLayout.addWidget(button)
 
-    def setupDividingLine(self):
-        dividingLine = QFrame(self.sidebar)
-        dividingLine.setFrameShape(QFrame.Shape.HLine)
-        dividingLine.setFrameShadow(QFrame.Shadow.Plain)
-        dividingLine.setStyleSheet("background-color: #3c3c3c; border: none;")
-        self.sidebarLayout.addWidget(dividingLine)
-        spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.sidebarLayout.addSpacerItem(spacer)
 
     def getButtonStyleSheet(self, bType, active=False):
-        baseStyle = """
-            QPushButton {{
-                text-align: {alignment};
-                border: none;
-                padding: 8px;
-                border-radius: 4px;
-                color: {color};
-                background-color: {bg_color};
-            }}
-            QPushButton:hover {{
-                background-color: {hover_bg_color};
-                color: #FFFFFF;
-            }}
-        """
+        
+        if bType == "icon" and active: return style.icon_button_active
+        if bType == "icon" and not active: return style.icon_button_inactive
+        if bType == "text" and active: return style.text_button_active
+        if bType == "text" and not active: return style.text_button_inactive
 
-        align = "left" if bType == "text" else "center"
-
-        if active:
-            return baseStyle.format(alignment=align, color="#EEEEEE", bg_color="#2F2F2F", hover_bg_color="#3F3F3F")
-
-        return baseStyle.format(alignment=align, color="#BDBDBD", bg_color="transparent", hover_bg_color="#2F2F2F")
 
     def onButtonClicked(self):
+        if self.sidebar.maximumWidth() == 50: self.collapseSidebar()
         clickedButton = self.sender()
         self.pageLabel.setText(self.teams[clickedButton.objectName()]["text"])
         self.pageLabel.adjustSize()
@@ -794,7 +527,7 @@ class MyWindow(QMainWindow):
             self.sidebar.setMinimumWidth(maxWidth)
             self.sidebar.setMaximumWidth(maxWidth+100)
 
-            self.splitter.setSizes([maxWidth, self.mainFrame.width()])
+            self.containerSplitter.setSizes([maxWidth, self.container.width()])
         
         for button in self.scrollWidget.findChildren(QPushButton):
 
