@@ -1,6 +1,7 @@
 import sys
 import data_pull as db
 import style_sheets as style
+from sidebar_maps import map as sidebarButtonMap
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QMouseEvent
@@ -74,16 +75,14 @@ class MyWindow(QMainWindow):
     def initUI(self):
         # Calling setup functions to initialize UI components
         self.buildContainer()
-        self.buildContainerSplitter()
         self.buildSidebar()
         self.buildMainPage()
-        self.buildCollapseButton()
-        self.buildSidebarButtons()
+        
 
-        self.setupsidebarSplitter()
-        self.setupScrollArea()
-        self.setupFilters()
+
         self.setupTableView()
+        
+        
 
         # Configuring sidebar and scroll area sizes
         self.configureSidebarAndScrollAreaSizes()
@@ -100,6 +99,8 @@ class MyWindow(QMainWindow):
         self.containerLayout = QVBoxLayout(self.container)
         self.containerLayout.setContentsMargins(0,0,0,0)
 
+        self.buildContainerSplitter()
+
     def buildContainerSplitter(self):
         self.containerSplitter = QSplitter(Qt.Orientation.Horizontal, self.container)
         self.containerSplitter.setChildrenCollapsible(False)
@@ -111,6 +112,11 @@ class MyWindow(QMainWindow):
         self.sidebar.setStyleSheet(style.light_gray_frame)
         self.sidebarLayout = QVBoxLayout(self.sidebar)
         self.sidebarLayout.setContentsMargins(0,0,0,0)
+
+        self.buildCollapseButton()
+        self.buildSidebarSplitter()
+        self.buildSidebarNavigation()
+        self.setupFilters()
 
     def buildCollapseButton(self):
         frame = QFrame(self.sidebar)
@@ -163,94 +169,46 @@ class MyWindow(QMainWindow):
         self.utilityScrollArea = QScrollArea(self.tableSplitter)
         self.utilityScrollArea.setStyleSheet(style.hidden)
 
-    def buildSidebarButtons(self):
+    def buildSidebarSplitter(self):
+        self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
+        self.sidebarSplitter.setChildrenCollapsible(False)
+        self.sidebarSplitter.setStyleSheet(style.visible_splitter)
+        self.sidebarLayout.addWidget(self.sidebarSplitter)
 
-        self.teams = {
-            "btnSMS": {
-                "text":"SMS & Costing",
-                "icon":QIcon("icons/sms_costing.svg"),
-                "tables":{
-                    "SMS Agreements": "SMS_Agreements",
-                    "Costing": "Costing"
-                }
-            },
-            "btnCAD": {
-                "text":"Customer Disputes",
-                "icon":QIcon("icons/customer_disputes.svg"),
-                "tables":{
-                    "Audit History": None,
-                    "Account Assignments": "CAL_Account_Assignments",
-                }
-            },
-            "btnCIR": {
-                "text":"Customer Incentives",
-                "icon":QIcon("icons/customer_incentives.svg"), 
-                "tables": {
-                    "REBA Tracker": None,
-                    "Agreements": None,
-                }
-            },
-            "btnDPM": {
-                "text":"Deviated Agreements",
-                "icon":QIcon("icons/deviated_agreements.svg"),
-                "tables": {
-                    "DPM Agreements": "CAL_Programs",
-                    "Customer Profile": "CAL_Customer_Profile",
-                    "Deviation Loads": "CAL_Deviation_Loads",
-                    "Account Assignments": "CAL_Account_Assignments",
-                    "Org Chart": "UL_Org"
-                }
-            },
-            "btnUSDA": {
-                "text":"USDA Agreements",
-                "icon":QIcon("icons/usda.svg"),
-                "tables": {
-                    "Agreements": None,
-                    "Bot Tracker": None
-                }
-            },
-            "btnQA": {
-                "text":"Quality Assurance",
-                "icon":QIcon("icons/quality_assurance.svg"),
-                "tables": {
-                    "Metrics Agreement": "Dash_Agreement",
-                    "Metrics Inquiry": "Dash_Inquiry",
-                    "Metrics Price Rule": "Dash_PriceRule",
-                    "Price Rule Tracker": "PR_Master"
-                }
-            }
-        }
+    def buildSidebarNavigation(self):
+        self.sidebarNaviContainer = QScrollArea(self.sidebarSplitter)
+        self.sidebarNaviContainer.setWidgetResizable(True)
+        self.sidebarNaviContainer.setStyleSheet(style.hidden)
+        self.sidebarNaviContainer.setMinimumHeight(100)
 
-        self.tableLookup = {
-            "SMS Agreements": None,
-            "Costing": None,
-            "Audit History": None,
-            "Account Assignments": "CAL_Account_Assignments",
-            "REBA Tracker": None,
-            "DPM Agreements": "CAL_Programs",
-            "Customer Profile": "CAL_Customer_Profile",
-            "Deviation Loads": "CAL_Deviation_Loads",
-            "Agreements": None,
-            "Bot Tracker": None,
-            "Metrics Agreement": "Dash_Agreement",
-            "Metrics Inquiry": "Dash_Inquiry",
-            "Metrics Price Rule": "Dash_PriceRule",
-            "Price Rule Tracker": "PR_Master",
-            "Org Chart": "UL_Org"
-        }
-        
-        for team in self.teams:
-            self.createButton(team, self.teams[team]["text"])
+        self.sidebarButtonFrame = QWidget(self.sidebarNaviContainer)
+        self.sidebarButtonFrame.setStyleSheet(style.hidden)
+        self.sidebarNaviContainer.setWidget(self.sidebarButtonFrame)
 
-        footerSpacer = QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.scrollLayout.addSpacerItem(footerSpacer)
+        self.sidebarNaviLayout = QVBoxLayout(self.sidebarButtonFrame)
+        self.sidebarNaviLayout.setSpacing(4)
+        self.sidebarNaviLayout.setContentsMargins(10,10,10,10)
+
+        self.sidebarNaviContainer.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.sidebarNaviContainer.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        self.buildSidebarButtons()
+
+
+
+
+    def buildSidebarButtons(self):  
+        for button, map in sidebarButtonMap:
+            self.createButton(button, map["text"])
+
+        self.sidebarNaviLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
     def createButton(self, objName, text):
         button = QPushButton(text, self.scrollWidget)
         button.setObjectName(objName)
         button.setStyleSheet(self.getButtonStyleSheet("text"))
         button.clicked.connect(self.onButtonClicked)
-        self.scrollLayout.addWidget(button)
+        self.sidebarNaviLayout.addWidget(button)
 
 
     def getButtonStyleSheet(self, bType, active=False):
@@ -269,7 +227,8 @@ class MyWindow(QMainWindow):
 
         self.filterLabel.setText(self.teams[clickedButton.objectName()]["text"])
         self.setupComboBox(self.teams[clickedButton.objectName()]["tables"].keys())
-        
+
+        self.tableRef = self.teams[clickedButton.objectName()]["tables"]
 
         maxWidth = max(self.scrollWidget.sizeHint().width(), self.filterWidget.sizeHint().width())
 
