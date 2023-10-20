@@ -365,7 +365,6 @@ class MyWindow(QMainWindow):
 
         self.dataScrollArea = QScrollArea(self.dataSplitter)
         self.dataScrollArea.setWidgetResizable(True)
-        
         self.dataScrollArea.setStyleSheet(style.hidden)
 
         self.dataScrollArea2 = QScrollArea(self.dataSplitter)

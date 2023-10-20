@@ -64,6 +64,14 @@ class TableModel(QtCore.QAbstractTableModel):
             return True
         return False
     
+    def headerData(self, section, orientation, role):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return str(self._data.columns[section])
+
+            if orientation == Qt.Orientation.Vertical:
+                return str(self._data.index[section])
+    
 
 # ------------------------- MyWindow Class -------------------------
 class MyWindow(QMainWindow):
@@ -203,12 +211,12 @@ class MyWindow(QMainWindow):
         self.mainLayout.addWidget(self.tableSplitter)
 
         self.tableScrollArea = QScrollArea(self.tableSplitter)
+        self.tableScrollArea.setWidgetResizable(True)
         self.tableScrollArea.setStyleSheet(style.hidden)
 
-        # keeping layout although it is not really necessary in case I do not like the utility scoll area in separate space
-        self.tableScrollLayout = QVBoxLayout(self.tableScrollArea)
-        self.tableScrollLayout.setSpacing(4)
-        self.tableScrollLayout.setContentsMargins(10,10,10,10)
+        self.utilityScrollArea = QScrollArea(self.tableSplitter)
+        self.utilityScrollArea.setWidgetResizable(True)
+        self.utilityScrollArea.setStyleSheet(style.hidden)
 
         self.table = QTableView(self.tableScrollArea)
         self.tableDelegate = CustomDelegate(self.table)
@@ -216,13 +224,15 @@ class MyWindow(QMainWindow):
         self.table.horizontalScrollBar().setStyleSheet(style.horizontal_scrollbar)
         self.table.verticalScrollBar().setStyleSheet(style.vertical_scrollbar)
         self.table.setStyleSheet(style.table)
+
+         # keeping layout although it is not really necessary in case I do not like the utility scoll area in separate space
+        self.tableScrollLayout = QVBoxLayout(self.tableScrollArea)
+        self.tableScrollLayout.setSpacing(4)
+        self.tableScrollLayout.setContentsMargins(10,10,10,10)
         self.tableScrollLayout.addWidget(self.table)
+
         self.tableScrollArea.setWidget(self.table)
-
-        self.utilityScrollArea = QScrollArea(self.tableSplitter)
-        self.utilityScrollArea.setStyleSheet(style.hidden)
-
-        self.bodyFrame.hide()
+        self.tableScrollArea.hide()
 
     def buildSidebarSplitter(self):
         self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
@@ -301,6 +311,8 @@ class MyWindow(QMainWindow):
         self.menuLayout.addSpacerItem(QSpacerItem(20,20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
         self.menuLine = QFrame(self.menuFrame)
+        self.menuLine.setFrameShape(QFrame.Shape.HLine)
+        self.menuLine.setFixedHeight(1)
         self.menuLine.setStyleSheet(style.dividing_line)
         self.menuLayout.addWidget(self.menuLine)
 
@@ -327,14 +339,15 @@ class MyWindow(QMainWindow):
         if table is not None:
             self.showLoadingPage()
 
-            self.pageLabel.setText(menuSelection)
             df = db.get_cal_programs(table)
+
+            self.hideLoadingPage()
+
+            self.pageLabel.setText(menuSelection)
             model = TableModel(df)
             self.table.setModel(model)
             self.tableSplitter.setMaximumWidth(self.table.horizontalHeader().length())
-            self.bodyFrame.show()
-
-            self.hideLoadingPage()
+            self.tableScrollArea.show()
 
     def showLoadingPage(self):
         self.table.hide()
