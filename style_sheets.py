@@ -89,7 +89,7 @@ table = """
         color: #BABABA;
         gridline-color: #333333;
         font-family: "Microsoft Sans Serif";
-        font-size: 9px;
+        font-size: 12px;
     }
     
     QTableView::item {
@@ -97,7 +97,7 @@ table = """
         color: #BABABA;
         border: none;
         font-family: "Microsoft Sans Serif";
-        font-size: 9px;
+        font-size: 12px;
     }
 
     QHeaderView::section {
@@ -107,7 +107,7 @@ table = """
         border-left: none;
         border-top: none;
         font-family: "Microsoft Sans Serif";
-        font-size: 9px;
+        font-size: 12px;
         text-align: left;
     }
 
@@ -125,6 +125,11 @@ table = """
         border-left: none;
         border-right: 1px solid #333333;
         border-bottom: 1px solid #333333; 
+    }
+    QTableView QLineEdit {  
+        color: #BABABA;
+        font-family: "Microsoft Sans Serif";
+        font-size: 12px;
     }
 """
 
@@ -166,7 +171,7 @@ hidden = """
 sidebar_label = """
     QLabel {
         font-family: "Microsoft Sans Serif";
-        font-size: 14px;
+        font-size: 18px;
         padding: 20px 0px 0px 0px;
         color: #EEEEEE;
         background-color: transparent;
@@ -179,7 +184,7 @@ page_label = """
         background-color: transparent;
         padding: 0px 0px 0px 30px;
         font-family: "Microsoft Sans Serif";
-        font-size: 18px;
+        font-size: 22px;
     }
 """
 
@@ -192,7 +197,7 @@ combobox = """
         min-width: 6em;
         color: #BDBDBD;
         font-family: "Microsoft Sans Serif";
-        font-size: 11px;
+        font-size: 14px;
     }
     QComboBox::drop-down {
         width: 30px;
@@ -215,7 +220,7 @@ combobox = """
         color: #BDBDBD;
         padding: 6px;
         font-family: "Microsoft Sans Serif";
-        font-size: 10px;
+        font-size: 14px;
     }
 """
 
@@ -228,7 +233,7 @@ base_button = """
         color: {color};
         background-color: {bg_color};
         font-family: "Microsoft Sans Serif";
-        font-size: 11px;
+        font-size: 14px;
     }}
     QPushButton:hover {{
         background-color: {hover_bg_color};

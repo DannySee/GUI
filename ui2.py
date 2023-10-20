@@ -3,8 +3,8 @@ import data_pull as db
 import style_sheets as style
 from sidebar_maps import map as naviButtonMap
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon, QMouseEvent
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QIcon, QMouseEvent, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
@@ -88,10 +88,9 @@ class MyWindow(QMainWindow):
         self.buildMainPage()       
 
         # Configuring sidebar and scroll area sizes
-        #self.configureSidebarAndScrollAreaSizes()
-
-        # Configuring splitter sizes
-        #self.configureSplitterSizes()
+        self.containerSplitter.setStretchFactor(0, 0)
+        self.containerSplitter.setStretchFactor(1, 1)
+        self.containerSplitter.setSizes([self.sidebar.minimumWidth(), self.container.width()])
 
         # Setting central widget
         self.setCentralWidget(self.container)
@@ -108,6 +107,8 @@ class MyWindow(QMainWindow):
         self.containerSplitter.setChildrenCollapsible(False)
         self.containerSplitter.setStyleSheet(style.hidden_splitter)
         self.containerLayout.addWidget(self.containerSplitter)
+        self.containerSplitter.setStretchFactor(0, 0)
+        self.containerSplitter.setStretchFactor(1, 1)
 
     def buildSidebar(self):
         self.sidebar = QFrame(self.containerSplitter)
@@ -120,8 +121,13 @@ class MyWindow(QMainWindow):
         self.buildSidebarNavigation()
         self.buildSidebarMenu()
 
-        self.naviScrollArea.setMaximumHeight(self.naviButtonFrame.sizeHint().height())
-        self.sidebarSplitter.setSizes([self.naviScrollArea.maximumHeight(),10])
+        self.sidebar_height = self.naviButtonFrame.sizeHint().height()
+        self.sidebar_width = 200
+
+        self.sidebar.setMinimumWidth(self.sidebar_width)
+        self.sidebar.setMaximumWidth(self.sidebar_width+100)
+        self.naviScrollArea.setMaximumHeight(self.sidebar_height)
+        self.sidebarSplitter.setSizes([self.sidebar_height,10])
 
     def buildSidebarResizeButton(self):
         self.resizeFrame = QFrame(self.sidebar)
@@ -145,40 +151,45 @@ class MyWindow(QMainWindow):
         if self.containerSplitter.sizes()[0] > 50:
             width = 50
             icon = QIcon("icons/chevron-right.svg")
+            activeButtonCSS = style.icon_button_active
             alignment = Qt.AlignmentFlag.AlignCenter
-            margin = 0
+            mgn = 0
             collapse = True
 
         else:
-            width = 200
+            width = self.sidebar_width
             icon = QIcon("icons/chevron-left.svg")
+            activeButtonCSS = style.text_button_active
             alignment = Qt.AlignmentFlag.AlignLeft
-            margin = 10
+            mgn = 10
             collapse = False
 
         self.sidebar.setMinimumWidth(width)
         self.sidebar.setMaximumWidth(width+100)
         self.containerSplitter.setSizes([width, self.container.width()])
         self.collapseButton.setIcon(icon)
-        self.naviLayout.setContentsMargins(margin,margin,margin,margin)
         self.naviLayout.setAlignment(alignment)
+        self.naviLayout.setContentsMargins(mgn,mgn,mgn,mgn)
 
         for button in self.naviButtonFrame.findChildren(QPushButton):
 
             if collapse:
+                button.setIconSize(QSize(20,20))
                 button.setToolTip(button.text())
                 button.setIcon(naviButtonMap[button.objectName()]["icon"])
                 button.setText("")
-                button.adjustSize()
                 button.setStyleSheet(style.icon_button_inactive)
+                button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed) 
 
             else:
                 button.setToolTip("")
                 button.setIcon(QIcon())
                 button.setText(naviButtonMap[button.objectName()]["text"])
-                button.adjustSize()
                 button.setStyleSheet(style.text_button_inactive)
+                button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed) 
 
+        if self.menuFrame.isVisible(): self.activeNaviButton.setStyleSheet(activeButtonCSS)
+            
     def buildMainPage(self):
         self.mainPage = QFrame(self.containerSplitter)
         self.mainPage.setMinimumWidth(200)
@@ -267,19 +278,30 @@ class MyWindow(QMainWindow):
         self.naviLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
     def naviButtonClicked(self):
-        clickedButton = self.sender()
+        self.activeNaviButton = self.sender()
+        activeObject = self.activeNaviButton.objectName()
+        activeLabel = naviButtonMap[self.activeNaviButton.objectName()]['text']
+        activeText = self.activeNaviButton.text()
 
-        self.pageLabel.setText(clickedButton.text())
+        self.pageLabel.setText(activeLabel)
         self.pageLabel.adjustSize()
 
-        self.menuLabel.setText(clickedButton.text())
+        self.menuLabel.setText(activeLabel)
         self.menuLabel.adjustSize()
 
-        self.populateSidebarMenu(naviButtonMap[clickedButton.objectName()]["tables"].keys())
-        self.tableRef = naviButtonMap[clickedButton.objectName()]["tables"]
+        self.tableScrollArea.hide()
 
-        if self.containerSplitter.sizes()[0] == 50:
-            self.resizeSidebar()
+        self.populateSidebarMenu(naviButtonMap[activeObject]["tables"].keys())
+        self.tableRef = naviButtonMap[activeObject]["tables"]
+
+        inactiveCSS = style.icon_button_inactive if activeText == "" else style.text_button_inactive 
+        activeCSS = style.icon_button_active if activeText == "" else style.text_button_active
+
+        for button in self.naviButtonFrame.findChildren(QPushButton):
+            button.setStyleSheet(inactiveCSS)
+
+        self.activeNaviButton.setStyleSheet(activeCSS)
+
 
     def buildSidebarMenu(self):
         self.menuScrollArea = QScrollArea(self.sidebarSplitter)
@@ -346,7 +368,7 @@ class MyWindow(QMainWindow):
             self.pageLabel.setText(menuSelection)
             model = TableModel(df)
             self.table.setModel(model)
-            self.tableSplitter.setMaximumWidth(self.table.horizontalHeader().length())
+            self.tableScrollArea.setMaximumWidth(self.table.horizontalHeader().length()+40)
             self.tableScrollArea.show()
 
     def showLoadingPage(self):
