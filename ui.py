@@ -292,21 +292,7 @@ class MyWindow(QMainWindow):
 
 
 
-    def setupComboBox(self, activeTables):
-
-
-        
-        if self.combobox.count() > 0: 
-            self.combobox.currentIndexChanged.disconnect(self.onComboBoxChanged)
-            self.combobox.clear()
-        else:
-            self.combobox.setVisible(True)
-            
-
-        self.combobox.addItems(activeTables)
-        self.combobox.setCurrentIndex(0)
-        self.combobox.currentIndexChanged.connect(self.onComboBoxChanged)
-        
+    
 
 
     def loadingTable(self):

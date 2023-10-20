@@ -178,7 +178,7 @@ page_label = """
         color: #EEEEEE;
         background-color: transparent;
         padding: 0px 0px 0px 30px;
-        text-family: "Microsoft Sans Serif";
+        font-family: "Microsoft Sans Serif";
         font-size: 18px;
     }
 """
@@ -241,7 +241,7 @@ icon_button_inactive = base_button.format(alignment="center", color="#BDBDBD", b
 text_button_active = base_button.format(alignment="left", color="#EEEEEE", bg_color="#2F2F2F", hover_bg_color="#3F3F3F")
 text_button_inactive = base_button.format(alignment="left", color="#BDBDBD", bg_color="transparent", hover_bg_color="#2F2F2F")
 
-dividing_line = "background-color: #3c3c3c; border: none; padding: 10px;"
+dividing_line = "background-color: #BDBDBD; border: none; padding: 10px;"
 
 light_gray_frame = "background-color: #1f1f1f; border: none;"
 
