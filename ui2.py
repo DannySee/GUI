@@ -1,7 +1,7 @@
 import sys
 import data_pull as db
 import style_sheets as style
-from sidebar_maps import map as naviButtonMap
+from sidebar_maps import button_map as naviButtonMap, filter_map as filterMap
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QMouseEvent, QPalette
@@ -278,6 +278,9 @@ class MyWindow(QMainWindow):
         self.naviLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
     def naviButtonClicked(self):
+        self.tableScrollArea.hide()
+        self.quickFilterFrame.hide()
+
         self.activeNaviButton = self.sender()
         activeObject = self.activeNaviButton.objectName()
         activeLabel = naviButtonMap[self.activeNaviButton.objectName()]['text']
@@ -288,8 +291,6 @@ class MyWindow(QMainWindow):
 
         self.menuLabel.setText(activeLabel)
         self.menuLabel.adjustSize()
-
-        self.tableScrollArea.hide()
 
         self.populateSidebarMenu(naviButtonMap[activeObject]["tables"].keys())
         self.tableRef = naviButtonMap[activeObject]["tables"]
@@ -321,7 +322,7 @@ class MyWindow(QMainWindow):
 
         self.menuLabel = QLabel(self.menuFrame)
         self.menuLabel.setText("")
-        self.menuLabel.setStyleSheet(style.sidebar_label)               
+        self.menuLabel.setStyleSheet(style.menu_label)               
         self.menuLayout.addWidget(self.menuLabel)
 
         self.menuLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
@@ -332,14 +333,27 @@ class MyWindow(QMainWindow):
 
         self.menuLayout.addSpacerItem(QSpacerItem(20,20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
-        self.menuLine = QFrame(self.menuFrame)
+        self.quickFilterFrame = QFrame(self.menuFrame)
+        self.quickFilterFrame.setStyleSheet(style.hidden)
+        self.menuLayout.addWidget(self.quickFilterFrame)
+
+        self.quickFilterLayout = QVBoxLayout(self.quickFilterFrame)
+        self.quickFilterLayout.setSpacing(4)
+        self.quickFilterLayout.setContentsMargins(0,0,0,0)
+
+        self.menuLine = QFrame(self.quickFilterFrame)
         self.menuLine.setFrameShape(QFrame.Shape.HLine)
         self.menuLine.setFixedHeight(1)
         self.menuLine.setStyleSheet(style.dividing_line)
-        self.menuLayout.addWidget(self.menuLine)
+        self.quickFilterLayout.addWidget(self.menuLine)
+
+        self.quickFilterLabel = QLabel(self.quickFilterFrame)
+        self.quickFilterLabel.setText("")
+        self.quickFilterLabel.setStyleSheet(style.quick_filter_label)               
+        self.quickFilterLayout.addWidget(self.quickFilterLabel)
+        self.quickFilterLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
         self.menuLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-
         self.menuFrame.hide()
 
     def populateSidebarMenu(self, releventTables):
@@ -354,15 +368,41 @@ class MyWindow(QMainWindow):
         self.menuComboBox.setCurrentIndex(0)
         self.menuComboBox.currentIndexChanged.connect(self.menuComboBoxChanged)
 
+    def populateQuickFilters(self, menuSelection):
+        self.quickFilterLabel.setText("Quick Filters:")        
+        filters = filterMap[menuSelection]
+
+        for child in self.quickFilterFrame.findChildren(QLineEdit):
+            child.deleteLater()
+
+        for filter in filters:
+            quickFilter = QLineEdit(self.quickFilterFrame)
+            quickFilter.setPlaceholderText(filter) 
+            quickFilter.setStyleSheet("""
+                QLineEdit {
+                    background-color: #181818;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 8px;
+                    color: #EEEEEE;
+                    font-family: "Microsoft Sans Serif";
+                    font-size: 12px;
+                }
+            """)
+
+            self.quickFilterLayout.addWidget(quickFilter)
+
+            
+
+
+
     def menuComboBoxChanged(self):
         menuSelection = self.menuComboBox.currentText()
         table = self.tableRef[menuSelection]
 
         if table is not None:
             self.showLoadingPage()
-
             df = db.get_cal_programs(table)
-
             self.hideLoadingPage()
 
             self.pageLabel.setText(menuSelection)
@@ -370,6 +410,9 @@ class MyWindow(QMainWindow):
             self.table.setModel(model)
             self.tableScrollArea.setMaximumWidth(self.table.horizontalHeader().length()+40)
             self.tableScrollArea.show()
+
+            self.populateQuickFilters(menuSelection)
+            self.quickFilterFrame.show()
 
     def showLoadingPage(self):
         self.table.hide()

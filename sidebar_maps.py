@@ -1,13 +1,13 @@
 from PyQt6.QtGui import QIcon
 
 
-map = {
+button_map = {
     "btnSMS": {
         "text":"SMS & Costing",
         "icon":QIcon("icons/sms_costing.svg"),
         "tables":{
-            "SMS Agreements": "SMS_Agreements",
-            "Costing": "Costing"
+            "SMS Agreements": None,
+            "Costing": None
         }
     },
     "btnCAD": {
@@ -55,4 +55,16 @@ map = {
             "Price Rule Tracker": "PR_Master"
         }
     }
+}
+
+filter_map = {
+    "Metrics Agreement": ['VA_NUM','CA_NUM','SR','PERIOD','WEEK'],
+    "Metrics Inquiry": ['ASSOCIATE','TEAM_LEAD','SR','PERIOD','WEEK'],
+    "Metrics Price Rule": ['ASSOCIATE','CUSTOMER','NAME','PERIOD','WEEK'],
+    "Price Rule Tracker": ['CUSTOMER','CONCEPT','PRICE_RULE','APPROVER','SR'],
+    "DPM Agreements": ['CUSTOMER','CONCEPT','PRICE_RULE','APPROVER','SR'],
+    "Customer Profile": ['CUSTOMER','ALT_NAME','T1_USER','T2_USER','T3_USER'],
+    "Deviation Loads": ['CUSTOMER','PROGRAM','T1_USER','T2_USER','T3_USER'],
+    "Account Assignments": ['CUSTOMER','TEAM_LEAD','T1_USER','T2_USER','T3_USER'],
+    "Org Chart": ['TEAM_LEAD','ASSOCIATE']
 }

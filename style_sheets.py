@@ -127,6 +127,7 @@ table = """
         border-bottom: 1px solid #333333; 
     }
     QTableView QLineEdit {  
+        background-color: #1f1f1f;
         color: #BABABA;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
@@ -168,10 +169,21 @@ hidden = """
         border: none; 
 """
 
-sidebar_label = """
+menu_label = """
     QLabel {
         font-family: "Microsoft Sans Serif";
         font-size: 18px;
+        padding: 20px 0px 0px 0px;
+        color: #EEEEEE;
+        background-color: transparent;
+    }
+"""
+
+quick_filter_label = """
+    QLabel {
+        font-family: "Microsoft Sans Serif";
+        font-size: 16px;
+        font-style: italic;
         padding: 20px 0px 0px 0px;
         color: #EEEEEE;
         background-color: transparent;
