@@ -378,23 +378,8 @@ class MyWindow(QMainWindow):
         for filter in filters:
             quickFilter = QLineEdit(self.quickFilterFrame)
             quickFilter.setPlaceholderText(filter) 
-            quickFilter.setStyleSheet("""
-                QLineEdit {
-                    background-color: #181818;
-                    border: none;
-                    border-radius: 4px;
-                    padding: 8px;
-                    color: #EEEEEE;
-                    font-family: "Microsoft Sans Serif";
-                    font-size: 12px;
-                }
-            """)
-
+            quickFilter.setStyleSheet(style.quick_filter)
             self.quickFilterLayout.addWidget(quickFilter)
-
-            
-
-
 
     def menuComboBoxChanged(self):
         menuSelection = self.menuComboBox.currentText()

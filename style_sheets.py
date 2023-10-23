@@ -146,6 +146,18 @@ ui_button = """
     }
 """
 
+quick_filter = """
+    QLineEdit {
+        background-color: #181818;
+        border: none;
+        border-radius: 4px;
+        padding: 8px;
+        color: #EEEEEE;
+        font-family: "Microsoft Sans Serif";
+        font-size: 12px;
+    }
+"""
+
 visible_splitter = """
     QSplitter::handle {
         background-color: #3c3c3c; 
