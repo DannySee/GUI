@@ -24,5 +24,15 @@ def get_cal_programs(table):
     df = pd.read_csv(f"session_data/{table}.csv")
     return df.astype(str)
 
+def save_changes(table, changes):
+
+    df = pd.read_csv(f"session_data/{table}.csv")
+    
+    for row in changes:
+        for col in changes[row]:
+            df.loc[row, col] = changes[row][col]
+            
+    df.to_csv(f"session_data/{table}.csv", index=False)
+
 
 

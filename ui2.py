@@ -9,13 +9,14 @@ from PyQt6.QtGui import QIcon, QMouseEvent, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
-                             QStyledItemDelegate, QTableView, QVBoxLayout, QWidget)
+                             QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox)
 
     
 
 # ------------------------- MyWindow Class -------------------------
 class MyWindow(QMainWindow):
     data = pd.DataFrame()
+    changes = {}
 
     def __init__(self):
         super().__init__()
@@ -60,7 +61,7 @@ class MyWindow(QMainWindow):
                 editor.setStyleSheet(style.table)
                 value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
                 editor.setText(value)
-                index.model().setData(index, "", Qt.ItemDataRole.EditRole)
+                #index.model().setData(index, "")
 
 
     # ------------------------- TableModel Class -------------------------
@@ -84,9 +85,6 @@ class MyWindow(QMainWindow):
         def flags(self, index):
             return super().flags(index) | Qt.ItemFlag.ItemIsEditable
         
-        def getChanges(self):
-            return self._changes
-        
         def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
             
             if index.isValid() and role == Qt.ItemDataRole.EditRole:
@@ -96,12 +94,19 @@ class MyWindow(QMainWindow):
 
                 actual_row = self._data.iloc[row].name
                 MyWindow.data.iat[actual_row, col] = value
+                self.handleChanges(actual_row, col, value)
                 return True
             return False
         
-        def handleChanges(self):
-            self._changes = {}
-        
+        def handleChanges(self, row, col, value):
+
+            if row not in MyWindow.changes: 
+                MyWindow.changes[row] = {} 
+
+            column_name = self._data.columns[col]  
+            MyWindow.changes[row][column_name] = value  # Update the value in the nested dictionary
+            print(MyWindow.changes)
+
         def headerData(self, section, orientation, role):
             if role == Qt.ItemDataRole.DisplayRole:
                 if orientation == Qt.Orientation.Horizontal:
@@ -431,6 +436,19 @@ class MyWindow(QMainWindow):
         self.table.setModel(model)
 
     def menuComboBoxChanged(self):
+
+        if MyWindow.changes != {}:
+            popup = QMessageBox(self)
+            popup.setText("You have unsaved changes. Would you like to save them?")
+            popup.setWindowTitle("Unsaved Changes")
+            popup.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard)
+            popup.setDefaultButton(QMessageBox.StandardButton.Save)
+
+            if popup.exec() == QMessageBox.StandardButton.Save:
+                db.save_changes(self.activeTable, MyWindow.changes)
+            
+            MyWindow.changes = {}
+
         menuSelection = self.menuComboBox.currentText()
         self.activeTable = self.tableRef[menuSelection]
         self.menuComboBox.setStyleSheet(style.active_combobox)
