@@ -22,7 +22,7 @@ def pull_records(table):
 def get_cal_programs(table):
 
     df = pd.read_csv(f"session_data/{table}.csv")
-    return df
+    return df.astype(str)
 
 
 

@@ -146,6 +146,14 @@ ui_button = """
     }
 """
 
+control_button = """
+    QPushButton {
+        background-color: transparent;
+        padding: 20px 0px 10px 0px;
+        border: none;
+    }
+"""
+
 quick_filter = """
     QLineEdit {
         background-color: #181818;
@@ -153,6 +161,15 @@ quick_filter = """
         border-radius: 4px;
         padding: 8px;
         color: #EEEEEE;
+        font-family: "Microsoft Sans Serif";
+        font-size: 12px;
+    }
+    QLineEdit::placeholder {
+        background-color: #181818;
+        border: none;
+        border-radius: 4px;
+        padding: 8px;
+        color: #BDBDBD;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
     }
@@ -181,22 +198,11 @@ hidden = """
         border: none; 
 """
 
-menu_label = """
-    QLabel {
-        font-family: "Microsoft Sans Serif";
-        font-size: 18px;
-        padding: 20px 0px 0px 0px;
-        color: #EEEEEE;
-        background-color: transparent;
-    }
-"""
-
-quick_filter_label = """
+sidebar_label = """
     QLabel {
         font-family: "Microsoft Sans Serif";
         font-size: 16px;
-        font-style: italic;
-        padding: 20px 0px 0px 0px;
+        padding: 20px 0px 10px 0px;
         color: #EEEEEE;
         background-color: transparent;
     }
@@ -213,40 +219,43 @@ page_label = """
 """
 
 combobox = """
-    QComboBox {
+    QComboBox {{
         background-color: #181818;
         border: none;
         border-radius: 4px;
         padding: 8px;
         min-width: 6em;
-        color: #BDBDBD;
+        color: {color};
         font-family: "Microsoft Sans Serif";
         font-size: 14px;
-    }
-    QComboBox::drop-down {
+    }}
+    QComboBox::drop-down {{
         width: 30px;
         border-left: none;
         border-top-right-radius: 4px;
         border-bottom-right-radius: 4px;
-    }
-    QComboBox::down-arrow {
+    }}
+    QComboBox::down-arrow {{
         image: url(icons/menu-down.svg);
-    }
-    QComboBox:editable {
+    }}
+    QComboBox:editable {{
         background: #181818;    
-    }
-    QComboBox QAbstractItemView {
+    }}
+    QComboBox QAbstractItemView {{
         padding:  0px 8px 0px 8px ;
         border: 1px solid #333333;
         border-radius: 4px;
-    }
-    QComboBox QAbstractItemView::item {
-        color: #BDBDBD;
+    }}
+    QComboBox QAbstractItemView::item {{
+        color: #EEEEEE;
         padding: 6px;
         font-family: "Microsoft Sans Serif";
         font-size: 14px;
-    }
+    }}
 """
+
+default_combobox = combobox.format(color="#BDBDBD")
+active_combobox = combobox.format(color="#EEEEEE")
 
 base_button = """
     QPushButton {{

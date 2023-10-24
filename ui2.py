@@ -77,7 +77,7 @@ class TableModel(QtCore.QAbstractTableModel):
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setGeometry(200, 500, 800, 600)
+        self.setGeometry(200, 500, 1000, 800)
         self.setWindowTitle("Hive Data Center")
         self.initUI()
 
@@ -275,34 +275,35 @@ class MyWindow(QMainWindow):
             naviButton.clicked.connect(self.naviButtonClicked)
             self.naviLayout.addWidget(naviButton)
 
+        self.activeNaviButton = None
         self.naviLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
     def naviButtonClicked(self):
-        self.tableScrollArea.hide()
-        self.quickFilterFrame.hide()
+        if self.activeNaviButton is not self.sender():
+            self.tableScrollArea.hide()
+            self.quickFilterFrame.hide()
 
-        self.activeNaviButton = self.sender()
-        activeObject = self.activeNaviButton.objectName()
-        activeLabel = naviButtonMap[self.activeNaviButton.objectName()]['text']
-        activeText = self.activeNaviButton.text()
+            self.activeNaviButton = self.sender()
+            activeObject = self.activeNaviButton.objectName()
+            activeLabel = naviButtonMap[self.activeNaviButton.objectName()]['text']
+            activeText = self.activeNaviButton.text()
 
-        self.pageLabel.setText(activeLabel)
-        self.pageLabel.adjustSize()
+            self.pageLabel.setText(activeLabel)
+            self.pageLabel.adjustSize()
 
-        self.menuLabel.setText(activeLabel)
-        self.menuLabel.adjustSize()
+            self.menuLabel.setText(activeLabel)
+            self.menuLabel.adjustSize()
 
-        self.populateSidebarMenu(naviButtonMap[activeObject]["tables"].keys())
-        self.tableRef = naviButtonMap[activeObject]["tables"]
+            self.populateSidebarMenu(naviButtonMap[activeObject]["tables"].keys())
+            self.tableRef = naviButtonMap[activeObject]["tables"]
 
-        inactiveCSS = style.icon_button_inactive if activeText == "" else style.text_button_inactive 
-        activeCSS = style.icon_button_active if activeText == "" else style.text_button_active
+            inactiveCSS = style.icon_button_inactive if activeText == "" else style.text_button_inactive 
+            activeCSS = style.icon_button_active if activeText == "" else style.text_button_active
 
-        for button in self.naviButtonFrame.findChildren(QPushButton):
-            button.setStyleSheet(inactiveCSS)
+            for button in self.naviButtonFrame.findChildren(QPushButton):
+                button.setStyleSheet(inactiveCSS)
 
-        self.activeNaviButton.setStyleSheet(activeCSS)
-
+            self.activeNaviButton.setStyleSheet(activeCSS)
 
     def buildSidebarMenu(self):
         self.menuScrollArea = QScrollArea(self.sidebarSplitter)
@@ -322,16 +323,14 @@ class MyWindow(QMainWindow):
 
         self.menuLabel = QLabel(self.menuFrame)
         self.menuLabel.setText("")
-        self.menuLabel.setStyleSheet(style.menu_label)               
+        self.menuLabel.setStyleSheet(style.sidebar_label)               
         self.menuLayout.addWidget(self.menuLabel)
 
-        self.menuLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
-
         self.menuComboBox = QComboBox(self.menuFrame)
-        self.menuComboBox.setStyleSheet(style.combobox)
+        self.menuComboBox.setPlaceholderText("--Select Data--")
         self.menuLayout.addWidget(self.menuComboBox)
 
-        self.menuLayout.addSpacerItem(QSpacerItem(20,20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
+        self.menuLayout.addSpacerItem(QSpacerItem(15,15, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
         self.quickFilterFrame = QFrame(self.menuFrame)
         self.quickFilterFrame.setStyleSheet(style.hidden)
@@ -347,11 +346,23 @@ class MyWindow(QMainWindow):
         self.menuLine.setStyleSheet(style.dividing_line)
         self.quickFilterLayout.addWidget(self.menuLine)
 
-        self.quickFilterLabel = QLabel(self.quickFilterFrame)
+        self.quickFilterHeader = QFrame(self.quickFilterFrame)
+        self.quickFilterLayout.addWidget(self.quickFilterHeader)
+
+        self.quickFilterHeaderLayout = QHBoxLayout(self.quickFilterHeader)
+
+        self.quickFilterLabel = QLabel(self.quickFilterHeader)
         self.quickFilterLabel.setText("")
-        self.quickFilterLabel.setStyleSheet(style.quick_filter_label)               
-        self.quickFilterLayout.addWidget(self.quickFilterLabel)
-        self.quickFilterLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
+        self.quickFilterLabel.setStyleSheet(style.sidebar_label)      
+        self.quickFilterHeaderLayout.addWidget(self.quickFilterLabel)   
+
+        self.quickFilterClearButton = QPushButton(self.quickFilterHeader)
+        self.quickFilterClearButton.setIcon(QIcon("icons/clear-filter.svg"))
+        self.quickFilterClearButton.setStyleSheet(style.control_button)
+        self.quickFilterClearButton.setFixedWidth(self.quickFilterClearButton.height())
+        self.quickFilterClearButton.setToolTip("Clear Filters")
+        self.quickFilterHeaderLayout.addWidget(self.quickFilterClearButton)
+        self.quickFilterClearButton.clicked.connect(self.clearQuickFilters)     
 
         self.menuLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         self.menuFrame.hide()
@@ -363,13 +374,15 @@ class MyWindow(QMainWindow):
             self.menuComboBox.clear()
         else:
             self.menuFrame.show()
-            
+
+        self.menuComboBox.setStyleSheet(style.default_combobox)           
         self.menuComboBox.addItems(releventTables)
-        self.menuComboBox.setCurrentIndex(0)
+        self.menuComboBox.setCurrentIndex(-1)
         self.menuComboBox.currentIndexChanged.connect(self.menuComboBoxChanged)
 
     def populateQuickFilters(self, menuSelection):
-        self.quickFilterLabel.setText("Quick Filters:")        
+        self.quickFilterLabel.setText("Quick Filters:")  
+        self.quickFilterLabel.adjustSize()      
         filters = filterMap[menuSelection]
 
         for child in self.quickFilterFrame.findChildren(QLineEdit):
@@ -379,19 +392,39 @@ class MyWindow(QMainWindow):
             quickFilter = QLineEdit(self.quickFilterFrame)
             quickFilter.setPlaceholderText(filter) 
             quickFilter.setStyleSheet(style.quick_filter)
+            quickFilter.textChanged.connect(self.quickFilterChanged)
             self.quickFilterLayout.addWidget(quickFilter)
+
+    def quickFilterChanged(self):
+        df = self.df
+        
+        for quickFilter in self.quickFilterFrame.findChildren(QLineEdit):
+            if quickFilter.text() != "":
+                field = quickFilter.placeholderText()
+                value = quickFilter.text()
+                df = df[df[field].str.contains(value, case=False)]
+                model = TableModel(df)
+                self.table.setModel(model)
+        
+    def clearQuickFilters(self):
+        for child in self.quickFilterFrame.findChildren(QLineEdit):
+            child.setText("")
+
+        model = TableModel(self.df)
+        self.table.setModel(model)
 
     def menuComboBoxChanged(self):
         menuSelection = self.menuComboBox.currentText()
-        table = self.tableRef[menuSelection]
+        self.activeTable = self.tableRef[menuSelection]
+        self.menuComboBox.setStyleSheet(style.active_combobox)
 
-        if table is not None:
+        if self.activeTable is not None:
             self.showLoadingPage()
-            df = db.get_cal_programs(table)
+            self.df = db.get_cal_programs(self.activeTable)
             self.hideLoadingPage()
 
             self.pageLabel.setText(menuSelection)
-            model = TableModel(df)
+            model = TableModel(self.df)
             self.table.setModel(model)
             self.tableScrollArea.setMaximumWidth(self.table.horizontalHeader().length()+40)
             self.tableScrollArea.show()
