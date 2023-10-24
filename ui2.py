@@ -3,6 +3,7 @@ import data_pull as db
 import style_sheets as style
 from sidebar_maps import button_map as naviButtonMap, filter_map as filterMap
 from PyQt6 import QtCore
+import pandas as pd
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QMouseEvent, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
@@ -10,71 +11,12 @@ from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout,
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
                              QStyledItemDelegate, QTableView, QVBoxLayout, QWidget)
 
-
-# ------------------------- CustomDelegate Class -------------------------
-class CustomDelegate(QStyledItemDelegate):
-    def createEditor(self, parent, option, index):
-        editor = super().createEditor(parent, option, index)
-        self.applyStyleSheetAndValueIfLineEdit(editor, index)
-        return editor
-
-    def setEditorData(self, editor, index):
-        if not isinstance(editor, QLineEdit):
-            super().setEditorData(editor, index)
-
-    def setModelData(self, editor, model, index):
-        if isinstance(editor, QLineEdit):
-            model.setData(index, editor.text(), Qt.ItemDataRole.EditRole)
-        else:
-            super().setModelData(editor, model, index)
-
-    def applyStyleSheetAndValueIfLineEdit(self, editor, index):
-        if isinstance(editor, QLineEdit):
-            editor.setStyleSheet(style.table)
-            value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
-            editor.setText(value)
-            index.model().setData(index, "", Qt.ItemDataRole.EditRole)
-
-
-# ------------------------- TableModel Class -------------------------
-class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, data):
-        super(TableModel, self).__init__()
-        self._data = data
-
-    def data(self, index, role):
-        if role == Qt.ItemDataRole.DisplayRole:
-            value = self._data.iloc[index.row(), index.column()]
-            return str(value)
-
-    def rowCount(self, index):
-        return self._data.shape[0]
-
-    def columnCount(self, index):
-        return self._data.shape[1]
-    
-    def flags(self, index):
-        return super().flags(index) | Qt.ItemFlag.ItemIsEditable
-    
-    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        if index.isValid() and role == Qt.ItemDataRole.EditRole:
-            row, col = index.row(), index.column()
-            self._data.iat[row, col] = value  # Update the pandas DataFrame
-            self.dataChanged.emit(index, index)  # Notify listeners that data has been changed
-            return True
-        return False
-    
-    def headerData(self, section, orientation, role):
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Orientation.Vertical:
-                return str(self._data.index[section])
     
 
 # ------------------------- MyWindow Class -------------------------
 class MyWindow(QMainWindow):
+    data = pd.DataFrame()
+
     def __init__(self):
         super().__init__()
         self.setGeometry(200, 500, 1000, 800)
@@ -94,6 +36,79 @@ class MyWindow(QMainWindow):
 
         # Setting central widget
         self.setCentralWidget(self.container)
+
+    # ------------------------- CustomDelegate Class -------------------------
+    class CustomDelegate(QStyledItemDelegate):
+        def createEditor(self, parent, option, index):
+            editor = super().createEditor(parent, option, index)
+            self.applyStyleSheetAndValueIfLineEdit(editor, index)
+            return editor
+
+        def setEditorData(self, editor, index):
+            if not isinstance(editor, QLineEdit):
+                super().setEditorData(editor, index)
+
+        def setModelData(self, editor, model, index):
+            if isinstance(editor, QLineEdit):
+                model.setData(index, editor.text(), Qt.ItemDataRole.EditRole)
+                
+            else:
+                super().setModelData(editor, model, index)
+
+        def applyStyleSheetAndValueIfLineEdit(self, editor, index):
+            if isinstance(editor, QLineEdit):
+                editor.setStyleSheet(style.table)
+                value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
+                editor.setText(value)
+                index.model().setData(index, "", Qt.ItemDataRole.EditRole)
+
+
+    # ------------------------- TableModel Class -------------------------
+    class TableModel(QtCore.QAbstractTableModel):
+        def __init__(self, data):
+            super(MyWindow.TableModel, self).__init__()
+            self._data = data
+            self._changes = {}
+
+        def data(self, index, role):
+            if role == Qt.ItemDataRole.DisplayRole:
+                value = self._data.iloc[index.row(), index.column()]
+                return str(value)
+
+        def rowCount(self, index):
+            return self._data.shape[0]
+
+        def columnCount(self, index):
+            return self._data.shape[1]
+        
+        def flags(self, index):
+            return super().flags(index) | Qt.ItemFlag.ItemIsEditable
+        
+        def getChanges(self):
+            return self._changes
+        
+        def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
+            
+            if index.isValid() and role == Qt.ItemDataRole.EditRole:
+                row, col = index.row(), index.column()
+                self._data.iat[row, col] = value  # Update the pandas DataFrame
+                self.dataChanged.emit(index, index)  # Notify listeners that data has been changed
+
+                actual_row = self._data.iloc[row].name
+                MyWindow.data.iat[actual_row, col] = value
+                return True
+            return False
+        
+        def handleChanges(self):
+            self._changes = {}
+        
+        def headerData(self, section, orientation, role):
+            if role == Qt.ItemDataRole.DisplayRole:
+                if orientation == Qt.Orientation.Horizontal:
+                    return str(self._data.columns[section])
+
+                if orientation == Qt.Orientation.Vertical:
+                    return str(self._data.index[section])
 
     def buildContainer(self):
         self.container = QFrame(self)
@@ -230,7 +245,7 @@ class MyWindow(QMainWindow):
         self.utilityScrollArea.setStyleSheet(style.hidden)
 
         self.table = QTableView(self.tableScrollArea)
-        self.tableDelegate = CustomDelegate(self.table)
+        self.tableDelegate = self.CustomDelegate(self.table)
         self.table.setItemDelegate(self.tableDelegate)
         self.table.horizontalScrollBar().setStyleSheet(style.horizontal_scrollbar)
         self.table.verticalScrollBar().setStyleSheet(style.vertical_scrollbar)
@@ -356,6 +371,8 @@ class MyWindow(QMainWindow):
         self.quickFilterLabel.setStyleSheet(style.sidebar_label)      
         self.quickFilterHeaderLayout.addWidget(self.quickFilterLabel)   
 
+        self.quickFilterHeaderLayout.addSpacerItem(QSpacerItem(25,25, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
+
         self.quickFilterClearButton = QPushButton(self.quickFilterHeader)
         self.quickFilterClearButton.setIcon(QIcon("icons/clear-filter.svg"))
         self.quickFilterClearButton.setStyleSheet(style.control_button)
@@ -396,21 +413,21 @@ class MyWindow(QMainWindow):
             self.quickFilterLayout.addWidget(quickFilter)
 
     def quickFilterChanged(self):
-        df = self.df
+        df = MyWindow.data
         
         for quickFilter in self.quickFilterFrame.findChildren(QLineEdit):
             if quickFilter.text() != "":
                 field = quickFilter.placeholderText()
                 value = quickFilter.text()
                 df = df[df[field].str.contains(value, case=False)]
-                model = TableModel(df)
+                model = self.TableModel(df)
                 self.table.setModel(model)
         
     def clearQuickFilters(self):
         for child in self.quickFilterFrame.findChildren(QLineEdit):
             child.setText("")
 
-        model = TableModel(self.df)
+        model = self.TableModel(MyWindow.data)
         self.table.setModel(model)
 
     def menuComboBoxChanged(self):
@@ -420,11 +437,11 @@ class MyWindow(QMainWindow):
 
         if self.activeTable is not None:
             self.showLoadingPage()
-            self.df = db.get_cal_programs(self.activeTable)
+            MyWindow.data = db.get_cal_programs(self.activeTable)
             self.hideLoadingPage()
 
             self.pageLabel.setText(menuSelection)
-            model = TableModel(self.df)
+            model = self.TableModel(MyWindow.data)
             self.table.setModel(model)
             self.tableScrollArea.setMaximumWidth(self.table.horizontalHeader().length()+40)
             self.tableScrollArea.show()
