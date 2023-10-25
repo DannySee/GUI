@@ -9,7 +9,7 @@ from PyQt6.QtGui import QIcon, QMouseEvent, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
-                             QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox)
+                             QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox, QAbstractItemView)
 
     
 
@@ -243,8 +243,14 @@ class MyWindow(QMainWindow):
 
         self.tableScrollArea = QScrollArea(self.tableSplitter)
         self.tableScrollArea.setWidgetResizable(True)
-        self.tableScrollArea.setStyleSheet(style.hidden)
-
+        self.tableScrollArea.setStyleSheet("""
+            QScrollArea {
+                background-color: transparent;
+                border: 1px solid #333333;
+                border-radius: 4px;
+            }   
+        """)
+  
         self.utilityScrollArea = QScrollArea(self.tableSplitter)
         self.utilityScrollArea.setWidgetResizable(True)
         self.utilityScrollArea.setStyleSheet(style.hidden)
@@ -255,8 +261,11 @@ class MyWindow(QMainWindow):
         self.table.horizontalScrollBar().setStyleSheet(style.horizontal_scrollbar)
         self.table.verticalScrollBar().setStyleSheet(style.vertical_scrollbar)
         self.table.setStyleSheet(style.table)
+        self.table.verticalHeader().setVisible(False) 
+         
+        self.table.setSortingEnabled(True)
 
-         # keeping layout although it is not really necessary in case I do not like the utility scoll area in separate space
+        # keeping layout although it is not really necessary in case I do not like the utility scoll area in separate space
         self.tableScrollLayout = QVBoxLayout(self.tableScrollArea)
         self.tableScrollLayout.setSpacing(4)
         self.tableScrollLayout.setContentsMargins(10,10,10,10)
@@ -370,13 +379,13 @@ class MyWindow(QMainWindow):
         self.quickFilterLayout.addWidget(self.quickFilterHeader)
 
         self.quickFilterHeaderLayout = QHBoxLayout(self.quickFilterHeader)
+        self.quickFilterHeaderLayout.setSpacing(4)
+        self.quickFilterHeaderLayout.setContentsMargins(0,0,0,0)
 
         self.quickFilterLabel = QLabel(self.quickFilterHeader)
         self.quickFilterLabel.setText("")
         self.quickFilterLabel.setStyleSheet(style.sidebar_label)      
         self.quickFilterHeaderLayout.addWidget(self.quickFilterLabel)   
-
-        self.quickFilterHeaderLayout.addSpacerItem(QSpacerItem(25,25, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
         self.quickFilterClearButton = QPushButton(self.quickFilterHeader)
         self.quickFilterClearButton.setIcon(QIcon("icons/clear-filter.svg"))
@@ -403,7 +412,7 @@ class MyWindow(QMainWindow):
         self.menuComboBox.currentIndexChanged.connect(self.menuComboBoxChanged)
 
     def populateQuickFilters(self, menuSelection):
-        self.quickFilterLabel.setText("Quick Filters:")  
+        self.quickFilterLabel.setText("Quick Filters")  
         self.quickFilterLabel.adjustSize()      
         filters = filterMap[menuSelection]
 
