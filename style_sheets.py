@@ -22,12 +22,12 @@ vertical_scrollbar = """
     }
     QScrollBar::add-page:vertical {
         background: transparent; /* Customize the background color of the track */
+
     }
     QScrollBar::sub-page:vertical {
         background: transparent; /* Customize the background color of the track */
 
     }
-  
 """
 
 horizontal_scrollbar =  """
@@ -53,7 +53,7 @@ horizontal_scrollbar =  """
        width: 0;
    }
    QScrollBar::add-page:horizontal {
-       background: transparent; /* Customize the background color of the track */
+        background: transparent; /* Customize the background color of the track */
    }
    QScrollBar::sub-page:horizontal {
        background: transparent; /* Customize the background color of the track */
@@ -63,44 +63,47 @@ horizontal_scrollbar =  """
 table = """
     QTableView {
         background-color: #1f1f1f;
-        border:none;
+        border:1px solid #3c3c3c;
+        border-radius: 10px;
         color: #BDBDBD;
         gridline-color: #333333;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
         outline: 0;
     }
-    
     QTableView::item {
         background-color: #1f1f1f;
         border: none;
-        color: #BDBDBD;
+        color: #EEEEEE;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
     }
-
     QTableView::item:selected {
         background-color: #181818;
-        color: #EEEEEE;
         font-weight: bold;
     }
-
-    QHeaderView::section {
+    QHeaderView {
         background-color: #2f2f2f;
-        color: #BDBDBD;; 
+        border-top-left-radius: 10px;
+    }
+    QHeaderView::section {
+        background: #2f2f2f;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
-        border:none;
-        border-bottom: 1px solid #333333;
-        border-right: 1px solid #333333;
-    } 
-
+        color: #BDBDBD;
+        border-top-left-radius: 10px;
+        border-bottom: 1px solid #3c3c3c;
+        border-right: 1px solid #3c3c3c;
+    }
     QTableView QLineEdit {  
         background-color: #1f1f1f;
         color: #EEEEEE;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
     }
+    QTableView::corner {
+        border-bottom-right-radius: 10px;
+    }    
 """
 
 ui_button = """
@@ -182,10 +185,10 @@ sidebar_label = """
 page_label = """
     QLabel {
         color: #EEEEEE;
+        font-weight: bold;
         background-color: transparent;
-        padding: 0px 0px 0px 30px;
         font-family: "Microsoft Sans Serif";
-        font-size: 22px;
+        font-size: 34px;
     }
 """
 

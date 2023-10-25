@@ -5,11 +5,12 @@ from sidebar_maps import button_map as naviButtonMap, filter_map as filterMap
 from PyQt6 import QtCore
 import pandas as pd
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon, QMouseEvent, QPalette
+from PyQt6.QtGui import QIcon, QMouseEvent, QPalette, QColor
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
-                             QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox, QAbstractItemView)
+                             QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox, 
+                             QAbstractItemView, QGraphicsDropShadowEffect)
 
     
 
@@ -241,38 +242,20 @@ class MyWindow(QMainWindow):
         self.tableSplitter.setStyleSheet(style.hidden_splitter)
         self.mainLayout.addWidget(self.tableSplitter)
 
-        self.tableScrollArea = QScrollArea(self.tableSplitter)
-        self.tableScrollArea.setWidgetResizable(True)
-        self.tableScrollArea.setStyleSheet("""
-            QScrollArea {
-                background-color: transparent;
-                border: 1px solid #333333;
-                border-radius: 4px;
-            }   
-        """)
-  
-        self.utilityScrollArea = QScrollArea(self.tableSplitter)
-        self.utilityScrollArea.setWidgetResizable(True)
-        self.utilityScrollArea.setStyleSheet(style.hidden)
-
-        self.table = QTableView(self.tableScrollArea)
+        self.table = QTableView(self.tableSplitter)
         self.tableDelegate = self.CustomDelegate(self.table)
         self.table.setItemDelegate(self.tableDelegate)
         self.table.horizontalScrollBar().setStyleSheet(style.horizontal_scrollbar)
         self.table.verticalScrollBar().setStyleSheet(style.vertical_scrollbar)
         self.table.setStyleSheet(style.table)
         self.table.verticalHeader().setVisible(False) 
-         
         self.table.setSortingEnabled(True)
 
-        # keeping layout although it is not really necessary in case I do not like the utility scoll area in separate space
-        self.tableScrollLayout = QVBoxLayout(self.tableScrollArea)
-        self.tableScrollLayout.setSpacing(4)
-        self.tableScrollLayout.setContentsMargins(10,10,10,10)
-        self.tableScrollLayout.addWidget(self.table)
+        self.utilityScrollArea = QScrollArea(self.tableSplitter)
+        self.utilityScrollArea.setWidgetResizable(True)
+        self.utilityScrollArea.setStyleSheet(style.hidden)
 
-        self.tableScrollArea.setWidget(self.table)
-        self.tableScrollArea.hide()
+        self.bodyFrame.hide()
 
     def buildSidebarSplitter(self):
         self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
@@ -309,7 +292,7 @@ class MyWindow(QMainWindow):
 
     def naviButtonClicked(self):
         if self.activeNaviButton is not self.sender():
-            self.tableScrollArea.hide()
+            self.bodyFrame.hide()
             self.quickFilterFrame.hide()
 
             self.activeNaviButton = self.sender()
@@ -468,23 +451,27 @@ class MyWindow(QMainWindow):
             self.hideLoadingPage()
 
             self.pageLabel.setText(menuSelection)
+            self.pageLabel.adjustSize()
             model = self.TableModel(MyWindow.data)
             self.table.setModel(model)
-            self.tableScrollArea.setMaximumWidth(self.table.horizontalHeader().length()+40)
-            self.tableScrollArea.show()
+            self.bodyFrame.show()
 
             self.populateQuickFilters(menuSelection)
             self.quickFilterFrame.show()
 
     def showLoadingPage(self):
-        self.table.hide()
+        self.bodyFrame.hide()
         self.savedLabel = self.pageLabel.text()
         self.pageLabel.setText("Loading....")
+        self.pageLabel.adjustSize()
+
         QApplication.processEvents()
 
     def hideLoadingPage(self):
-        self.table.show()
+        self.bodyFrame.show()
         self.pageLabel.setText(self.savedLabel)
+        self.pageLabel.adjustSize()
+
 
 
 # ------------------------- Main Execution -------------------------
