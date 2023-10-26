@@ -81,6 +81,7 @@ table = """
     QTableView::item:selected {
         background-color: #181818;
         font-weight: bold;
+        border: 1px solid #3c3c3c;
     }
     QHeaderView {
         background-color: #2f2f2f;
@@ -96,10 +97,11 @@ table = """
         border-right: 1px solid #3c3c3c;
     }
     QTableView QLineEdit {  
-        background-color: #1f1f1f;
+        background-color: #181818;
         color: #EEEEEE;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
+        border: 1px solid #3c3c3c;
     }
     QTableView::corner {
         border-bottom-right-radius: 10px;
