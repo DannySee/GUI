@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout,
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
                              QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox, 
-                             QAbstractItemView, QGraphicsDropShadowEffect)
+                             QAbstractItemView, QGraphicsDropShadowEffect, QGridLayout)
 
     
 
@@ -224,23 +224,45 @@ class MyWindow(QMainWindow):
         self.bannerFrame.setStyleSheet(style.hidden)
         self.mainLayout.addWidget(self.bannerFrame)
 
-        self.headerFrame = QFrame(self.mainPage)
-        self.headerFrame.setFixedHeight(50)
-        self.headerFrame.setStyleSheet(style.hidden)
-        self.mainLayout.addWidget(self.headerFrame)
+        self.pageScrollArea = QScrollArea(self.mainPage)
+        self.pageScrollArea.setStyleSheet(style.hidden)
+        self.mainLayout.addWidget(self.pageScrollArea)
 
-        self.pageLabel = QLabel(self.headerFrame)
+        self.pageLayout = QVBoxLayout(self.pageScrollArea)
+        self.pageLayout.setContentsMargins(0,0,0,0)
+        self.pageLayout.setSpacing(10)
+        
+        self.pageLabel = QLabel(self.pageScrollArea)
         self.pageLabel.setText("Welcome to Commercial Services Hive")
         self.pageLabel.setStyleSheet(style.page_label)
+        self.pageLayout.addWidget(self.pageLabel)
 
-        self.bodyFrame = QFrame(self.mainPage)
-        self.bodyFrame.setStyleSheet(style.hidden)
-        self.mainLayout.addWidget(self.bodyFrame)
+        self.allFilterFrame = QFrame(self.pageScrollArea)
+        self.allFilterFrame.setMinimumHeight(40)
+        self.allFilterFrame.setStyleSheet("""
+            QFrame {
+                background-color: #181818;
+                border-radius: 10px;
+                border:1px solid #3c3c3c;
+            }                                         
+        """)
+        self.pageLayout.addWidget(self.allFilterFrame)
 
-        self.tableSplitter = QSplitter(Qt.Orientation.Vertical, self.bodyFrame)
+        #self.allFilterLayout = QHBoxLayout(self.allFilterFrame)
+        #self.allFilterLayout.setContentsMargins(0,0,0,0)
+        #self.allFilterLayout.setSpacing(10)
+        #self.allFilterButton = QPushButton(self.allFilterFrame)
+        #self.allFilterButton.setText("All Filters")
+        #self.allFilterButton.setStyleSheet(style.text_button_inactive)
+        #self.allFilterButton.clicked.connect(self.expandAllFilters)
+        #self.allFilterLayout.addWidget(self.allFilterButton)
+
+        
+
+        self.tableSplitter = QSplitter(Qt.Orientation.Vertical, self.pageScrollArea)
         self.tableSplitter.setChildrenCollapsible(False)
         self.tableSplitter.setStyleSheet(style.hidden_splitter)
-        self.mainLayout.addWidget(self.tableSplitter)
+        self.pageLayout.addWidget(self.tableSplitter)
 
         self.table = QTableView(self.tableSplitter)
         self.tableDelegate = self.CustomDelegate(self.table)
@@ -250,12 +272,34 @@ class MyWindow(QMainWindow):
         self.table.setStyleSheet(style.table)
         self.table.verticalHeader().setVisible(False) 
         self.table.setSortingEnabled(True)
+        
+        self.pageUtility = QFrame(self.tableSplitter)
+        #self.pageScrollArea.hide()
 
-        self.utilityScrollArea = QScrollArea(self.tableSplitter)
-        self.utilityScrollArea.setWidgetResizable(True)
-        self.utilityScrollArea.setStyleSheet(style.hidden)
+    def expandAllFilters(self):
 
-        self.bodyFrame.hide()
+
+        self.filterGrid = QGridLayout(self.allFilterFrame)
+        self.filterGrid.setContentsMargins(10,10,10,10)
+        self.filterGrid.setSpacing(10)
+
+        fields = MyWindow.data.columns.tolist()
+
+        row = 0
+        for col_idx, col_name in enumerate(fields):
+            if col_idx % 5 == 0:
+                row += 1
+
+            filter = QLineEdit(self.allFilterFrame)
+            filter.setPlaceholderText(col_name) 
+            filter.setStyleSheet(style.quick_filter)
+            #filter.textChanged.connect(self.quickFilterChanged)
+            self.filterGrid.addWidget(filter, row, col_idx % 5)
+
+        self.allFilterFrame.setLayout(self.filterGrid)
+        self.allFilterFrame.adjustSize()
+        
+
 
     def buildSidebarSplitter(self):
         self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
@@ -292,7 +336,7 @@ class MyWindow(QMainWindow):
 
     def naviButtonClicked(self):
         if self.activeNaviButton is not self.sender():
-            self.bodyFrame.hide()
+            self.pageScrollArea.hide()
             self.quickFilterFrame.hide()
 
             self.activeNaviButton = self.sender()
@@ -454,13 +498,17 @@ class MyWindow(QMainWindow):
             self.pageLabel.adjustSize()
             model = self.TableModel(MyWindow.data)
             self.table.setModel(model)
-            self.bodyFrame.show()
+            self.pageScrollArea.show()
 
             self.populateQuickFilters(menuSelection)
             self.quickFilterFrame.show()
 
+
+
+            self.expandAllFilters()
+
     def showLoadingPage(self):
-        self.bodyFrame.hide()
+        self.pageScrollArea.hide()
         self.savedLabel = self.pageLabel.text()
         self.pageLabel.setText("Loading....")
         self.pageLabel.adjustSize()
@@ -468,7 +516,7 @@ class MyWindow(QMainWindow):
         QApplication.processEvents()
 
     def hideLoadingPage(self):
-        self.bodyFrame.show()
+        self.pageScrollArea.show()
         self.pageLabel.setText(self.savedLabel)
         self.pageLabel.adjustSize()
 

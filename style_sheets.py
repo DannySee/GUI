@@ -117,7 +117,7 @@ ui_button = """
     }
     QPushButton:hover {
         background-color: #3c3c3c;
-        border-radius: 4px;                           
+        border-radius: 5px;                           
     }
 """
 
@@ -134,7 +134,7 @@ quick_filter = """
     QLineEdit {
         background-color: #181818;
         border: none;
-        border-radius: 4px;
+        border-radius: 5px;
         padding: 8px;
         color: #EEEEEE;
         font-family: "Microsoft Sans Serif";
@@ -143,7 +143,7 @@ quick_filter = """
     QLineEdit::placeholder {
         background-color: #181818;
         border: none;
-        border-radius: 4px;
+        border-radius: 5px;
         padding: 8px;
         color: #BDBDBD;
         font-family: "Microsoft Sans Serif";
@@ -198,7 +198,7 @@ combobox = """
     QComboBox {{
         background-color: #181818;
         border: none;
-        border-radius: 4px;
+        border-radius: 5px;
         padding: 8px;
         min-width: 6em;
         color: {color};
@@ -221,7 +221,7 @@ combobox = """
     QComboBox QAbstractItemView {{
         padding:  0px 8px 0px 8px ;
         border: 1px solid #333333;
-        border-radius: 4px;
+        border-radius: 5px;
     }}
     QComboBox QAbstractItemView::item {{
         color: #EEEEEE;
@@ -239,7 +239,7 @@ base_button = """
         text-align: {alignment};
         border: none;
         padding: 8px;
-        border-radius: 4px;
+        border-radius: 5px;
         color: {color};
         background-color: {bg_color};
         font-family: "Microsoft Sans Serif";
