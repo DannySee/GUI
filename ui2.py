@@ -128,8 +128,6 @@ class MyWindow(QMainWindow):
         self.containerSplitter.setChildrenCollapsible(False)
         self.containerSplitter.setStyleSheet(style.hidden_splitter)
         self.containerLayout.addWidget(self.containerSplitter)
-        self.containerSplitter.setStretchFactor(0, 0)
-        self.containerSplitter.setStretchFactor(1, 1)
 
     def buildSidebar(self):
         self.sidebar = QFrame(self.containerSplitter)
@@ -226,18 +224,25 @@ class MyWindow(QMainWindow):
 
         self.pageScrollArea = QScrollArea(self.mainPage)
         self.pageScrollArea.setStyleSheet(style.hidden)
+        self.pageScrollArea.setWidgetResizable(True)
+        self.pageScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.pageScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.mainLayout.addWidget(self.pageScrollArea)
 
-        self.pageLayout = QVBoxLayout(self.pageScrollArea)
+        self.pageScrollWidget = QWidget(self.pageScrollArea)
+        self.pageScrollWidget.setStyleSheet(style.hidden)
+        self.pageScrollArea.setWidget(self.pageScrollWidget)
+
+        self.pageLayout = QVBoxLayout(self.pageScrollWidget)
         self.pageLayout.setContentsMargins(0,0,0,0)
         self.pageLayout.setSpacing(10)
         
-        self.pageLabel = QLabel(self.pageScrollArea)
+        self.pageLabel = QLabel(self.pageScrollWidget)
         self.pageLabel.setText("Welcome to Commercial Services Hive")
         self.pageLabel.setStyleSheet(style.page_label)
         self.pageLayout.addWidget(self.pageLabel)
 
-        self.allFilterFrame = QFrame(self.pageScrollArea)
+        self.allFilterFrame = QFrame(self.pageScrollWidget)
         self.allFilterFrame.setMinimumHeight(40)
         self.allFilterFrame.setStyleSheet("""
             QFrame {
@@ -253,9 +258,9 @@ class MyWindow(QMainWindow):
         self.filterGrid.setSpacing(10)
         self.allFilterFrame.setLayout(self.filterGrid)
 
-
         self.allFilterButton = QPushButton(self.allFilterFrame)
         self.allFilterButton.setText("All Filters")
+        self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
         self.allFilterButton.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -264,14 +269,19 @@ class MyWindow(QMainWindow):
                 font-family: "Microsoft Sans Serif";
                 font-size: 12px;
                 text-align: left;  
-                padding: 5px;
+                padding: 0px 5px 0px 5px;
+                qproperty-layoutDirection: RightToLeft;
+                outline: 0;
+            }
+            QPushButton:hover {
+                color: #EEEEEE;
             }
         """)
         self.allFilterButton.clicked.connect(self.expandAllFilters)
 
         self.filterGrid.addWidget(self.allFilterButton, 0, 0,1,5)
 
-        self.tableSplitter = QSplitter(Qt.Orientation.Vertical, self.pageScrollArea)
+        self.tableSplitter = QSplitter(Qt.Orientation.Vertical, self.pageScrollWidget)
         self.tableSplitter.setChildrenCollapsible(False)
         self.tableSplitter.setStyleSheet(style.hidden_splitter)
         self.pageLayout.addWidget(self.tableSplitter)
@@ -284,13 +294,25 @@ class MyWindow(QMainWindow):
         self.table.setStyleSheet(style.table)
         self.table.verticalHeader().setVisible(False) 
         self.table.setSortingEnabled(True)
+        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.table.setMinimumHeight(400)
         
         self.pageUtility = QFrame(self.tableSplitter)
+        self.pageUtility.setStyleSheet(style.light_gray_frame)
+        self.pageUtility.setFixedHeight(200)
+        self.pageUtility.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+
+
+        self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum , QSizePolicy.Policy.Expanding))
+
+        #self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         #self.pageScrollArea.hide()
 
     def expandAllFilters(self):
 
         if self.allFilterFrame.findChildren(QLineEdit) == []:
+            self.allFilterButton.setIcon(QIcon("icons/chevron-up.svg"))
             fields = MyWindow.data.columns.tolist()
             row = 0
             for col_idx, col_name in enumerate(fields):
@@ -300,17 +322,24 @@ class MyWindow(QMainWindow):
                 filter = QLineEdit(self.allFilterFrame)
                 filter.setPlaceholderText(col_name) 
                 filter.setStyleSheet(style.quick_filter)
-                #filter.textChanged.connect(self.quickFilterChanged)
+                #filter.textChanged.connect(self.allFilterchanged)
                 self.filterGrid.addWidget(filter, row, col_idx % 5)
 
+            QApplication.processEvents()
+            self.allFilterFrame.setMinimumHeight(self.allFilterFrame.sizeHint().height())
+
         else:
-            for child in self.allFilterFrame.findChildren(QLineEdit):
-                child.deleteLater()
+            self.collapseAllFilters()
 
+    def collapseAllFilters(self):
+        self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
 
-        self.allFilterFrame.adjustSize()
-        
+        for child in self.allFilterFrame.findChildren(QLineEdit):
+            child.deleteLater()
 
+        self.allFilterFrame.setMinimumHeight(40)
+        model = self.TableModel(MyWindow.data)
+        self.table.setModel(model)
 
     def buildSidebarSplitter(self):
         self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
@@ -348,7 +377,6 @@ class MyWindow(QMainWindow):
     def naviButtonClicked(self):
         if self.activeNaviButton is not self.sender():
             self.pageScrollArea.hide()
-            self.quickFilterFrame.hide()
 
             self.activeNaviButton = self.sender()
             activeObject = self.activeNaviButton.objectName()
@@ -430,10 +458,11 @@ class MyWindow(QMainWindow):
         self.quickFilterClearButton.setStyleSheet(style.control_button)
         self.quickFilterClearButton.setFixedWidth(self.quickFilterClearButton.height())
         self.quickFilterClearButton.setToolTip("Clear Filters")
-        self.quickFilterHeaderLayout.addWidget(self.quickFilterClearButton)
         self.quickFilterClearButton.clicked.connect(self.clearQuickFilters)     
+        self.quickFilterHeaderLayout.addWidget(self.quickFilterClearButton)
 
         self.menuLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+        self.quickFilterFrame.hide()
         self.menuFrame.hide()
 
     def populateSidebarMenu(self, releventTables):
@@ -463,6 +492,18 @@ class MyWindow(QMainWindow):
             quickFilter.setStyleSheet(style.quick_filter)
             quickFilter.textChanged.connect(self.quickFilterChanged)
             self.quickFilterLayout.addWidget(quickFilter)
+
+
+    def allFilterchanged(self):
+        df = MyWindow.data
+        
+        for filter in self.allFilterFrame.findChildren(QLineEdit):
+            if filter.text() != "":
+                field = filter.placeholderText()
+                value = filter.text()
+                df = df[df[field].str.contains(value, case=False)]
+                model = self.TableModel(df)
+                self.table.setModel(model)
 
     def quickFilterChanged(self):
         df = MyWindow.data
@@ -500,6 +541,9 @@ class MyWindow(QMainWindow):
         self.activeTable = self.tableRef[menuSelection]
         self.menuComboBox.setStyleSheet(style.active_combobox)
 
+        if self.allFilterFrame.findChildren(QLineEdit) != []:
+            self.collapseAllFilters()
+
         if self.activeTable is not None:
             self.showLoadingPage()
             MyWindow.data = db.get_cal_programs(self.activeTable)
@@ -513,6 +557,8 @@ class MyWindow(QMainWindow):
 
             self.populateQuickFilters(menuSelection)
             self.quickFilterFrame.show()
+
+        
 
 
 
