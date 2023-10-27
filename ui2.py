@@ -304,7 +304,7 @@ class MyWindow(QMainWindow):
 
 
 
-        self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum , QSizePolicy.Policy.Expanding))
+        #self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum , QSizePolicy.Policy.Expanding))
 
         #self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         #self.pageScrollArea.hide()
