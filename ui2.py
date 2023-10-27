@@ -241,23 +241,35 @@ class MyWindow(QMainWindow):
         self.allFilterFrame.setMinimumHeight(40)
         self.allFilterFrame.setStyleSheet("""
             QFrame {
-                background-color: #181818;
+                background-color: #1f1f1f;
                 border-radius: 10px;
                 border:1px solid #3c3c3c;
             }                                         
         """)
         self.pageLayout.addWidget(self.allFilterFrame)
 
-        #self.allFilterLayout = QHBoxLayout(self.allFilterFrame)
-        #self.allFilterLayout.setContentsMargins(0,0,0,0)
-        #self.allFilterLayout.setSpacing(10)
-        #self.allFilterButton = QPushButton(self.allFilterFrame)
-        #self.allFilterButton.setText("All Filters")
-        #self.allFilterButton.setStyleSheet(style.text_button_inactive)
-        #self.allFilterButton.clicked.connect(self.expandAllFilters)
-        #self.allFilterLayout.addWidget(self.allFilterButton)
+        self.filterGrid = QGridLayout(self.allFilterFrame)
+        self.filterGrid.setContentsMargins(10,10,10,10)
+        self.filterGrid.setSpacing(10)
+        self.allFilterFrame.setLayout(self.filterGrid)
 
-        
+
+        self.allFilterButton = QPushButton(self.allFilterFrame)
+        self.allFilterButton.setText("All Filters")
+        self.allFilterButton.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                color: #BDBDBD;
+                font-family: "Microsoft Sans Serif";
+                font-size: 12px;
+                text-align: left;  
+                padding: 5px;
+            }
+        """)
+        self.allFilterButton.clicked.connect(self.expandAllFilters)
+
+        self.filterGrid.addWidget(self.allFilterButton, 0, 0,1,5)
 
         self.tableSplitter = QSplitter(Qt.Orientation.Vertical, self.pageScrollArea)
         self.tableSplitter.setChildrenCollapsible(False)
@@ -278,25 +290,24 @@ class MyWindow(QMainWindow):
 
     def expandAllFilters(self):
 
+        if self.allFilterFrame.findChildren(QLineEdit) == []:
+            fields = MyWindow.data.columns.tolist()
+            row = 0
+            for col_idx, col_name in enumerate(fields):
+                if col_idx % 5 == 0:
+                    row += 1
 
-        self.filterGrid = QGridLayout(self.allFilterFrame)
-        self.filterGrid.setContentsMargins(10,10,10,10)
-        self.filterGrid.setSpacing(10)
+                filter = QLineEdit(self.allFilterFrame)
+                filter.setPlaceholderText(col_name) 
+                filter.setStyleSheet(style.quick_filter)
+                #filter.textChanged.connect(self.quickFilterChanged)
+                self.filterGrid.addWidget(filter, row, col_idx % 5)
 
-        fields = MyWindow.data.columns.tolist()
+        else:
+            for child in self.allFilterFrame.findChildren(QLineEdit):
+                child.deleteLater()
 
-        row = 0
-        for col_idx, col_name in enumerate(fields):
-            if col_idx % 5 == 0:
-                row += 1
 
-            filter = QLineEdit(self.allFilterFrame)
-            filter.setPlaceholderText(col_name) 
-            filter.setStyleSheet(style.quick_filter)
-            #filter.textChanged.connect(self.quickFilterChanged)
-            self.filterGrid.addWidget(filter, row, col_idx % 5)
-
-        self.allFilterFrame.setLayout(self.filterGrid)
         self.allFilterFrame.adjustSize()
         
 
@@ -505,7 +516,6 @@ class MyWindow(QMainWindow):
 
 
 
-            self.expandAllFilters()
 
     def showLoadingPage(self):
         self.pageScrollArea.hide()
