@@ -217,10 +217,10 @@ class MyWindow(QMainWindow):
         self.mainPage.setStyleSheet(style.hidden)
 
         self.mainLayout = QVBoxLayout(self.mainPage)
-        self.mainLayout.setContentsMargins(50,20,50,20)
+        self.mainLayout.setContentsMargins(0,0,0,0)
 
         self.bannerFrame = QFrame(self.mainPage)
-        self.bannerFrame.setFixedHeight(50)
+        self.bannerFrame.setFixedHeight(30)
         self.bannerFrame.setStyleSheet(style.hidden)
         self.mainLayout.addWidget(self.bannerFrame)
 
@@ -237,7 +237,7 @@ class MyWindow(QMainWindow):
         self.pageScrollArea.setWidget(self.pageScrollWidget)
 
         self.pageLayout = QVBoxLayout(self.pageScrollWidget)
-        self.pageLayout.setContentsMargins(0,0,0,0)
+        self.pageLayout.setContentsMargins(50,20,50,50)
         self.pageLayout.setSpacing(10)
         
         self.pageLabel = QLabel(self.pageScrollWidget)
@@ -246,7 +246,7 @@ class MyWindow(QMainWindow):
         self.pageLayout.addWidget(self.pageLabel)
 
         self.allFilterFrame = QFrame(self.pageScrollWidget)
-        self.allFilterFrame.setMinimumHeight(40)
+        #self.allFilterFrame.setMinimumHeight(40)
         self.allFilterFrame.setStyleSheet("""
             QFrame {
                 background-color: #1f1f1f;
@@ -257,7 +257,8 @@ class MyWindow(QMainWindow):
         self.pageLayout.addWidget(self.allFilterFrame)
 
         self.filterGrid = QGridLayout(self.allFilterFrame)
-        self.filterGrid.setContentsMargins(10,10,10,10)
+        self.filterGrid.setContentsMargins(0,0,0,0)
+        #self.filterGrid.setContentsMargins(10,10,10,10)
         self.filterGrid.setSpacing(10)
         self.allFilterFrame.setLayout(self.filterGrid)
 
@@ -270,26 +271,21 @@ class MyWindow(QMainWindow):
                 border: none;
                 color: #BDBDBD;
                 font-family: "Microsoft Sans Serif";
-                font-size: 12px;
+                font-size: 14px;
                 text-align: left;  
-                padding: 0px 5px 0px 5px;
+                padding: 10px;
                 qproperty-layoutDirection: RightToLeft;
                 outline: 0;
+                border-radius: 10px;
             }
             QPushButton:hover {
                 color: #EEEEEE;
             }
         """)
         self.allFilterButton.clicked.connect(self.expandAllFilters)
+        self.filterGrid.addWidget(self.allFilterButton, 0, 0,1, 7)
 
-        self.filterGrid.addWidget(self.allFilterButton, 0, 0,1,5)
-
-        self.tableSplitter = QSplitter(Qt.Orientation.Vertical, self.pageScrollWidget)
-        self.tableSplitter.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.tableSplitter.setChildrenCollapsible(False)
-        self.pageLayout.addWidget(self.tableSplitter)
-
-        self.table = QTableView(self.tableSplitter)
+        self.table = QTableView(self.pageScrollWidget)
         self.tableDelegate = self.CustomDelegate(self.table)
         self.table.setItemDelegate(self.tableDelegate)
         self.table.horizontalScrollBar().setStyleSheet(style.horizontal_scrollbar)
@@ -298,14 +294,19 @@ class MyWindow(QMainWindow):
         self.table.verticalHeader().setVisible(False) 
         self.table.setSortingEnabled(True)
         self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.table.setMinimumHeight(200)
+        self.table.setMinimumHeight(300)
+        self.pageLayout.addWidget(self.table)
 
-        self.pageUtility = QFrame(self.tableSplitter)
-        self.pageUtility.setStyleSheet(style.light_gray_frame)
+        self.pageUtility = QFrame(self.pageScrollWidget)
+        self.pageUtility.setStyleSheet("""
+            QFrame {
+                background-color: #1f1f1f;
+                border-radius: 10px;
+                border:1px solid #3c3c3c;
+            }                                         
+        """)
         self.pageUtility.setFixedHeight(100)
-
-        #self.splitterPadding = QWidget(self.tableSplitter)
-        #self.splitterPadding.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        self.pageLayout.addWidget(self.pageUtility)
 
 
     def resizeScrollArea(self):
@@ -315,12 +316,31 @@ class MyWindow(QMainWindow):
     def expandAllFilters(self):
 
         if self.allFilterFrame.findChildren(QLineEdit) == []:
+            self.allFilterButton.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    border: none;
+                    color: #BDBDBD;
+                    font-family: "Microsoft Sans Serif";
+                    font-size: 14px;
+                    text-align: left;  
+                    padding: 0px;
+                    qproperty-layoutDirection: RightToLeft;
+                    outline: 0;
+                    border-radius: 10px;
+                }
+                QPushButton:hover {
+                    color: #EEEEEE;
+                }
+            """)
 
+            self.filterGrid.setContentsMargins(10,10,10,10)
             self.allFilterButton.setIcon(QIcon("icons/chevron-up.svg"))
             fields = MyWindow.data.columns.tolist()
             row = 0
+
             for col_idx, col_name in enumerate(fields):
-                if col_idx % 5 == 0:
+                if col_idx % 7 == 0:
                     row += 1
 
                 filter = QLineEdit(self.allFilterFrame)
@@ -331,10 +351,10 @@ class MyWindow(QMainWindow):
 
                 filter.setStyleSheet(style.quick_filter)
                 filter.textChanged.connect(self.allFilterchanged)
-                self.filterGrid.addWidget(filter, row, col_idx % 5)
+                self.filterGrid.addWidget(filter, row, col_idx % 7)
 
             QApplication.processEvents()
-            self.allFilterFrame.setMinimumHeight(self.allFilterFrame.sizeHint().height())
+            #self.allFilterFrame.setMinimumHeight(self.allFilterFrame.sizeHint().height())
 
 
         else:
@@ -342,11 +362,29 @@ class MyWindow(QMainWindow):
 
     def collapseAllFilters(self):
         self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
+        self.filterGrid.setContentsMargins(0,0,0,0)
+        self.allFilterButton.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    border: none;
+                    color: #BDBDBD;
+                    font-family: "Microsoft Sans Serif";
+                    font-size: 14px;
+                    text-align: left;  
+                    padding: 10px;
+                    qproperty-layoutDirection: RightToLeft;
+                    outline: 0;
+                    border-radius: 10px;
+                }
+                QPushButton:hover {
+                    color: #EEEEEE;
+                }
+            """)
+
 
         for child in self.allFilterFrame.findChildren(QLineEdit):
             child.deleteLater()
 
-        self.allFilterFrame.setMinimumHeight(40)
 
     def buildSidebarSplitter(self):
         self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
