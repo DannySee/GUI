@@ -4,13 +4,15 @@ import style_sheets as style
 from sidebar_maps import button_map as naviButtonMap, filter_map as filterMap
 from PyQt6 import QtCore
 import pandas as pd
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtGui import QIcon, QMouseEvent, QPalette, QColor
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
                              QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox, 
-                             QAbstractItemView, QGraphicsDropShadowEffect, QGridLayout)
+                             QAbstractItemView, QGraphicsDropShadowEffect, QGridLayout, QSizeGrip)
+
+
 
     
 
@@ -231,6 +233,7 @@ class MyWindow(QMainWindow):
 
         self.pageScrollWidget = QWidget(self.pageScrollArea)
         self.pageScrollWidget.setStyleSheet(style.hidden)
+        self.pageScrollWidget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         self.pageScrollArea.setWidget(self.pageScrollWidget)
 
         self.pageLayout = QVBoxLayout(self.pageScrollWidget)
@@ -282,8 +285,8 @@ class MyWindow(QMainWindow):
         self.filterGrid.addWidget(self.allFilterButton, 0, 0,1,5)
 
         self.tableSplitter = QSplitter(Qt.Orientation.Vertical, self.pageScrollWidget)
+        self.tableSplitter.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.tableSplitter.setChildrenCollapsible(False)
-        self.tableSplitter.setStyleSheet(style.hidden_splitter)
         self.pageLayout.addWidget(self.tableSplitter)
 
         self.table = QTableView(self.tableSplitter)
@@ -295,23 +298,24 @@ class MyWindow(QMainWindow):
         self.table.verticalHeader().setVisible(False) 
         self.table.setSortingEnabled(True)
         self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.table.setMinimumHeight(400)
-        
+        self.table.setMinimumHeight(200)
+
         self.pageUtility = QFrame(self.tableSplitter)
         self.pageUtility.setStyleSheet(style.light_gray_frame)
-        self.pageUtility.setFixedHeight(200)
-        self.pageUtility.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.pageUtility.setFixedHeight(100)
+
+        #self.splitterPadding = QWidget(self.tableSplitter)
+        #self.splitterPadding.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
 
 
-
-        #self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum , QSizePolicy.Policy.Expanding))
-
-        #self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-        #self.pageScrollArea.hide()
-
+    def resizeScrollArea(self):
+        size = self.pageLabel.height() + self.allFilterFrame.height() + self.tableSplitter.sizes()[0] + self.tableSplitter.sizes()[1] + 50
+        self.pageScrollWidget.setMinimumHeight(size)
+   
     def expandAllFilters(self):
 
         if self.allFilterFrame.findChildren(QLineEdit) == []:
+
             self.allFilterButton.setIcon(QIcon("icons/chevron-up.svg"))
             fields = MyWindow.data.columns.tolist()
             row = 0
@@ -321,12 +325,17 @@ class MyWindow(QMainWindow):
 
                 filter = QLineEdit(self.allFilterFrame)
                 filter.setPlaceholderText(col_name) 
+                
+                if self.appliedFilters is not None:
+                    filter.setText(self.appliedFilterDict[col_name])
+
                 filter.setStyleSheet(style.quick_filter)
-                #filter.textChanged.connect(self.allFilterchanged)
+                filter.textChanged.connect(self.allFilterchanged)
                 self.filterGrid.addWidget(filter, row, col_idx % 5)
 
             QApplication.processEvents()
             self.allFilterFrame.setMinimumHeight(self.allFilterFrame.sizeHint().height())
+
 
         else:
             self.collapseAllFilters()
@@ -338,8 +347,6 @@ class MyWindow(QMainWindow):
             child.deleteLater()
 
         self.allFilterFrame.setMinimumHeight(40)
-        model = self.TableModel(MyWindow.data)
-        self.table.setModel(model)
 
     def buildSidebarSplitter(self):
         self.sidebarSplitter = QSplitter(Qt.Orientation.Vertical, self.sidebar)
@@ -494,10 +501,24 @@ class MyWindow(QMainWindow):
             self.quickFilterLayout.addWidget(quickFilter)
 
 
+    def clearAllFilters(self):
+        for child in self.allFilterFrame.findChildren(QLineEdit):
+            child.setText("")
+
+        model = self.TableModel(MyWindow.data)
+        self.table.setModel(model)
+        self.appliedFilters = None
+        self.appliedFilterDict = {}
+
+
     def allFilterchanged(self):
         df = MyWindow.data
-        
+
+        self.appliedFilterDict = {}
+
         for filter in self.allFilterFrame.findChildren(QLineEdit):
+            self.appliedFilterDict[filter.placeholderText()] = filter.text()
+
             if filter.text() != "":
                 field = filter.placeholderText()
                 value = filter.text()
@@ -505,8 +526,10 @@ class MyWindow(QMainWindow):
                 model = self.TableModel(df)
                 self.table.setModel(model)
 
+        self.appliedFilters = df
+
     def quickFilterChanged(self):
-        df = MyWindow.data
+        df = self.appliedFilters if self.appliedFilters is not None else MyWindow.data
         
         for quickFilter in self.quickFilterFrame.findChildren(QLineEdit):
             if quickFilter.text() != "":
@@ -520,7 +543,8 @@ class MyWindow(QMainWindow):
         for child in self.quickFilterFrame.findChildren(QLineEdit):
             child.setText("")
 
-        model = self.TableModel(MyWindow.data)
+        df = self.appliedFilters if self.appliedFilters is not None else MyWindow.data
+        model = self.TableModel(df)
         self.table.setModel(model)
 
     def menuComboBoxChanged(self):
@@ -541,6 +565,9 @@ class MyWindow(QMainWindow):
         self.activeTable = self.tableRef[menuSelection]
         self.menuComboBox.setStyleSheet(style.active_combobox)
 
+        # clear filters
+        self.appliedFilters = None
+        self.appliedFilterDict = {}
         if self.allFilterFrame.findChildren(QLineEdit) != []:
             self.collapseAllFilters()
 
