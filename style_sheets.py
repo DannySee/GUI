@@ -184,6 +184,18 @@ sidebar_label = """
     }
 """
 
+
+slicer_label = """
+    QLabel {
+        font-family: "Microsoft Sans Serif";
+        font-size: 14px;
+        padding: 20px 0px 10px 0px;
+        color: #BDBDBD;
+        background-color: transparent;
+        font-style: italic;
+    }
+"""
+
 page_label = """
     QLabel {
         color: #EEEEEE;

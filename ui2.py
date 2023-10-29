@@ -256,14 +256,18 @@ class MyWindow(QMainWindow):
         """)
         self.pageLayout.addWidget(self.allFilterFrame)
 
-        self.filterGrid = QGridLayout(self.allFilterFrame)
-        self.filterGrid.setContentsMargins(0,0,0,0)
-        #self.filterGrid.setContentsMargins(10,10,10,10)
-        self.filterGrid.setSpacing(10)
-        self.allFilterFrame.setLayout(self.filterGrid)
+        self.allFilterLayout = QVBoxLayout(self.allFilterFrame)
+        self.allFilterLayout.setContentsMargins(0,0,0,0)
+        self.allFilterLayout.setSpacing(0)
+        self.allFilterFrame.setLayout(self.allFilterLayout)
 
-        self.allFilterButton = QPushButton(self.allFilterFrame)
-        self.allFilterButton.setText("All Filters")
+        self.allFilterHeaderLayout = QHBoxLayout()
+        self.allFilterHeaderLayout.setContentsMargins(0,0,0,0)
+        self.allFilterHeaderLayout.setSpacing(10)
+        self.allFilterLayout.addLayout(self.allFilterHeaderLayout)
+
+        self.allFilterButton = QPushButton()
+        self.allFilterButton.setText("Filters")
         self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
         self.allFilterButton.setStyleSheet("""
             QPushButton {
@@ -277,13 +281,42 @@ class MyWindow(QMainWindow):
                 qproperty-layoutDirection: RightToLeft;
                 outline: 0;
                 border-radius: 10px;
+                font-style: italic;
             }
             QPushButton:hover {
+                background-color: #2F2F2F;
                 color: #EEEEEE;
             }
         """)
         self.allFilterButton.clicked.connect(self.expandAllFilters)
-        self.filterGrid.addWidget(self.allFilterButton, 0, 0,1, 7)
+        self.allFilterHeaderLayout.addWidget(self.allFilterButton)
+
+        self.clearAllFiltersButton = QPushButton(self.allFilterFrame)
+        self.clearAllFiltersButton.setText("Clear Filters")
+        self.clearAllFiltersButton.setIcon(QIcon("icons/clear-filter.svg"))
+        self.clearAllFiltersButton.clicked.connect(self.clearAllFilters)
+        self.clearAllFiltersButton.setMaximumWidth(self.clearAllFiltersButton.sizeHint().width() + 25)
+        self.clearAllFiltersButton.setStyleSheet("""
+            QPushButton {
+                text-align: center;
+                background-color: #2F2F2F;
+                border: none;
+                color: #EEEEEE;
+                font-family: "Microsoft Sans Serif";
+                font-size: 14px;
+                text-align: left;  
+                padding: 10px;
+                qproperty-layoutDirection: RightToLeft;
+                outline: 0;
+                border-radius: 10px;
+            }
+            QPushButton:hover {
+                background-color: #3F3F3F;
+            }
+        """)
+        self.clearAllFiltersButton.hide()
+        self.allFilterHeaderLayout.addWidget(self.clearAllFiltersButton)
+
 
         self.table = QTableView(self.pageScrollWidget)
         self.tableDelegate = self.CustomDelegate(self.table)
@@ -319,47 +352,13 @@ class MyWindow(QMainWindow):
     def expandAllFilters(self):
 
         if self.allFilterFrame.findChildren(QLineEdit) == []:
-
-            self.allFilterButton.setText("All Filters")
-            self.allFilterButton.setStyleSheet("""
-                QPushButton {
-                    background-color: transparent;
-                    border: none;
-                    color: #BDBDBD;
-                    font-family: "Microsoft Sans Serif";
-                    font-size: 14px;
-                    text-align: left;  
-                    padding: 0px;
-                    qproperty-layoutDirection: RightToLeft;
-                    outline: 0;
-                    border-radius: 10px;
-                }
-                QPushButton:hover {
-                    color: #EEEEEE;
-                }
-            """)
-
-            if self.filterCount > 0:
-                self.clearAllFiltersButton.setStyleSheet("""    
-                    QPushButton {
-                        background-color: transparent;
-                        border: none;
-                        color: #BDBDBD;
-                        font-family: "Microsoft Sans Serif";
-                        font-size: 14px;
-                        text-align: left;  
-                        padding: 0px;
-                        qproperty-layoutDirection: RightToLeft;
-                        outline: 0;
-                        border-radius: 10px;
-                    }
-                    QPushButton:hover {
-                        color: #EEEEEE;
-                    }
-                """)
-
-            self.filterGrid.setContentsMargins(10,10,10,10)
             self.allFilterButton.setIcon(QIcon("icons/chevron-up.svg"))
+
+            self.filterGrid = QGridLayout()
+            self.filterGrid.setContentsMargins(10,10,10,10)
+            self.filterGrid.setSpacing(10)
+            self.allFilterLayout.addLayout(self.filterGrid)
+
             fields = MyWindow.data.columns.tolist()
             row = 0
 
@@ -377,56 +376,21 @@ class MyWindow(QMainWindow):
                 filter.textChanged.connect(self.allFilterchanged)
                 self.filterGrid.addWidget(filter, row, col_idx % 7)
 
+            print("huh?")
+
 
         else:
+            print("oi")
             self.collapseAllFilters()
 
 
     def collapseAllFilters(self):
-        
         self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
-        self.filterGrid.setContentsMargins(0,0,0,0)
-        self.allFilterButton.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                color: #BDBDBD;
-                font-family: "Microsoft Sans Serif";
-                font-size: 14px;
-                text-align: left;  
-                padding: 10px;
-                qproperty-layoutDirection: RightToLeft;
-                outline: 0;
-                border-radius: 10px;
-            }
-            QPushButton:hover {
-                color: #EEEEEE;
-            }
-        """)
         
-        if self.filterCount > 0:
-            self.clearAllFiltersButton.setStyleSheet("""
-                QPushButton {
-                    background-color: #2F2F2F;
-                    border: none;
-                    color: #EEEEEE;
-                    font-family: "Microsoft Sans Serif";
-                    font-size: 14px;
-                    text-align: left;  
-                    padding: 10px;
-                    qproperty-layoutDirection: RightToLeft;
-                    outline: 0;
-                    border-radius: 10px;
-                }
-                QPushButton:hover {
-                    background-color: #3F3F3F;
-                    color: #EEEEEE;
-                }
-            """)
-
-
         for child in self.allFilterFrame.findChildren(QLineEdit):
             child.deleteLater()
+
+        self.filterGrid.deleteLater()
 
 
     def buildSidebarSplitter(self):
@@ -465,6 +429,7 @@ class MyWindow(QMainWindow):
     def naviButtonClicked(self):
         if self.activeNaviButton is not self.sender():
             self.pageScrollArea.hide()
+            self.quickFilterFrame.hide()
 
             self.activeNaviButton = self.sender()
             activeObject = self.activeNaviButton.objectName()
@@ -538,7 +503,7 @@ class MyWindow(QMainWindow):
 
         self.quickFilterLabel = QLabel(self.quickFilterHeader)
         self.quickFilterLabel.setText("")
-        self.quickFilterLabel.setStyleSheet(style.sidebar_label)      
+        self.quickFilterLabel.setStyleSheet(style.slicer_label)      
         self.quickFilterHeaderLayout.addWidget(self.quickFilterLabel)   
 
         self.quickFilterClearButton = QPushButton(self.quickFilterHeader)
@@ -548,6 +513,8 @@ class MyWindow(QMainWindow):
         self.quickFilterClearButton.setToolTip("Clear Filters")
         self.quickFilterClearButton.clicked.connect(self.clearQuickFilters)     
         self.quickFilterHeaderLayout.addWidget(self.quickFilterClearButton)
+        self.quickFilterClearButton.hide()
+
 
         self.menuLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         self.quickFilterFrame.hide()
@@ -567,7 +534,7 @@ class MyWindow(QMainWindow):
         self.menuComboBox.currentIndexChanged.connect(self.menuComboBoxChanged)
 
     def populateQuickFilters(self, menuSelection):
-        self.quickFilterLabel.setText("Quick Filters")  
+        self.quickFilterLabel.setText("Slicers:")  
         self.quickFilterLabel.adjustSize()      
         filters = filterMap[menuSelection]
 
@@ -584,7 +551,8 @@ class MyWindow(QMainWindow):
 
     def clearAllFilters(self):
         # Ensure the widget is in the layout
-        self.deleteClearFilterButton()
+        self.clearAllFiltersButton.hide()
+
         
         # Clear line edits
         for child in self.allFilterFrame.findChildren(QLineEdit):
@@ -603,11 +571,9 @@ class MyWindow(QMainWindow):
 
 
 
-    def deleteClearFilterButton(self):
-        self.filterGrid.removeWidget(self.clearAllFiltersButton)
-        self.clearAllFiltersButton.deleteLater()
-        self.filterGrid.removeWidget(self.allFilterButton)
-        self.filterGrid.addWidget(self.allFilterButton, 0,0,1,7)
+    def hideClearFilterButton(self):
+        self.clearAllFiltersButton.hide()
+       
 
 
     def resetAllFilters(self):  
@@ -634,55 +600,37 @@ class MyWindow(QMainWindow):
                 self.populateTable(df)
     
         if self.filterCount == 0:
-            self.deleteClearFilterButton()
+            self.clearAllFiltersButton.hide()
             self.appliedFilters = None
             self.populateTable(MyWindow.data)
             
         else:
             self.appliedFilters = df
             
-            if len(self.allFilterFrame.findChildren(QPushButton)) == 1:
-                self.addClearFilterButton()
-
-
-    def addClearFilterButton(self):
-        self.filterGrid.removeWidget(self.allFilterButton)
-        self.filterGrid.addWidget(self.allFilterButton, 0,0,1,6)
-
-        self.clearAllFiltersButton = QPushButton(self.allFilterFrame)
-        self.clearAllFiltersButton.setText("Clear Filters")
-        self.clearAllFiltersButton.setIcon(QIcon("icons/clear-filter.svg"))
-        self.clearAllFiltersButton.clicked.connect(self.clearAllFilters)
-        self.clearAllFiltersButton.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                color: #BDBDBD;
-                font-family: "Microsoft Sans Serif";
-                font-size: 14px;
-                text-align: left;  
-                padding: 0px;
-                qproperty-layoutDirection: RightToLeft;
-                outline: 0;
-                border-radius: 10px;
-            }
-            QPushButton:hover {
-                color: #EEEEEE;
-            }
-        """)
-        self.filterGrid.addWidget(self.clearAllFiltersButton,0,6,1,1)
+            if self.clearAllFiltersButton.isHidden():
+                self.clearAllFiltersButton.show()
 
 
     def quickFilterChanged(self):
         df = self.appliedFilters if self.appliedFilters is not None else MyWindow.data
-        
+        quickFilterCount = 0
+
         for quickFilter in self.quickFilterFrame.findChildren(QLineEdit):
             if quickFilter.text() != "":
+                quickFilterCount += 1
                 field = quickFilter.placeholderText()
                 value = quickFilter.text()
                 df = df[df[field].str.contains(value, case=False)]
 
                 self.populateTable(df)
+
+        if quickFilterCount == 0:
+            self.quickFilterClearButton.hide()
+            self.populateTable(df)
+        else:
+            self.quickFilterClearButton.show()
+
+
         
     def clearQuickFilters(self):        
         for child in self.quickFilterFrame.findChildren(QLineEdit):
@@ -711,7 +659,7 @@ class MyWindow(QMainWindow):
 
         # clear filters
         if self.filterCount > 0:
-            self.deleteClearFilterButton()
+            self.clearAllFiltersButton.hide()
         if self.allFilterFrame.findChildren(QLineEdit) != []:
             self.collapseAllFilters()
 
