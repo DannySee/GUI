@@ -308,14 +308,19 @@ class MyWindow(QMainWindow):
         self.pageUtility.setFixedHeight(100)
         self.pageLayout.addWidget(self.pageUtility)
 
+        self.resetAllFilters()
+
 
     def resizeScrollArea(self):
         size = self.pageLabel.height() + self.allFilterFrame.height() + self.tableSplitter.sizes()[0] + self.tableSplitter.sizes()[1] + 50
         self.pageScrollWidget.setMinimumHeight(size)
    
+
     def expandAllFilters(self):
 
         if self.allFilterFrame.findChildren(QLineEdit) == []:
+
+            self.allFilterButton.setText("All Filters")
             self.allFilterButton.setStyleSheet("""
                 QPushButton {
                     background-color: transparent;
@@ -333,6 +338,25 @@ class MyWindow(QMainWindow):
                     color: #EEEEEE;
                 }
             """)
+
+            if self.filterCount > 0:
+                self.clearAllFiltersButton.setStyleSheet("""    
+                    QPushButton {
+                        background-color: transparent;
+                        border: none;
+                        color: #BDBDBD;
+                        font-family: "Microsoft Sans Serif";
+                        font-size: 14px;
+                        text-align: left;  
+                        padding: 0px;
+                        qproperty-layoutDirection: RightToLeft;
+                        outline: 0;
+                        border-radius: 10px;
+                    }
+                    QPushButton:hover {
+                        color: #EEEEEE;
+                    }
+                """)
 
             self.filterGrid.setContentsMargins(10,10,10,10)
             self.allFilterButton.setIcon(QIcon("icons/chevron-up.svg"))
@@ -353,21 +377,39 @@ class MyWindow(QMainWindow):
                 filter.textChanged.connect(self.allFilterchanged)
                 self.filterGrid.addWidget(filter, row, col_idx % 7)
 
-            QApplication.processEvents()
-            #self.allFilterFrame.setMinimumHeight(self.allFilterFrame.sizeHint().height())
-
 
         else:
             self.collapseAllFilters()
 
+
     def collapseAllFilters(self):
+        
         self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
         self.filterGrid.setContentsMargins(0,0,0,0)
         self.allFilterButton.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                color: #BDBDBD;
+                font-family: "Microsoft Sans Serif";
+                font-size: 14px;
+                text-align: left;  
+                padding: 10px;
+                qproperty-layoutDirection: RightToLeft;
+                outline: 0;
+                border-radius: 10px;
+            }
+            QPushButton:hover {
+                color: #EEEEEE;
+            }
+        """)
+        
+        if self.filterCount > 0:
+            self.clearAllFiltersButton.setStyleSheet("""
                 QPushButton {
-                    background-color: transparent;
+                    background-color: #2F2F2F;
                     border: none;
-                    color: #BDBDBD;
+                    color: #EEEEEE;
                     font-family: "Microsoft Sans Serif";
                     font-size: 14px;
                     text-align: left;  
@@ -377,6 +419,7 @@ class MyWindow(QMainWindow):
                     border-radius: 10px;
                 }
                 QPushButton:hover {
+                    background-color: #3F3F3F;
                     color: #EEEEEE;
                 }
             """)
@@ -540,31 +583,95 @@ class MyWindow(QMainWindow):
 
 
     def clearAllFilters(self):
+        # Ensure the widget is in the layout
+        self.deleteClearFilterButton()
+        
+        # Clear line edits
         for child in self.allFilterFrame.findChildren(QLineEdit):
             child.setText("")
+        
+        # Reset the table model
+        self.populateTable(MyWindow.data)
+        
+        # Reset filters
+        self.resetAllFilters()
 
-        model = self.TableModel(MyWindow.data)
+
+    def populateTable(self, df):
+        model = self.TableModel(df)
         self.table.setModel(model)
+
+
+
+    def deleteClearFilterButton(self):
+        self.filterGrid.removeWidget(self.clearAllFiltersButton)
+        self.clearAllFiltersButton.deleteLater()
+        self.filterGrid.removeWidget(self.allFilterButton)
+        self.filterGrid.addWidget(self.allFilterButton, 0,0,1,7)
+
+
+    def resetAllFilters(self):  
+        # Reset filters
         self.appliedFilters = None
         self.appliedFilterDict = {}
+        self.filterCount = 0
 
 
     def allFilterchanged(self):
         df = MyWindow.data
 
         self.appliedFilterDict = {}
+        self.filterCount = 0
 
         for filter in self.allFilterFrame.findChildren(QLineEdit):
             self.appliedFilterDict[filter.placeholderText()] = filter.text()
 
             if filter.text() != "":
+                self.filterCount += 1
                 field = filter.placeholderText()
                 value = filter.text()
                 df = df[df[field].str.contains(value, case=False)]
-                model = self.TableModel(df)
-                self.table.setModel(model)
+                self.populateTable(df)
+    
+        if self.filterCount == 0:
+            self.deleteClearFilterButton()
+            self.appliedFilters = None
+            self.populateTable(MyWindow.data)
+            
+        else:
+            self.appliedFilters = df
+            
+            if len(self.allFilterFrame.findChildren(QPushButton)) == 1:
+                self.addClearFilterButton()
 
-        self.appliedFilters = df
+
+    def addClearFilterButton(self):
+        self.filterGrid.removeWidget(self.allFilterButton)
+        self.filterGrid.addWidget(self.allFilterButton, 0,0,1,6)
+
+        self.clearAllFiltersButton = QPushButton(self.allFilterFrame)
+        self.clearAllFiltersButton.setText("Clear Filters")
+        self.clearAllFiltersButton.setIcon(QIcon("icons/clear-filter.svg"))
+        self.clearAllFiltersButton.clicked.connect(self.clearAllFilters)
+        self.clearAllFiltersButton.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                color: #BDBDBD;
+                font-family: "Microsoft Sans Serif";
+                font-size: 14px;
+                text-align: left;  
+                padding: 0px;
+                qproperty-layoutDirection: RightToLeft;
+                outline: 0;
+                border-radius: 10px;
+            }
+            QPushButton:hover {
+                color: #EEEEEE;
+            }
+        """)
+        self.filterGrid.addWidget(self.clearAllFiltersButton,0,6,1,1)
+
 
     def quickFilterChanged(self):
         df = self.appliedFilters if self.appliedFilters is not None else MyWindow.data
@@ -574,16 +681,15 @@ class MyWindow(QMainWindow):
                 field = quickFilter.placeholderText()
                 value = quickFilter.text()
                 df = df[df[field].str.contains(value, case=False)]
-                model = self.TableModel(df)
-                self.table.setModel(model)
+
+                self.populateTable(df)
         
-    def clearQuickFilters(self):
+    def clearQuickFilters(self):        
         for child in self.quickFilterFrame.findChildren(QLineEdit):
             child.setText("")
 
         df = self.appliedFilters if self.appliedFilters is not None else MyWindow.data
-        model = self.TableModel(df)
-        self.table.setModel(model)
+        self.populateTable(df)
 
     def menuComboBoxChanged(self):
 
@@ -604,10 +710,13 @@ class MyWindow(QMainWindow):
         self.menuComboBox.setStyleSheet(style.active_combobox)
 
         # clear filters
-        self.appliedFilters = None
-        self.appliedFilterDict = {}
+        if self.filterCount > 0:
+            self.deleteClearFilterButton()
         if self.allFilterFrame.findChildren(QLineEdit) != []:
             self.collapseAllFilters()
+
+        self.resetAllFilters()
+        
 
         if self.activeTable is not None:
             self.showLoadingPage()
@@ -616,16 +725,11 @@ class MyWindow(QMainWindow):
 
             self.pageLabel.setText(menuSelection)
             self.pageLabel.adjustSize()
-            model = self.TableModel(MyWindow.data)
-            self.table.setModel(model)
+            self.populateTable(MyWindow.data)
             self.pageScrollArea.show()
 
             self.populateQuickFilters(menuSelection)
             self.quickFilterFrame.show()
-
-        
-
-
 
 
     def showLoadingPage(self):
