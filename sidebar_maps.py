@@ -58,13 +58,13 @@ button_map = {
 }
 
 filter_map = {
-    "Metrics Agreement": ['VA_NUM','CA_NUM','SR','PERIOD','WEEK'],
-    "Metrics Inquiry": ['ASSOCIATE','TEAM_LEAD','SR','PERIOD','WEEK'],
-    "Metrics Price Rule": ['ASSOCIATE','CUSTOMER','NAME','PERIOD','WEEK'],
-    "Price Rule Tracker": ['CUSTOMER','CONCEPT','PRICE_RULE','APPROVER','SR'],
-    "DPM Agreements": ['CUSTOMER','PROGRAM_DESCRIPTION','T1_USER','T2_USER','T3_USER'],
-    "Customer Profile": ['CUSTOMER','ALT_NAME','T1_USER','T2_USER','T3_USER'],
-    "Deviation Loads": ['CUSTOMER','PROGRAM','T1_USER','T2_USER','T3_USER'],
-    "Account Assignments": ['CUSTOMER','TEAM_LEAD','T1_USER','T2_USER','T3_USER'],
-    "Org Chart": ['TEAM_LEAD','ASSOCIATE']
+    "Metrics Agreement": ["VA_NUM","CA_NUM","SR","PERIOD","WEEK"],
+    "Metrics Inquiry": ["ASSOCIATE","TEAM_LEAD","SR","PERIOD","WEEK"],
+    "Metrics Price Rule": ["ASSOCIATE","CUSTOMER","NAME","PERIOD","WEEK"],
+    "Price Rule Tracker": ["CUSTOMER","CONCEPT","PRICE_RULE","APPROVER","SR"],
+    "DPM Agreements": ["CUSTOMER","PROGRAM_DESCRIPTION","T1_USER","T2_USER","T3_USER"],
+    "Customer Profile": ["CUSTOMER","ALT_NAME","T1_USER","T2_USER","T3_USER"],
+    "Deviation Loads": ["CUSTOMER","PROGRAM","T1_USER","T2_USER","T3_USER"],
+    "Account Assignments": ["CUSTOMER","TEAM_LEAD","T1_USER","T2_USER","T3_USER"],
+    "Org Chart": ["TEAM_LEAD","ASSOCIATE"]
 }

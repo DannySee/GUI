@@ -1,16 +1,18 @@
 import sys
 import data_pull as db
 import style_sheets as style
+import pandas as pd
+import json
 from sidebar_maps import button_map as naviButtonMap, filter_map as filterMap
 from PyQt6 import QtCore
-import pandas as pd
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
-from PyQt6.QtGui import QIcon, QMouseEvent, QPalette, QColor
+from PyQt6.QtGui import QIcon, QMouseEvent, QPalette, QColor, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
                              QSizePolicy, QSpacerItem, QSplitter, QSplitterHandle, 
                              QStyledItemDelegate, QTableView, QVBoxLayout, QWidget, QMessageBox, 
-                             QAbstractItemView, QGraphicsDropShadowEffect, QGridLayout, QSizeGrip)
+                             QAbstractItemView, QGraphicsDropShadowEffect, QGridLayout, QSizeGrip,
+                             QCheckBox, QListView)
 
 
 
@@ -425,7 +427,9 @@ class MyWindow(QMainWindow):
     def naviButtonClicked(self):
         if self.activeNaviButton is not self.sender():
             self.pageScrollArea.hide()
+            self.quickFilterSettings.hide()
             self.quickFilterFrame.hide()
+
 
             self.activeNaviButton = self.sender()
             activeObject = self.activeNaviButton.objectName()
@@ -484,24 +488,6 @@ class MyWindow(QMainWindow):
         self.quickFilterLayout.setSpacing(4)
         self.quickFilterLayout.setContentsMargins(0,0,0,0)
 
-
-############################################
-
-        self.quickFilterSettingsLayout = QHBoxLayout()
-        self.quickFilterSettingsLayout.setSpacing(4)
-        self.quickFilterSettingsLayout.setContentsMargins(0,0,0,0)
-        self.quickFilterLayout.addLayout(self.quickFilterSettingsLayout)
-
-        quickFilterSettings = QPushButton(self.quickFilterFrame)
-        quickFilterSettings.setIcon(QIcon("icons/settings.svg"))
-        quickFilterSettings.setStyleSheet(style.ui_button)
-        quickFilterSettings.setToolTip("Quick Slicer Settings")
-        quickFilterSettings.setFixedWidth(30)
-        self.quickFilterSettingsLayout.addWidget(quickFilterSettings)
-
-
-
-
         self.menuLine = QFrame(self.quickFilterFrame)
         self.menuLine.setFrameShape(QFrame.Shape.HLine)
         self.menuLine.setFixedHeight(1)
@@ -529,8 +515,17 @@ class MyWindow(QMainWindow):
         self.quickFilterHeaderLayout.addWidget(self.quickFilterClearButton)
         self.quickFilterClearButton.hide()
 
-
         self.menuLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        self.quickFilterSettings = QPushButton(self.menuFrame)
+        self.quickFilterSettings.setIcon(QIcon("icons/settings.svg"))
+        self.quickFilterSettings.setStyleSheet(style.ui_button)
+        self.quickFilterSettings.setToolTip("Quick Slicer Settings")
+        self.quickFilterSettings.setFixedWidth(30)
+        self.quickFilterSettings.clicked.connect(self.quickFilterSettingsClicked)
+        self.menuLayout.addWidget(self.quickFilterSettings)
+
+        self.quickFilterSettings.hide()
         self.quickFilterFrame.hide()
         self.menuFrame.hide()
 
@@ -549,13 +544,15 @@ class MyWindow(QMainWindow):
 
     def populateQuickFilters(self, menuSelection):
         self.quickFilterLabel.setText("Quick Slicers:")  
-        self.quickFilterLabel.adjustSize()      
-        filters = filterMap[menuSelection]
+        self.quickFilterLabel.adjustSize()  
+
+        with open(f"quick_slicers/{self.activeTable}.json", "r") as f:
+            filters = json.load(f)
 
         for child in self.quickFilterFrame.findChildren(QLineEdit):
             child.deleteLater()
 
-        for filter in filters:
+        for filter in filters['slicers']:
             quickFilter = QLineEdit(self.quickFilterFrame)
             quickFilter.setPlaceholderText(filter) 
             quickFilter.setStyleSheet(style.quick_filter)
@@ -645,6 +642,103 @@ class MyWindow(QMainWindow):
             self.quickFilterClearButton.show()
 
 
+    def quickFilterSettingsClicked(self):
+        def addButtonClicked():
+            selected = allFieldList.selectedIndexes()
+            indeces = allFieldList.selectionModel().selectedRows()
+
+            for item, index in zip(selected, indeces):
+                item = QStandardItem(item.data())
+                selectedModel.appendRow(item)
+                allModel.removeRow(index.row())
+
+        def removeButtonClicked():
+            selected = selectedList.selectedIndexes()
+            indecies = selectedList.selectionModel().selectedRows()
+
+            for item, index in zip(selected, indecies):
+                item = QStandardItem(item.data())
+                allModel.appendRow(item)
+                selectedModel.removeRow(index.row())
+
+        def removeAllButtonClicked():
+            row_count = selectedModel.rowCount()
+            for _ in range(row_count):
+                item = selectedModel.item(0)  # Always get the first item since the list will reduce in size with each iteration
+                allModel.appendRow(QStandardItem(item.text()))
+                selectedModel.removeRow(0)  
+  
+
+        popup = QMessageBox(self)
+        popup.setWindowTitle("Modify Quick Slicers")
+
+        mainFrame = QFrame(popup)
+        mainLayout = QHBoxLayout()
+
+        allFieldList = QListView(mainFrame)
+        mainLayout.addWidget(allFieldList)
+
+        controlFrame = QFrame(mainFrame)
+        controlLayout = QVBoxLayout(controlFrame)
+        controlLayout.setContentsMargins(0, 0, 0, 0)
+        controlLayout.setSpacing(0)
+
+        addButton = QPushButton("Add", controlFrame)
+        addButton.clicked.connect(addButtonClicked)
+        controlLayout.addWidget(addButton)
+
+        removeButton = QPushButton("Remove", controlFrame)
+        removeButton.clicked.connect(removeButtonClicked)
+        controlLayout.addWidget(removeButton)
+
+        removeAllButton = QPushButton("Remove All", controlFrame)
+        removeAllButton.clicked.connect(removeAllButtonClicked)
+        controlLayout.addWidget(removeAllButton)
+
+        controlFrame.setLayout(controlLayout)
+        mainLayout.addWidget(controlFrame)
+
+        selectedList = QListView(mainFrame)
+        mainLayout.addWidget(selectedList)
+
+        mainFrame.setLayout(mainLayout)
+        popup.layout().addWidget(mainFrame, 0, 0, 1, popup.layout().columnCount())
+
+        fields = MyWindow.data.columns.tolist()
+
+        with open(f"quick_slicers/{self.activeTable}.json", "r") as f:
+            activeSlicers = json.load(f)
+
+        allModel = QStandardItemModel()
+        allFieldList.setModel(allModel)
+        selectedModel = QStandardItemModel()
+        selectedList.setModel(selectedModel)
+
+        for field in fields:
+            item = QStandardItem(field)
+            if field in activeSlicers['slicers']:
+                selectedModel.appendRow(item)
+            else:
+                allModel.appendRow(item)
+
+
+        height = len(fields) * 14
+        allFieldList.setFixedHeight(height)
+        allFieldList.setFixedWidth(200)
+        selectedList.setFixedHeight(height)
+        selectedList.setFixedWidth(200)
+
+        popup.exec()
+
+        
+
+
+
+
+
+
+
+
         
     def clearQuickFilters(self):        
         for child in self.quickFilterFrame.findChildren(QLineEdit):
@@ -692,6 +786,8 @@ class MyWindow(QMainWindow):
 
             self.populateQuickFilters(menuSelection)
             self.quickFilterFrame.show()
+            self.quickFilterSettings.show()
+
 
 
     def showLoadingPage(self):
