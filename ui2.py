@@ -484,6 +484,9 @@ class MyWindow(QMainWindow):
         self.quickFilterLayout.setSpacing(4)
         self.quickFilterLayout.setContentsMargins(0,0,0,0)
 
+
+############################################
+
         self.quickFilterSettingsLayout = QHBoxLayout()
         self.quickFilterSettingsLayout.setSpacing(4)
         self.quickFilterSettingsLayout.setContentsMargins(0,0,0,0)
@@ -495,6 +498,9 @@ class MyWindow(QMainWindow):
         quickFilterSettings.setToolTip("Quick Slicer Settings")
         quickFilterSettings.setFixedWidth(30)
         self.quickFilterSettingsLayout.addWidget(quickFilterSettings)
+
+
+
 
         self.menuLine = QFrame(self.quickFilterFrame)
         self.menuLine.setFrameShape(QFrame.Shape.HLine)
