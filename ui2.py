@@ -5,7 +5,7 @@ import pandas as pd
 import json
 from sidebar_maps import button_map as naviButtonMap, filter_map as filterMap
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, QSize, pyqtSignal
+from PyQt6.QtCore import Qt, QSize, pyqtSignal, QModelIndex, QItemSelectionModel
 from PyQt6.QtGui import QIcon, QMouseEvent, QPalette, QColor, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
@@ -173,7 +173,7 @@ class MyWindow(QMainWindow):
 
         if self.containerSplitter.sizes()[0] > 50:
             width = 50
-            icon = QIcon("icons/chevron-right.svg")
+            icon = QIcon("icons/double-chevron-right.svg")
             activeButtonCSS = style.icon_button_active
             alignment = Qt.AlignmentFlag.AlignCenter
             mgn = 0
@@ -181,7 +181,7 @@ class MyWindow(QMainWindow):
 
         else:
             width = self.sidebar_width
-            icon = QIcon("icons/chevron-left.svg")
+            icon = QIcon("icons/double-chevron-left.svg")
             activeButtonCSS = style.text_button_active
             alignment = Qt.AlignmentFlag.AlignLeft
             mgn = 10
@@ -542,7 +542,7 @@ class MyWindow(QMainWindow):
         self.menuComboBox.setCurrentIndex(-1)
         self.menuComboBox.currentIndexChanged.connect(self.menuComboBoxChanged)
 
-    def populateQuickFilters(self, menuSelection):
+    def populateQuickFilters(self):
         self.quickFilterLabel.setText("Quick Slicers:")  
         self.quickFilterLabel.adjustSize()  
 
@@ -643,23 +643,74 @@ class MyWindow(QMainWindow):
 
 
     def quickFilterSettingsClicked(self):
+        def changePosition(direction):
+            selected = selectedList.selectionModel().selectedRows()
+            if not selected:
+                print("No item selected!")
+                return
+
+            selected_row = selected[0].row()
+            destination = selected_row  # Default value
+
+            if direction == "top":
+                destination = 0
+            elif direction == "up" and selected_row > 0:
+                destination = selected_row - 1
+            elif direction == "down" and selected_row < selectedModel.rowCount() - 1:
+                destination = selected_row + 1
+            elif direction == "bottom":
+                destination = selectedModel.rowCount() - 1
+
+            print(f"Direction: {direction}, Selected Row: {selected_row}, Destination: {destination}")
+
+            if destination != selected_row:  # Check if there's any change
+                # Get data
+                item = selectedModel.takeItem(selected_row)
+
+                # Insert at new position
+                selectedModel.insertRow(destination, item)
+
+                # Set this item as the current selection
+                index = selectedModel.indexFromItem(item)
+                selectedList.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Current)
+
+
+        def positionTop():
+            changePosition("top")
+
+        def positionUp():
+            changePosition("up")
+
+        def positionDown():
+            changePosition("down")
+
+        def positionBottom():
+            changePosition("bottom")
+
+
         def addButtonClicked():
             selected = allFieldList.selectedIndexes()
-            indeces = allFieldList.selectionModel().selectedRows()
 
-            for item, index in zip(selected, indeces):
-                item = QStandardItem(item.data())
-                selectedModel.appendRow(item)
-                allModel.removeRow(index.row())
+            if selected != []:
+                selectedModel.appendRow(QStandardItem(selected[0].data()))
+                allModel.removeRow(allFieldList.selectionModel().selectedRows()[0].row())
+                removeButton.setEnabled(True)
+                removeAllButton.setEnabled(True)
 
+                if selectedModel.rowCount() == 5:
+                    addButton.setEnabled(False)
+                
         def removeButtonClicked():
             selected = selectedList.selectedIndexes()
-            indecies = selectedList.selectionModel().selectedRows()
 
-            for item, index in zip(selected, indecies):
-                item = QStandardItem(item.data())
-                allModel.appendRow(item)
-                selectedModel.removeRow(index.row())
+            if selected != []:
+                allModel.appendRow(QStandardItem(selected[0].data()))
+                selectedModel.removeRow(selectedList.selectionModel().selectedRows()[0].row())
+                addButton.setEnabled(True)
+
+                if selectedModel.rowCount() == 0:
+                    removeButton.setEnabled(False)
+                    removeAllButton.setEnabled(False)
 
         def removeAllButtonClicked():
             row_count = selectedModel.rowCount()
@@ -667,13 +718,28 @@ class MyWindow(QMainWindow):
                 item = selectedModel.item(0)  # Always get the first item since the list will reduce in size with each iteration
                 allModel.appendRow(QStandardItem(item.text()))
                 selectedModel.removeRow(0)  
-  
+
+            addButton.setEnabled(True)
+            removeButton.setEnabled(False)
+            removeAllButton.setEnabled(False)
+
 
         popup = QMessageBox(self)
         popup.setWindowTitle("Modify Quick Slicers")
+        popup.setStandardButtons(QMessageBox.StandardButton.Apply | QMessageBox.StandardButton.Cancel)
+        popup.setDefaultButton(QMessageBox.StandardButton.Cancel)
 
         mainFrame = QFrame(popup)
+        pageLayout = QVBoxLayout()
+        headerLayout = QVBoxLayout()
+        pageLayout.addLayout(headerLayout)
         mainLayout = QHBoxLayout()
+        pageLayout.addLayout(mainLayout)
+
+        popupLabel = QLabel(mainFrame)
+        popupLabel.setText("Select (5) Quick Slicer fields to display in the sidebar.")
+        headerLayout.addWidget(popupLabel)
+        headerLayout.addSpacing(10)
 
         allFieldList = QListView(mainFrame)
         mainLayout.addWidget(allFieldList)
@@ -683,17 +749,25 @@ class MyWindow(QMainWindow):
         controlLayout.setContentsMargins(0, 0, 0, 0)
         controlLayout.setSpacing(0)
 
-        addButton = QPushButton("Add", controlFrame)
+        controlLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        addButton = QPushButton(controlFrame)
+        addButton.setIcon(QIcon("icons/chevron-right.svg"))
         addButton.clicked.connect(addButtonClicked)
+        addButton.setEnabled(False)
         controlLayout.addWidget(addButton)
 
-        removeButton = QPushButton("Remove", controlFrame)
+        removeButton = QPushButton(controlFrame)
+        removeButton.setIcon(QIcon("icons/chevron-left.svg"))
         removeButton.clicked.connect(removeButtonClicked)
         controlLayout.addWidget(removeButton)
 
-        removeAllButton = QPushButton("Remove All", controlFrame)
+        removeAllButton = QPushButton(controlFrame)
+        removeAllButton.setIcon(QIcon("icons/double-chevron-left-alt.svg"))
         removeAllButton.clicked.connect(removeAllButtonClicked)
         controlLayout.addWidget(removeAllButton)
+
+        controlLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         controlFrame.setLayout(controlLayout)
         mainLayout.addWidget(controlFrame)
@@ -701,7 +775,42 @@ class MyWindow(QMainWindow):
         selectedList = QListView(mainFrame)
         mainLayout.addWidget(selectedList)
 
-        mainFrame.setLayout(mainLayout)
+        positionFrame = QFrame(mainFrame)
+        positionLayout = QVBoxLayout(positionFrame)
+        positionLayout.setContentsMargins(0, 0, 0, 0)
+        positionLayout.setSpacing(0)
+
+        positionLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        positionTopButton = QPushButton(positionFrame)
+        positionTopButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionTopButton.clicked.connect(positionTop)
+        positionLayout.addWidget(positionTopButton)
+
+        positionUpButton = QPushButton(positionFrame)
+        positionUpButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionUpButton.clicked.connect(positionUp)
+        positionLayout.addWidget(positionUpButton)
+
+        positionLayout.addSpacing(10)
+
+        positionDownButton = QPushButton(positionFrame)
+        positionDownButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionDownButton.clicked.connect(positionDown)
+        positionLayout.addWidget(positionDownButton)
+
+        positionBottomButton = QPushButton(positionFrame)
+        positionBottomButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionBottomButton.clicked.connect(positionBottom)
+        positionLayout.addWidget(positionBottomButton)
+
+        positionLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+    
+        mainLayout.addWidget(positionFrame)
+
+        controlLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        mainFrame.setLayout(pageLayout)
         popup.layout().addWidget(mainFrame, 0, 0, 1, popup.layout().columnCount())
 
         fields = MyWindow.data.columns.tolist()
@@ -722,13 +831,21 @@ class MyWindow(QMainWindow):
                 allModel.appendRow(item)
 
 
-        height = len(fields) * 14
-        allFieldList.setFixedHeight(height)
-        allFieldList.setFixedWidth(200)
-        selectedList.setFixedHeight(height)
-        selectedList.setFixedWidth(200)
+        allFieldList.setFixedSize(200, 300)
+        selectedList.setFixedSize(200, 300)
 
-        popup.exec()
+        if popup.exec() == QMessageBox.StandardButton.Apply:
+
+            fields = [selectedModel.item(row).text() for row in range(selectedModel.rowCount())]
+            with open(f"quick_slicers/{self.activeTable}.json", "r") as f:
+                quick_slicers = json.load(f)
+
+            quick_slicers['slicers'] = fields
+
+            with open(f"quick_slicers/{self.activeTable}.json", "w") as f:
+                json.dump(quick_slicers, f)
+
+            self.populateQuickFilters()
 
         
 
@@ -784,7 +901,7 @@ class MyWindow(QMainWindow):
             self.populateTable(MyWindow.data)
             self.pageScrollArea.show()
 
-            self.populateQuickFilters(menuSelection)
+            self.populateQuickFilters()
             self.quickFilterFrame.show()
             self.quickFilterSettings.show()
 

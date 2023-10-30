@@ -1,1 +1,1 @@
-{"slicers":["ASSOCIATE","TEAM_LEAD","SR","PERIOD","WEEK"]}
+{"slicers": ["PRIMARY_KEY", "YEAR", "PERIOD", "WEEK", "ASSOCIATE"]}
