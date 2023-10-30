@@ -643,49 +643,53 @@ class MyWindow(QMainWindow):
 
 
     def quickFilterSettingsClicked(self):
-        def changePosition(direction):
-            selected = selectedList.selectionModel().selectedRows()
-            if not selected:
-                print("No item selected!")
-                return
-
-            selected_row = selected[0].row()
-            destination = selected_row  # Default value
-
-            if direction == "top":
-                destination = 0
-            elif direction == "up" and selected_row > 0:
-                destination = selected_row - 1
-            elif direction == "down" and selected_row < selectedModel.rowCount() - 1:
-                destination = selected_row + 1
-            elif direction == "bottom":
-                destination = selectedModel.rowCount() - 1
-
-            print(f"Direction: {direction}, Selected Row: {selected_row}, Destination: {destination}")
-
-            if destination != selected_row:  # Check if there's any change
-                # Get data
-                item = selectedModel.takeItem(selected_row)
-
-                # Insert at new position
-                selectedModel.insertRow(destination, item)
-
-                # Set this item as the current selection
-                index = selectedModel.indexFromItem(item)
-                selectedList.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Current)
-
-
         def positionTop():
-            changePosition("top")
+            selected = selectedList.selectionModel().selectedRows()
+            if selected:
+                selected_row = selected[0].row()
+
+                if selected_row > 0:
+                    item = selectedModel.takeItem(selected_row)  # Remove the item from the source position
+                    selectedModel.insertRow(0, item)  # Insert the item at the destination
+                    selectedModel.removeRow(selected_row + 1)
+                    index = selectedModel.indexFromItem(item)
+                    selectedList.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
 
         def positionUp():
-            changePosition("up")
+            selected = selectedList.selectionModel().selectedRows()
+            if selected:
+                selected_row = selected[0].row()
+
+                if selected_row > 0:
+                    item = selectedModel.takeItem(selected_row)  # Remove the item from the source position
+                    selectedModel.insertRow(selected_row - 1, item)  # Insert the item at the destination
+                    selectedModel.removeRow(selected_row + 1)
+                    index = selectedModel.indexFromItem(item)
+                    selectedList.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
 
         def positionDown():
-            changePosition("down")
+            selected = selectedList.selectionModel().selectedRows()
+            if selected:
+                selected_row = selected[0].row()
+
+                if selected_row + 1 < selectedModel.rowCount():
+                    item = selectedModel.takeItem(selected_row)  # Remove the item from the source position
+                    selectedModel.insertRow(selected_row + 2, item)  # Insert the item at the destination
+                    selectedModel.removeRow(selected_row)
+                    index = selectedModel.indexFromItem(item)
+                    selectedList.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
 
         def positionBottom():
-            changePosition("bottom")
+            selected = selectedList.selectionModel().selectedRows()
+            if selected:
+                selected_row = selected[0].row()
+
+                if selected_row < selectedModel.rowCount():
+                    item = selectedModel.takeItem(selected_row)  # Remove the item from the source position
+                    selectedModel.appendRow(item)  # Insert the item at the destination
+                    selectedModel.removeRow(selected_row)
+                    index = selectedModel.indexFromItem(item)
+                    selectedList.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
 
 
         def addButtonClicked():
@@ -783,7 +787,7 @@ class MyWindow(QMainWindow):
         positionLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         positionTopButton = QPushButton(positionFrame)
-        positionTopButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionTopButton.setIcon(QIcon("icons/double-chevron-up.svg"))
         positionTopButton.clicked.connect(positionTop)
         positionLayout.addWidget(positionTopButton)
 
@@ -795,20 +799,18 @@ class MyWindow(QMainWindow):
         positionLayout.addSpacing(10)
 
         positionDownButton = QPushButton(positionFrame)
-        positionDownButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionDownButton.setIcon(QIcon("icons/chevron-down.svg"))
         positionDownButton.clicked.connect(positionDown)
         positionLayout.addWidget(positionDownButton)
 
         positionBottomButton = QPushButton(positionFrame)
-        positionBottomButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionBottomButton.setIcon(QIcon("icons/double-chevron-down.svg"))
         positionBottomButton.clicked.connect(positionBottom)
         positionLayout.addWidget(positionBottomButton)
 
         positionLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
     
         mainLayout.addWidget(positionFrame)
-
-        controlLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         mainFrame.setLayout(pageLayout)
         popup.layout().addWidget(mainFrame, 0, 0, 1, popup.layout().columnCount())
