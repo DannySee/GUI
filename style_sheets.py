@@ -149,6 +149,9 @@ quick_filter = """
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
     }
+    QLineEdit:hover::placeholder {
+        color: #EEEEEE;
+    }
 """
 
 visible_splitter = """

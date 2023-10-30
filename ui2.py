@@ -263,11 +263,11 @@ class MyWindow(QMainWindow):
 
         self.allFilterHeaderLayout = QHBoxLayout()
         self.allFilterHeaderLayout.setContentsMargins(0,0,0,0)
-        self.allFilterHeaderLayout.setSpacing(10)
+        self.allFilterHeaderLayout.setSpacing(4)
         self.allFilterLayout.addLayout(self.allFilterHeaderLayout)
 
         self.allFilterButton = QPushButton()
-        self.allFilterButton.setText("Filters")
+        self.allFilterButton.setText("All Filters")
         self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
         self.allFilterButton.setStyleSheet("""
             QPushButton {
@@ -376,11 +376,7 @@ class MyWindow(QMainWindow):
                 filter.textChanged.connect(self.allFilterchanged)
                 self.filterGrid.addWidget(filter, row, col_idx % 7)
 
-            print("huh?")
-
-
         else:
-            print("oi")
             self.collapseAllFilters()
 
 
@@ -488,6 +484,18 @@ class MyWindow(QMainWindow):
         self.quickFilterLayout.setSpacing(4)
         self.quickFilterLayout.setContentsMargins(0,0,0,0)
 
+        self.quickFilterSettingsLayout = QHBoxLayout()
+        self.quickFilterSettingsLayout.setSpacing(4)
+        self.quickFilterSettingsLayout.setContentsMargins(0,0,0,0)
+        self.quickFilterLayout.addLayout(self.quickFilterSettingsLayout)
+
+        quickFilterSettings = QPushButton(self.quickFilterFrame)
+        quickFilterSettings.setIcon(QIcon("icons/settings.svg"))
+        quickFilterSettings.setStyleSheet(style.ui_button)
+        quickFilterSettings.setToolTip("Quick Slicer Settings")
+        quickFilterSettings.setFixedWidth(30)
+        self.quickFilterSettingsLayout.addWidget(quickFilterSettings)
+
         self.menuLine = QFrame(self.quickFilterFrame)
         self.menuLine.setFrameShape(QFrame.Shape.HLine)
         self.menuLine.setFixedHeight(1)
@@ -534,7 +542,7 @@ class MyWindow(QMainWindow):
         self.menuComboBox.currentIndexChanged.connect(self.menuComboBoxChanged)
 
     def populateQuickFilters(self, menuSelection):
-        self.quickFilterLabel.setText("Slicers:")  
+        self.quickFilterLabel.setText("Quick Slicers:")  
         self.quickFilterLabel.adjustSize()      
         filters = filterMap[menuSelection]
 
