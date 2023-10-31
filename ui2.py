@@ -733,7 +733,21 @@ class MyWindow(QMainWindow):
         popup.setStandardButtons(QMessageBox.StandardButton.Apply | QMessageBox.StandardButton.Cancel)
         popup.setDefaultButton(QMessageBox.StandardButton.Cancel)
 
+        popup.setStyleSheet("""
+            QMessageBox {   
+                background-color: #2f2f2f;
+                color: #EEEEEE;
+                border:1px solid #3c3c3c;
+            }
+        """)
+
         mainFrame = QFrame(popup)
+        mainFrame.setStyleSheet("""
+            QFrame {   
+                background-color: #2f2f2f;
+                color: #EEEEEE;
+            }
+        """)
         pageLayout = QVBoxLayout()
         headerLayout = QVBoxLayout()
         pageLayout.addLayout(headerLayout)
@@ -746,28 +760,61 @@ class MyWindow(QMainWindow):
         headerLayout.addSpacing(10)
 
         allFieldList = QListView(mainFrame)
+        allFieldList.setStyleSheet("""
+            QListView {
+                background-color: #1f1f1f;
+                color: #EEEEEE;
+                border-radius: 10px;
+                border:1px solid #3c3c3c;
+                padding: 5px;                                   
+            }
+        """)
         mainLayout.addWidget(allFieldList)
 
         controlFrame = QFrame(mainFrame)
         controlLayout = QVBoxLayout(controlFrame)
         controlLayout.setContentsMargins(0, 0, 0, 0)
-        controlLayout.setSpacing(0)
+        controlLayout.setSpacing(5)
 
         controlLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         addButton = QPushButton(controlFrame)
         addButton.setIcon(QIcon("icons/chevron-right.svg"))
+        addButton.setStyleSheet("""
+            QPushButton {
+                background-color: #1f1f1f;
+                color: #EEEEEE;
+                border-radius: 10px;
+                padding: 5px;
+            }
+        """)
         addButton.clicked.connect(addButtonClicked)
         addButton.setEnabled(False)
         controlLayout.addWidget(addButton)
 
         removeButton = QPushButton(controlFrame)
         removeButton.setIcon(QIcon("icons/chevron-left.svg"))
+        removeButton.setStyleSheet("""
+            QPushButton {
+                background-color: #1f1f1f;
+                color: #EEEEEE;
+                border-radius: 10px;
+                padding: 5px;
+            }
+        """)
         removeButton.clicked.connect(removeButtonClicked)
         controlLayout.addWidget(removeButton)
 
         removeAllButton = QPushButton(controlFrame)
         removeAllButton.setIcon(QIcon("icons/double-chevron-left-alt.svg"))
+        removeAllButton.setStyleSheet("""
+            QPushButton {
+                background-color: #1f1f1f;
+                color: #EEEEEE;
+                border-radius: 10px;
+                padding: 5px;
+            }
+        """)
         removeAllButton.clicked.connect(removeAllButtonClicked)
         controlLayout.addWidget(removeAllButton)
 
@@ -777,6 +824,15 @@ class MyWindow(QMainWindow):
         mainLayout.addWidget(controlFrame)
 
         selectedList = QListView(mainFrame)
+        selectedList.setStyleSheet("""
+            QListView {
+                background-color: #1f1f1f;
+                color: #EEEEEE;
+                border-radius: 10px;
+                border:1px solid #3c3c3c;
+                padding: 5px;
+            }
+        """)
         mainLayout.addWidget(selectedList)
 
         positionFrame = QFrame(mainFrame)
