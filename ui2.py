@@ -1,9 +1,10 @@
 import sys
 import data_pull as db
-import style_sheets as style
+import ui_elements.style_sheets as style
 import pandas as pd
 import json
-from sidebar_maps import button_map as naviButtonMap, filter_map as filterMap
+from ui_elements.sidebar_buttons import map as naviButtonMap
+from ui_elements.sidebar_combobox import map as menuBoxMap
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QSize, pyqtSignal, QModelIndex, QItemSelectionModel
 from PyQt6.QtGui import QIcon, QMouseEvent, QPalette, QColor, QStandardItemModel, QStandardItem
@@ -163,7 +164,7 @@ class MyWindow(QMainWindow):
         self.resizeLayout.addSpacerItem(QSpacerItem(25,25, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
         self.collapseButton = QPushButton(self.resizeFrame)
-        self.collapseButton.setIcon(QIcon("icons/chevron-left.svg"))
+        self.collapseButton.setIcon(QIcon("ui_elements/icons/double-chevron-left.svg"))
         self.collapseButton.setFixedWidth(25)
         self.collapseButton.setStyleSheet(style.ui_button)
         self.collapseButton.clicked.connect(self.resizeSidebar)
@@ -173,7 +174,7 @@ class MyWindow(QMainWindow):
 
         if self.containerSplitter.sizes()[0] > 50:
             width = 50
-            icon = QIcon("icons/double-chevron-right.svg")
+            icon = QIcon("ui_elements/icons/double-chevron-right.svg")
             activeButtonCSS = style.icon_button_active
             alignment = Qt.AlignmentFlag.AlignCenter
             mgn = 0
@@ -181,7 +182,7 @@ class MyWindow(QMainWindow):
 
         else:
             width = self.sidebar_width
-            icon = QIcon("icons/double-chevron-left.svg")
+            icon = QIcon("ui_elements/icons/double-chevron-left.svg")
             activeButtonCSS = style.text_button_active
             alignment = Qt.AlignmentFlag.AlignLeft
             mgn = 10
@@ -247,8 +248,14 @@ class MyWindow(QMainWindow):
         self.pageLabel.setStyleSheet(style.page_label)
         self.pageLayout.addWidget(self.pageLabel)
 
+        self.pageLayout.addSpacing(10)
+
+        self.pageSubLabel = QLabel(self.pageScrollWidget)
+        self.pageSubLabel.setText("Welcome to Commercial Services Hive")
+        self.pageSubLabel.setStyleSheet(style.page_sub_label)
+        self.pageLayout.addWidget(self.pageSubLabel)
+
         self.allFilterFrame = QFrame(self.pageScrollWidget)
-        #self.allFilterFrame.setMinimumHeight(40)
         self.allFilterFrame.setStyleSheet("""
             QFrame {
                 background-color: #1f1f1f;
@@ -270,7 +277,7 @@ class MyWindow(QMainWindow):
 
         self.allFilterButton = QPushButton()
         self.allFilterButton.setText("All Filters")
-        self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
+        self.allFilterButton.setIcon(QIcon("ui_elements/icons/chevron-down.svg"))
         self.allFilterButton.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -279,11 +286,10 @@ class MyWindow(QMainWindow):
                 font-family: "Microsoft Sans Serif";
                 font-size: 14px;
                 text-align: left;  
-                padding: 10px;
+                padding: 10;
                 qproperty-layoutDirection: RightToLeft;
                 outline: 0;
                 border-radius: 10px;
-                font-style: italic;
             }
             QPushButton:hover {
                 background-color: #2F2F2F;
@@ -295,7 +301,7 @@ class MyWindow(QMainWindow):
 
         self.clearAllFiltersButton = QPushButton(self.allFilterFrame)
         self.clearAllFiltersButton.setText("Clear Filters")
-        self.clearAllFiltersButton.setIcon(QIcon("icons/clear-filter.svg"))
+        self.clearAllFiltersButton.setIcon(QIcon("ui_elements/icons/clear-filter.svg"))
         self.clearAllFiltersButton.clicked.connect(self.clearAllFilters)
         self.clearAllFiltersButton.setMaximumWidth(self.clearAllFiltersButton.sizeHint().width() + 25)
         self.clearAllFiltersButton.setStyleSheet("""
@@ -318,7 +324,7 @@ class MyWindow(QMainWindow):
         """)
         self.clearAllFiltersButton.hide()
         self.allFilterHeaderLayout.addWidget(self.clearAllFiltersButton)
-
+        self.resetAllFilters()
 
         self.table = QTableView(self.pageScrollWidget)
         self.tableDelegate = self.CustomDelegate(self.table)
@@ -332,6 +338,12 @@ class MyWindow(QMainWindow):
         self.table.setMinimumHeight(300)
         self.pageLayout.addWidget(self.table)
 
+        self.save_button = QPushButton(self.pageScrollWidget)
+        self.save_button.setText("Save Changes") 
+        self.save_button.setStyleSheet(style.icon_button_inactive)
+        self.save_button.setFixedWidth(120)
+        self.pageLayout.addWidget(self.save_button)
+
         self.pageUtility = QFrame(self.pageScrollWidget)
         self.pageUtility.setStyleSheet("""
             QFrame {
@@ -343,18 +355,18 @@ class MyWindow(QMainWindow):
         self.pageUtility.setFixedHeight(100)
         self.pageLayout.addWidget(self.pageUtility)
 
-        self.resetAllFilters()
 
 
     def resizeScrollArea(self):
         size = self.pageLabel.height() + self.allFilterFrame.height() + self.tableSplitter.sizes()[0] + self.tableSplitter.sizes()[1] + 50
         self.pageScrollWidget.setMinimumHeight(size)
-   
+
+
 
     def expandAllFilters(self):
 
         if self.allFilterFrame.findChildren(QLineEdit) == []:
-            self.allFilterButton.setIcon(QIcon("icons/chevron-up.svg"))
+            self.allFilterButton.setIcon(QIcon("ui_elements/icons/chevron-up.svg"))
 
             self.filterGrid = QGridLayout()
             self.filterGrid.setContentsMargins(10,10,10,10)
@@ -383,7 +395,7 @@ class MyWindow(QMainWindow):
 
 
     def collapseAllFilters(self):
-        self.allFilterButton.setIcon(QIcon("icons/chevron-down.svg"))
+        self.allFilterButton.setIcon(QIcon("ui_elements/icons/chevron-down.svg"))
         
         for child in self.allFilterFrame.findChildren(QLineEdit):
             child.deleteLater()
@@ -430,20 +442,17 @@ class MyWindow(QMainWindow):
             self.quickFilterSettings.hide()
             self.quickFilterFrame.hide()
 
-
             self.activeNaviButton = self.sender()
             activeObject = self.activeNaviButton.objectName()
-            activeLabel = naviButtonMap[self.activeNaviButton.objectName()]['text']
             activeText = self.activeNaviButton.text()
 
-            self.pageLabel.setText(activeLabel)
+            self.pageLabel.setText(naviButtonMap[self.activeNaviButton.objectName()]['page_label'])
             self.pageLabel.adjustSize()
 
-            self.menuLabel.setText(activeLabel)
+            self.menuLabel.setText(naviButtonMap[self.activeNaviButton.objectName()]['text'])
             self.menuLabel.adjustSize()
 
-            self.populateSidebarMenu(naviButtonMap[activeObject]["tables"].keys())
-            self.tableRef = naviButtonMap[activeObject]["tables"]
+            self.populateSidebarMenu(naviButtonMap[activeObject]["options"])
 
             inactiveCSS = style.icon_button_inactive if activeText == "" else style.text_button_inactive 
             activeCSS = style.icon_button_active if activeText == "" else style.text_button_active
@@ -507,7 +516,7 @@ class MyWindow(QMainWindow):
         self.quickFilterHeaderLayout.addWidget(self.quickFilterLabel)   
 
         self.quickFilterClearButton = QPushButton(self.quickFilterHeader)
-        self.quickFilterClearButton.setIcon(QIcon("icons/clear-filter.svg"))
+        self.quickFilterClearButton.setIcon(QIcon("ui_elements/icons/clear-filter.svg"))
         self.quickFilterClearButton.setStyleSheet(style.control_button)
         self.quickFilterClearButton.setFixedWidth(self.quickFilterClearButton.height())
         self.quickFilterClearButton.setToolTip("Clear Filters")
@@ -518,7 +527,7 @@ class MyWindow(QMainWindow):
         self.menuLayout.addSpacerItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         self.quickFilterSettings = QPushButton(self.menuFrame)
-        self.quickFilterSettings.setIcon(QIcon("icons/settings.svg"))
+        self.quickFilterSettings.setIcon(QIcon("ui_elements/icons/settings.svg"))
         self.quickFilterSettings.setStyleSheet(style.ui_button)
         self.quickFilterSettings.setToolTip("Quick Slicer Settings")
         self.quickFilterSettings.setFixedWidth(30)
@@ -546,7 +555,7 @@ class MyWindow(QMainWindow):
         self.quickFilterLabel.setText("Quick Slicers:")  
         self.quickFilterLabel.adjustSize()  
 
-        with open(f"quick_slicers/{self.activeTable}.json", "r") as f:
+        with open(f"default_config/table_map/{self.activeTable}.json", "r") as f:
             filters = json.load(f)
 
         for child in self.quickFilterFrame.findChildren(QLineEdit):
@@ -779,7 +788,7 @@ class MyWindow(QMainWindow):
         controlLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         addButton = QPushButton(controlFrame)
-        addButton.setIcon(QIcon("icons/chevron-right.svg"))
+        addButton.setIcon(QIcon("ui_elements/icons/chevron-right.svg"))
         addButton.setStyleSheet("""
             QPushButton {
                 background-color: #1f1f1f;
@@ -793,7 +802,7 @@ class MyWindow(QMainWindow):
         controlLayout.addWidget(addButton)
 
         removeButton = QPushButton(controlFrame)
-        removeButton.setIcon(QIcon("icons/chevron-left.svg"))
+        removeButton.setIcon(QIcon("ui_elements/icons/chevron-left.svg"))
         removeButton.setStyleSheet("""
             QPushButton {
                 background-color: #1f1f1f;
@@ -806,7 +815,7 @@ class MyWindow(QMainWindow):
         controlLayout.addWidget(removeButton)
 
         removeAllButton = QPushButton(controlFrame)
-        removeAllButton.setIcon(QIcon("icons/double-chevron-left-alt.svg"))
+        removeAllButton.setIcon(QIcon("ui_elements/icons/double-chevron-left-alt.svg"))
         removeAllButton.setStyleSheet("""
             QPushButton {
                 background-color: #1f1f1f;
@@ -843,24 +852,24 @@ class MyWindow(QMainWindow):
         positionLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         positionTopButton = QPushButton(positionFrame)
-        positionTopButton.setIcon(QIcon("icons/double-chevron-up.svg"))
+        positionTopButton.setIcon(QIcon("ui_elements/icons/double-chevron-up.svg"))
         positionTopButton.clicked.connect(positionTop)
         positionLayout.addWidget(positionTopButton)
 
         positionUpButton = QPushButton(positionFrame)
-        positionUpButton.setIcon(QIcon("icons/chevron-up.svg"))
+        positionUpButton.setIcon(QIcon("ui_elements/icons/chevron-up.svg"))
         positionUpButton.clicked.connect(positionUp)
         positionLayout.addWidget(positionUpButton)
 
         positionLayout.addSpacing(10)
 
         positionDownButton = QPushButton(positionFrame)
-        positionDownButton.setIcon(QIcon("icons/chevron-down.svg"))
+        positionDownButton.setIcon(QIcon("ui_elements/icons/chevron-down.svg"))
         positionDownButton.clicked.connect(positionDown)
         positionLayout.addWidget(positionDownButton)
 
         positionBottomButton = QPushButton(positionFrame)
-        positionBottomButton.setIcon(QIcon("icons/double-chevron-down.svg"))
+        positionBottomButton.setIcon(QIcon("ui_elements/icons/double-chevron-down.svg"))
         positionBottomButton.clicked.connect(positionBottom)
         positionLayout.addWidget(positionBottomButton)
 
@@ -873,7 +882,7 @@ class MyWindow(QMainWindow):
 
         fields = MyWindow.data.columns.tolist()
 
-        with open(f"quick_slicers/{self.activeTable}.json", "r") as f:
+        with open(f"default_config/table_map/{self.activeTable}.json", "r") as f:
             activeSlicers = json.load(f)
 
         allModel = QStandardItemModel()
@@ -895,12 +904,12 @@ class MyWindow(QMainWindow):
         if popup.exec() == QMessageBox.StandardButton.Apply:
 
             fields = [selectedModel.item(row).text() for row in range(selectedModel.rowCount())]
-            with open(f"quick_slicers/{self.activeTable}.json", "r") as f:
+            with open(f"default_config/table_map/{self.activeTable}.json", "r") as f:
                 quick_slicers = json.load(f)
 
             quick_slicers['slicers'] = fields
 
-            with open(f"quick_slicers/{self.activeTable}.json", "w") as f:
+            with open(f"default_config/table_map/{self.activeTable}.json", "w") as f:
                 json.dump(quick_slicers, f)
 
             self.populateQuickFilters()
@@ -937,7 +946,7 @@ class MyWindow(QMainWindow):
             MyWindow.changes = {}
 
         menuSelection = self.menuComboBox.currentText()
-        self.activeTable = self.tableRef[menuSelection]
+        self.activeTable = menuBoxMap[menuSelection]["table"]
         self.menuComboBox.setStyleSheet(style.active_combobox)
 
         # clear filters
@@ -954,7 +963,7 @@ class MyWindow(QMainWindow):
             MyWindow.data = db.get_cal_programs(self.activeTable)
             self.hideLoadingPage()
 
-            self.pageLabel.setText(menuSelection)
+            self.pageSubLabel.setText(menuBoxMap[menuSelection]["sub_label"])
             self.pageLabel.adjustSize()
             self.populateTable(MyWindow.data)
             self.pageScrollArea.show()

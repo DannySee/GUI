@@ -149,9 +149,6 @@ quick_filter = """
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
     }
-    QLineEdit:hover: {
-        color: #EEEEEE;
-    }
 """
 
 visible_splitter = """
@@ -195,7 +192,6 @@ slicer_label = """
         padding: 20px 0px 10px 0px;
         color: #BDBDBD;
         background-color: transparent;
-        font-style: italic;
     }
 """
 
@@ -206,6 +202,16 @@ page_label = """
         background-color: transparent;
         font-family: "Microsoft Sans Serif";
         font-size: 34px;
+    }
+"""
+
+page_sub_label = """
+    QLabel {
+        color: #BDBDBD;
+        background-color: transparent;
+        font-family: "Microsoft Sans Serif";
+        font-size: 16px;
+        padding: 0 0 5 0;
     }
 """
 
@@ -268,9 +274,9 @@ base_button = """
 """
 
 icon_button_active = base_button.format(alignment="center", color="#EEEEEE", bg_color="#2F2F2F", hover_bg_color="#3F3F3F")
-icon_button_inactive = base_button.format(alignment="center", color="#BDBDBD", bg_color="transparent", hover_bg_color="#2F2F2F")
+icon_button_inactive = base_button.format(alignment="center", color="#BDBDBD", bg_color="#1f1f1f", hover_bg_color="#2F2F2F")
 text_button_active = base_button.format(alignment="left", color="#EEEEEE", bg_color="#2F2F2F", hover_bg_color="#3F3F3F")
-text_button_inactive = base_button.format(alignment="left", color="#BDBDBD", bg_color="transparent", hover_bg_color="#2F2F2F")
+text_button_inactive = base_button.format(alignment="left", color="#BDBDBD", bg_color="#1f1f1f", hover_bg_color="#2F2F2F")
 
 dividing_line = "background-color: #3c3c3c; border: none; padding: 10px;"
 
