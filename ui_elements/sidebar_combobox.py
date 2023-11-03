@@ -16,7 +16,7 @@ map = {
     },
     "Account Assignments": {
         "sub_label": "Deviated Account Assignments",
-        "table": "CAL_Account_Assignments"
+        "table": "cal_account_assignments"
     },
     "REBA Tracker": {
         "sub_label": "REBA Tracker",
@@ -28,19 +28,19 @@ map = {
     },
     "DPM Agreements": {
         "sub_label": "Agreements",
-        "table": "CAL_Programs"
+        "table": "cal_programs"
     },
     "Customer Profile": {
         "sub_label": "Customer Profile",
-        "table": "CAL_Customer_Profile"
+        "table": "cal_customer_profile"
     },
     "Deviation Loads": {
         "sub_label": "Deviation Loads",
-        "table": "CAL_Deviation_Loads"
+        "table": "cal_deviation_loads"
     },
     "Org Chart": {
         "sub_label": "Org Chart",
-        "table": "UL_Org"
+        "table": "ul_org"
     },
     "USDA Agreements": {
         "sub_label": "Agreements",
@@ -52,18 +52,18 @@ map = {
     },
     "Price Rule Approval": {
         "sub_label": "Price Rule Approval Tracker",
-        "table": "PR_Master"
+        "table": "pr_master"
     },
     "Quality: Agreement": {
         "sub_label": "Quality Metrics: Agreement Entry",
-        "table": "Dash_Agreement"
+        "table": "dash_agreement"
     },
     "Quality: Inquiry": {
         "sub_label": "Quality Metrics: Inquiry Timeliness",
-        "table": "Dash_Inquiry"
+        "table": "dash_inquiry"
     },
     "Quality: Price Rule": {
         "sub_label": "Quality Metrics: Price Rule Accuracy",
-        "table": "Dash_PriceRule"
+        "table": "dash_pricerule"
     },
 }

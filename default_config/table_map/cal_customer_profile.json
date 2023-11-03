@@ -1,1 +1,1 @@
-{"slicers":["CUSTOMER","ALT_NAME","T1_USER","T2_USER","T3_USER"]}
+{"slicers": ["CUSTOMER", "ALT_NAME", "PACKET", "MASTER_PRN", "CUST_CONTACT"]}

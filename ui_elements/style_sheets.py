@@ -234,7 +234,7 @@ combobox = """
         border-bottom-right-radius: 4px;
     }}
     QComboBox::down-arrow {{
-        image: url(icons/menu-down.svg);
+        image: url(ui_elements/icons/menu-down.svg);
     }}
     QComboBox:editable {{
         background: #181818;    

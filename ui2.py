@@ -897,7 +897,6 @@ class MyWindow(QMainWindow):
             else:
                 allModel.appendRow(item)
 
-
         allFieldList.setFixedSize(200, 300)
         selectedList.setFixedSize(200, 300)
 
