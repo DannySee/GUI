@@ -221,11 +221,39 @@ class MyWindow(QMainWindow):
 
         self.mainLayout = QVBoxLayout(self.mainPage)
         self.mainLayout.setContentsMargins(0,0,0,0)
+        self.mainLayout.setSpacing(0)
 
-        self.bannerFrame = QFrame(self.mainPage)
-        self.bannerFrame.setFixedHeight(30)
-        self.bannerFrame.setStyleSheet(style.hidden)
-        self.mainLayout.addWidget(self.bannerFrame)
+        self.bannerLayout = QHBoxLayout()
+        self.bannerLayout.setContentsMargins(5,5,5,5)
+        self.bannerLayout.setSpacing(2)
+        self.mainLayout.addLayout(self.bannerLayout)
+
+        self.bannerLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
+
+        self.exportButton = QPushButton(self.mainPage)
+        self.exportButton.setIcon(QIcon("ui_elements/icons/export.svg"))
+        self.exportButton.setIconSize(QSize(20,20))
+        #self.exportButton.clicked.connect(db.save_changes(self.activeTable, MyWindow.changes))
+        self.exportButton.setToolTip("Export Table to Excel")
+        self.exportButton.setStyleSheet(style.banner_button)
+        self.bannerLayout.addWidget(self.exportButton)
+
+        self.importButton = QPushButton(self.mainPage)
+        self.importButton.setIcon(QIcon("ui_elements/icons/import.svg"))
+        self.importButton.setIconSize(QSize(20,20))
+        #self.importButton.clicked.connect(db.save_changes(self.activeTable, MyWindow.changes))
+        self.importButton.setToolTip("Import Table to Excel")
+        self.importButton.setStyleSheet(style.banner_button)
+        self.bannerLayout.addWidget(self.importButton)
+
+        self.saveButton = QPushButton(self.mainPage)
+        self.saveButton.setIcon(QIcon("ui_elements/icons/save.svg"))
+        self.saveButton.setIconSize(QSize(20,20))
+        self.saveButton.clicked.connect(self.saveChanges)
+        self.saveButton.setToolTip("Save Changes")
+        self.saveButton.setStyleSheet(style.banner_button)
+        self.bannerLayout.addWidget(self.saveButton)
+
 
         self.pageScrollArea = QScrollArea(self.mainPage)
         self.pageScrollArea.setStyleSheet(style.hidden)
@@ -242,6 +270,8 @@ class MyWindow(QMainWindow):
         self.pageLayout = QVBoxLayout(self.pageScrollWidget)
         self.pageLayout.setContentsMargins(50,20,50,50)
         self.pageLayout.setSpacing(10)
+
+        self.pageLayout.addSpacing(10)
         
         self.pageLabel = QLabel(self.pageScrollWidget)
         self.pageLabel.setText("Welcome to Commercial Services Hive")
@@ -338,35 +368,42 @@ class MyWindow(QMainWindow):
         self.table.setMinimumHeight(300)
         self.pageLayout.addWidget(self.table)
 
-        self.save_button = QPushButton(self.pageScrollWidget)
-        self.save_button.setText("Save Changes") 
-        self.save_button.setStyleSheet(style.icon_button_inactive)
-        self.save_button.setFixedWidth(120)
-        self.pageLayout.addWidget(self.save_button)
-
-        self.pageUtility = QFrame(self.pageScrollWidget)
-        self.pageUtility.setStyleSheet("""
-            QFrame {
-                background-color: #1f1f1f;
-                border-radius: 10px;
-                border:1px solid #3c3c3c;
-            }                                         
-        """)
-        self.pageUtility.setFixedHeight(100)
-        self.pageLayout.addWidget(self.pageUtility)
 
 
-
-    def resizeScrollArea(self):
-        size = self.pageLabel.height() + self.allFilterFrame.height() + self.tableSplitter.sizes()[0] + self.tableSplitter.sizes()[1] + 50
-        self.pageScrollWidget.setMinimumHeight(size)
-
+        #self.pageUtility = QFrame(self.pageScrollWidget)
+        #self.pageUtility.setStyleSheet("""
+        #    QFrame {
+        #        background-color: #1f1f1f;
+        #        border-radius: 10px;
+        #        border:1px solid #3c3c3c;
+        #    }                                         
+        #""")
+        #self.pageUtility.setFixedHeight(100)
+        #self.pageLayout.addWidget(self.pageUtility)
 
 
     def expandAllFilters(self):
 
         if self.allFilterFrame.findChildren(QLineEdit) == []:
             self.allFilterButton.setIcon(QIcon("ui_elements/icons/chevron-up.svg"))
+            self.allFilterButton.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    border: none;
+                    color: #EEEEEE;
+                    font-family: "Microsoft Sans Serif";
+                    font-size: 14px;
+                    text-align: left;  
+                    padding: 10;
+                    qproperty-layoutDirection: RightToLeft;
+                    outline: 0;
+                    border-radius: 10px;
+                }
+                QPushButton:hover {
+                    background-color: #2F2F2F;
+                    color: #EEEEEE;
+                }
+            """)
 
             self.filterGrid = QGridLayout()
             self.filterGrid.setContentsMargins(10,10,10,10)
@@ -396,6 +433,24 @@ class MyWindow(QMainWindow):
 
     def collapseAllFilters(self):
         self.allFilterButton.setIcon(QIcon("ui_elements/icons/chevron-down.svg"))
+        self.allFilterButton.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    border: none;
+                    color: #BDBDBD;
+                    font-family: "Microsoft Sans Serif";
+                    font-size: 14px;
+                    text-align: left;  
+                    padding: 10;
+                    qproperty-layoutDirection: RightToLeft;
+                    outline: 0;
+                    border-radius: 10px;
+                }
+                QPushButton:hover {
+                    background-color: #2F2F2F;
+                    color: #EEEEEE;
+                }
+            """)
         
         for child in self.allFilterFrame.findChildren(QLineEdit):
             child.deleteLater()
@@ -441,6 +496,7 @@ class MyWindow(QMainWindow):
             self.pageScrollArea.hide()
             self.quickFilterSettings.hide()
             self.quickFilterFrame.hide()
+            self.quickFilterClearButton.hide()
 
             self.activeNaviButton = self.sender()
             activeObject = self.activeNaviButton.objectName()
@@ -461,6 +517,12 @@ class MyWindow(QMainWindow):
                 button.setStyleSheet(inactiveCSS)
 
             self.activeNaviButton.setStyleSheet(activeCSS)
+
+    def saveChanges(self):
+
+        if self.activeTable is not None:
+            db.save_changes(self.activeTable, MyWindow.changes)
+            MyWindow.changes = {}
 
     def buildSidebarMenu(self):
         self.menuScrollArea = QScrollArea(self.sidebarSplitter)
@@ -588,7 +650,7 @@ class MyWindow(QMainWindow):
     def populateTable(self, df):
         model = self.TableModel(df)
         self.table.setModel(model)
-
+        self.vertical_resize_table_to_content()
 
 
     def hideClearFilterButton(self):
@@ -626,6 +688,7 @@ class MyWindow(QMainWindow):
             
         else:
             self.appliedFilters = df
+            self.vertical_resize_table_to_content()
             
             if self.clearAllFiltersButton.isHidden():
                 self.clearAllFiltersButton.show()
@@ -649,6 +712,44 @@ class MyWindow(QMainWindow):
             self.populateTable(df)
         else:
             self.quickFilterClearButton.show()
+            self.vertical_resize_table_to_content()
+
+
+    def vertical_resize_table_to_content(self):
+        suggestedSize = self.table.verticalHeader().sectionSize(0) * self.table.verticalHeader().count() + self.table.horizontalHeader().height() + self.table.horizontalScrollBar().height() + 5
+
+        if self.pageLayout.itemAt(self.pageLayout.count()-1).spacerItem():
+            expanded = True
+            availableSize = self.table.height()
+            
+        else:
+            expanded = False
+            availableSize = self.pageScrollWidget.height() - self.pageLabel.height() - self.pageSubLabel.height() - self.allFilterFrame.height() + 10
+
+        if suggestedSize > availableSize: 
+            if expanded:
+                self.pageLayout.removeItem(self.pageLayout.itemAt(self.pageLayout.count()-1))
+                self.table.setMinimumHeight(300)
+                self.table.setMaximumHeight(100000)
+        else:
+
+            if not expanded:
+                self.pageLayout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+            self.table.setMinimumHeight(suggestedSize)
+            self.table.setMaximumHeight(suggestedSize)
+
+        
+
+    def adjust_column_widths(self):
+
+        if self.table.horizontalHeader().count() * 100 < self.table.width():
+            self.table.resizeColumnsToContents()
+
+        else:
+            for i in range(self.table.horizontalHeader().count()):
+                self.table.setColumnWidth(i, 100)
+
 
 
     def quickFilterSettingsClicked(self):
@@ -940,7 +1041,7 @@ class MyWindow(QMainWindow):
             popup.setDefaultButton(QMessageBox.StandardButton.Save)
 
             if popup.exec() == QMessageBox.StandardButton.Save:
-                db.save_changes(self.activeTable, MyWindow.changes)
+                self.saveChanges()
             
             MyWindow.changes = {}
 
@@ -955,7 +1056,6 @@ class MyWindow(QMainWindow):
             self.collapseAllFilters()
 
         self.resetAllFilters()
-        
 
         if self.activeTable is not None:
             self.showLoadingPage()
@@ -966,6 +1066,8 @@ class MyWindow(QMainWindow):
             self.pageLabel.adjustSize()
             self.populateTable(MyWindow.data)
             self.pageScrollArea.show()
+            self.adjust_column_widths()
+
 
             self.populateQuickFilters()
             self.quickFilterFrame.show()

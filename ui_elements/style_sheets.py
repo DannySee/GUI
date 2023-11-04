@@ -212,6 +212,7 @@ page_sub_label = """
         font-family: "Microsoft Sans Serif";
         font-size: 16px;
         padding: 0 0 5 0;
+        font-style: italic;
     }
 """
 
@@ -271,6 +272,23 @@ base_button = """
         background-color: {hover_bg_color};
         color: #FFFFFF;
     }}
+"""
+
+
+banner_button = """
+    QPushButton {
+        text-align: center;
+        border: none;
+        padding: 2px;
+        border-radius: 5px;
+        background-color: transparent;
+        font-family: "Microsoft Sans Serif";
+        font-size: 14px;
+        outline: 0;
+    }
+    QPushButton:hover {
+        background-color: #2F2F2F;
+    }
 """
 
 icon_button_active = base_button.format(alignment="center", color="#EEEEEE", bg_color="#2F2F2F", hover_bg_color="#3F3F3F")
