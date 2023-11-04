@@ -3,10 +3,12 @@ import data_pull as db
 import ui_elements.style_sheets as style
 import pandas as pd
 import json
+import time
+import asyncio
 from ui_elements.sidebar_buttons import map as naviButtonMap
 from ui_elements.sidebar_combobox import map as menuBoxMap
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, QSize, pyqtSignal, QModelIndex, QItemSelectionModel
+from PyQt6.QtCore import Qt, QSize, pyqtSignal, QModelIndex, QItemSelectionModel, QTimer
 from PyQt6.QtGui import QIcon, QMouseEvent, QPalette, QColor, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout, 
                              QLabel, QLineEdit, QMainWindow, QPushButton, QScrollArea, 
@@ -230,6 +232,18 @@ class MyWindow(QMainWindow):
 
         self.bannerLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
+        self.bannerLabel = QLabel(self.mainPage)
+        self.bannerLabel.setStyleSheet("""
+            QLabel {
+                color: #EEEEEE;  
+                font-family: "Microsoft Sans Serif";
+                font-size: 12px;
+            }
+        """)
+        self.bannerLayout.addWidget(self.bannerLabel)
+
+        self.bannerLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
+
         self.exportButton = QPushButton(self.mainPage)
         self.exportButton.setIcon(QIcon("ui_elements/icons/export.svg"))
         self.exportButton.setIconSize(QSize(20,20))
@@ -249,7 +263,7 @@ class MyWindow(QMainWindow):
         self.saveButton = QPushButton(self.mainPage)
         self.saveButton.setIcon(QIcon("ui_elements/icons/save.svg"))
         self.saveButton.setIconSize(QSize(20,20))
-        self.saveButton.clicked.connect(self.saveChanges)
+        self.saveButton.clicked.connect(self.initiateSave)
         self.saveButton.setToolTip("Save Changes")
         self.saveButton.setStyleSheet(style.banner_button)
         self.bannerLayout.addWidget(self.saveButton)
@@ -518,11 +532,34 @@ class MyWindow(QMainWindow):
 
             self.activeNaviButton.setStyleSheet(activeCSS)
 
-    def saveChanges(self):
+    def initiateSave(self):
+        # This method starts the saving process and updates the UI
+        self.saveMessage()
+        QTimer.singleShot(0, self.saveChanges)  # This will call saveChanges() almost immediately but still allow the UI to update
 
-        if self.activeTable is not None:
+    def saveMessage(self):
+        # This method updates the UI to show the saving message
+        self.bannerLabel.setText("Saving Changes...")
+        self.bannerLabel.adjustSize()
+
+    def saveChanges(self):
+        # This method performs the actual saving logic
+        if self.activeTable is not None and MyWindow.changes != {}:
             db.save_changes(self.activeTable, MyWindow.changes)
             MyWindow.changes = {}
+        QTimer.singleShot(500, self.finishSaving)  # Call finishSaving() after 1 second to update the message
+
+    def finishSaving(self):
+        # This method updates the UI after saving is done
+        self.bannerLabel.setText("Changes Saved")
+        QTimer.singleShot(1000, self.clearMessage)  # Schedule the clearing of the message after another second
+
+    def clearMessage(self):
+        # This method clears the saving message from the UI
+        self.bannerLabel.setText("")
+
+
+
 
     def buildSidebarMenu(self):
         self.menuScrollArea = QScrollArea(self.sidebarSplitter)
@@ -1041,7 +1078,7 @@ class MyWindow(QMainWindow):
             popup.setDefaultButton(QMessageBox.StandardButton.Save)
 
             if popup.exec() == QMessageBox.StandardButton.Save:
-                self.saveChanges()
+                self.initiateSave()
             
             MyWindow.changes = {}
 
