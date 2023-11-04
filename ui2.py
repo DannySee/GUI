@@ -233,13 +233,17 @@ class MyWindow(QMainWindow):
         self.bannerLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
         self.bannerLabel = QLabel(self.mainPage)
+        self.bannerLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.bannerLabel.setStyleSheet("""
             QLabel {
-                color: #EEEEEE;  
+                background-color: transparent;
+                color: #BDBDBD;
+                border-radius: 8px;
                 font-family: "Microsoft Sans Serif";
                 font-size: 12px;
             }
         """)
+        self.bannerLabel.setFixedWidth(150)
         self.bannerLayout.addWidget(self.bannerLabel)
 
         self.bannerLayout.addSpacerItem(QSpacerItem(10,10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
@@ -534,29 +538,53 @@ class MyWindow(QMainWindow):
 
     def initiateSave(self):
         # This method starts the saving process and updates the UI
-        self.saveMessage()
-        QTimer.singleShot(0, self.saveChanges)  # This will call saveChanges() almost immediately but still allow the UI to update
-
+        if self.activeTable is not None and MyWindow.changes != {}:
+            self.saveMessage()
+            QTimer.singleShot(0, self.saveChanges)  # This will call saveChanges() almost immediately but still allow the UI to update
+        else:
+            self.noChanges()
+            
     def saveMessage(self):
         # This method updates the UI to show the saving message
         self.bannerLabel.setText("Saving Changes...")
-        self.bannerLabel.adjustSize()
 
     def saveChanges(self):
         # This method performs the actual saving logic
-        if self.activeTable is not None and MyWindow.changes != {}:
-            db.save_changes(self.activeTable, MyWindow.changes)
-            MyWindow.changes = {}
+        db.save_changes(self.activeTable, MyWindow.changes)
+        MyWindow.changes = {}
         QTimer.singleShot(500, self.finishSaving)  # Call finishSaving() after 1 second to update the message
 
     def finishSaving(self):
         # This method updates the UI after saving is done
-        self.bannerLabel.setText("Changes Saved")
-        QTimer.singleShot(1000, self.clearMessage)  # Schedule the clearing of the message after another second
+        self.bannerLabel.setText("Changes Saved!")
+        self.bannerLabel.setStyleSheet("""
+            QLabel {
+                background-color: rgba(99,111,100, 0.5);
+                color: #EEEEEE;
+                border-radius: 8px;
+                font-family: "Microsoft Sans Serif";
+                font-size: 12px;
+            }
+        """)
+        QTimer.singleShot(2000, self.clearMessage)  # Schedule the clearing of the message after another second
+
+    def noChanges(self):
+        # This method updates the UI after saving is done
+        self.bannerLabel.setText("No Changes to Save")
+        QTimer.singleShot(1000, self.clearMessage)
 
     def clearMessage(self):
         # This method clears the saving message from the UI
         self.bannerLabel.setText("")
+        self.bannerLabel.setStyleSheet("""
+            QLabel {
+                background-color: transparent;
+                color: #BDBDBD;
+                border-radius: 8px;
+                font-family: "Microsoft Sans Serif";
+                font-size: 12px;
+            }
+        """)
 
 
 
