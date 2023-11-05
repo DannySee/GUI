@@ -168,7 +168,7 @@ class MyWindow(QMainWindow):
         self.collapseButton = QPushButton(self.resizeFrame)
         self.collapseButton.setIcon(QIcon("ui_elements/icons/double-chevron-left.svg"))
         self.collapseButton.setFixedWidth(25)
-        self.collapseButton.setStyleSheet(style.ui_button)
+        self.collapseButton.setStyleSheet(style.discrete_standard)
         self.collapseButton.clicked.connect(self.resizeSidebar)
         self.resizeLayout.addWidget(self.collapseButton)
 
@@ -177,7 +177,7 @@ class MyWindow(QMainWindow):
         if self.containerSplitter.sizes()[0] > 50:
             width = 50
             icon = QIcon("ui_elements/icons/double-chevron-right.svg")
-            activeButtonCSS = style.icon_button_active
+            activeButtonCSS = style.toggle_active
             alignment = Qt.AlignmentFlag.AlignCenter
             mgn = 0
             collapse = True
@@ -185,7 +185,7 @@ class MyWindow(QMainWindow):
         else:
             width = self.sidebar_width
             icon = QIcon("ui_elements/icons/double-chevron-left.svg")
-            activeButtonCSS = style.text_button_active
+            activeButtonCSS = style.toggle_active
             alignment = Qt.AlignmentFlag.AlignLeft
             mgn = 10
             collapse = False
@@ -204,14 +204,14 @@ class MyWindow(QMainWindow):
                 button.setToolTip(button.text())
                 button.setIcon(naviButtonMap[button.objectName()]["icon"])
                 button.setText("")
-                button.setStyleSheet(style.icon_button_inactive)
+                button.setStyleSheet(style.toggle_inactive)
                 button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed) 
 
             else:
                 button.setToolTip("")
                 button.setIcon(QIcon())
                 button.setText(naviButtonMap[button.objectName()]["text"])
-                button.setStyleSheet(style.text_button_inactive)
+                button.setStyleSheet(style.toggle_inactive)
                 button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed) 
 
         if self.menuFrame.isVisible(): self.activeNaviButton.setStyleSheet(activeButtonCSS)
@@ -253,7 +253,7 @@ class MyWindow(QMainWindow):
         self.exportButton.setIconSize(QSize(20,20))
         #self.exportButton.clicked.connect(db.save_changes(self.activeTable, MyWindow.changes))
         self.exportButton.setToolTip("Export Table to Excel")
-        self.exportButton.setStyleSheet(style.banner_button)
+        self.exportButton.setStyleSheet(style.discrete_small)
         self.bannerLayout.addWidget(self.exportButton)
 
         self.importButton = QPushButton(self.mainPage)
@@ -261,7 +261,7 @@ class MyWindow(QMainWindow):
         self.importButton.setIconSize(QSize(20,20))
         #self.importButton.clicked.connect(db.save_changes(self.activeTable, MyWindow.changes))
         self.importButton.setToolTip("Import Table to Excel")
-        self.importButton.setStyleSheet(style.banner_button)
+        self.importButton.setStyleSheet(style.discrete_small)
         self.bannerLayout.addWidget(self.importButton)
 
         self.saveButton = QPushButton(self.mainPage)
@@ -269,7 +269,7 @@ class MyWindow(QMainWindow):
         self.saveButton.setIconSize(QSize(20,20))
         self.saveButton.clicked.connect(self.initiateSave)
         self.saveButton.setToolTip("Save Changes")
-        self.saveButton.setStyleSheet(style.banner_button)
+        self.saveButton.setStyleSheet(style.discrete_small)
         self.bannerLayout.addWidget(self.saveButton)
 
 
@@ -293,7 +293,7 @@ class MyWindow(QMainWindow):
         
         self.pageLabel = QLabel(self.pageScrollWidget)
         self.pageLabel.setText("Welcome to Commercial Services Hive")
-        self.pageLabel.setStyleSheet(style.page_label)
+        self.pageLabel.setStyleSheet(style.header)
         self.pageLayout.addWidget(self.pageLabel)
 
         self.pageLayout.addSpacing(10)
@@ -441,7 +441,7 @@ class MyWindow(QMainWindow):
                 if self.appliedFilters is not None:
                     filter.setText(self.appliedFilterDict[col_name])
 
-                filter.setStyleSheet(style.quick_filter)
+                filter.setStyleSheet(style.input_box)
                 filter.textChanged.connect(self.allFilterchanged)
                 self.filterGrid.addWidget(filter, row, col_idx % 7)
 
@@ -502,7 +502,7 @@ class MyWindow(QMainWindow):
         for button_name, map in naviButtonMap.items():
             naviButton = QPushButton(map["text"], self.naviButtonFrame)
             naviButton.setObjectName(button_name)
-            naviButton.setStyleSheet(style.text_button_inactive)
+            naviButton.setStyleSheet(style.toggle_inactive)
             naviButton.clicked.connect(self.naviButtonClicked)
             self.naviLayout.addWidget(naviButton)
 
@@ -528,8 +528,8 @@ class MyWindow(QMainWindow):
 
             self.populateSidebarMenu(naviButtonMap[activeObject]["options"])
 
-            inactiveCSS = style.icon_button_inactive if activeText == "" else style.text_button_inactive 
-            activeCSS = style.icon_button_active if activeText == "" else style.text_button_active
+            inactiveCSS = style.toggle_inactive if activeText == "" else style.toggle_inactive 
+            activeCSS = style.toggle_active if activeText == "" else style.toggle_active
 
             for button in self.naviButtonFrame.findChildren(QPushButton):
                 button.setStyleSheet(inactiveCSS)
@@ -607,7 +607,7 @@ class MyWindow(QMainWindow):
 
         self.menuLabel = QLabel(self.menuFrame)
         self.menuLabel.setText("")
-        self.menuLabel.setStyleSheet(style.sidebar_label)               
+        self.menuLabel.setStyleSheet(style.menu)               
         self.menuLayout.addWidget(self.menuLabel)
 
         self.menuComboBox = QComboBox(self.menuFrame)
@@ -639,12 +639,12 @@ class MyWindow(QMainWindow):
 
         self.quickFilterLabel = QLabel(self.quickFilterHeader)
         self.quickFilterLabel.setText("")
-        self.quickFilterLabel.setStyleSheet(style.slicer_label)      
+        self.quickFilterLabel.setStyleSheet(style.slicer)      
         self.quickFilterHeaderLayout.addWidget(self.quickFilterLabel)   
 
         self.quickFilterClearButton = QPushButton(self.quickFilterHeader)
         self.quickFilterClearButton.setIcon(QIcon("ui_elements/icons/clear-filter.svg"))
-        self.quickFilterClearButton.setStyleSheet(style.control_button)
+        self.quickFilterClearButton.setStyleSheet(style.discrete_standard)
         self.quickFilterClearButton.setFixedWidth(self.quickFilterClearButton.height())
         self.quickFilterClearButton.setToolTip("Clear Filters")
         self.quickFilterClearButton.clicked.connect(self.clearQuickFilters)     
@@ -655,7 +655,7 @@ class MyWindow(QMainWindow):
 
         self.quickFilterSettings = QPushButton(self.menuFrame)
         self.quickFilterSettings.setIcon(QIcon("ui_elements/icons/settings.svg"))
-        self.quickFilterSettings.setStyleSheet(style.ui_button)
+        self.quickFilterSettings.setStyleSheet(style.discrete_standard)
         self.quickFilterSettings.setToolTip("Quick Slicer Settings")
         self.quickFilterSettings.setFixedWidth(30)
         self.quickFilterSettings.clicked.connect(self.quickFilterSettingsClicked)
@@ -691,7 +691,7 @@ class MyWindow(QMainWindow):
         for filter in filters['slicers']:
             quickFilter = QLineEdit(self.quickFilterFrame)
             quickFilter.setPlaceholderText(filter) 
-            quickFilter.setStyleSheet(style.quick_filter)
+            quickFilter.setStyleSheet(style.input_box)
             quickFilter.textChanged.connect(self.quickFilterChanged)
             self.quickFilterLayout.addWidget(quickFilter)
 
