@@ -1,11 +1,11 @@
 import sys
-import data_pull as db
-import ui_elements.style_sheets as style
+import model.data_pull as db
+import view.styles.style_sheets as style
 import pandas as pd
 import json
 import time
 import asyncio
-from ui_elements.sidebar_buttons import map as naviButtonMap
+from controller.sidebar_map import map as naviButtonMap
 from ui_elements.sidebar_combobox import map as menuBoxMap
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QSize, pyqtSignal, QModelIndex, QItemSelectionModel, QTimer
