@@ -8,9 +8,10 @@ from app_view.widgets.scroll_area_widget import ScrollWidget
 from app_view.widgets.splitter_widget import SplitterWidget
 from app_view.widgets.label_widget import LabelWidget
 from app_view.widgets.line_edit_widget import LineEditWidget
+from app_view.widgets.table_widget import TableWidget
 from app_view.widgets.popup_widget import SlicerSettingsPopup
-from app_view.style_sheets import button_style, splitter_style, universal_style, combo_box_style, label_style, line_edit_style
-from PyQt6.QtWidgets import QMainWindow
+from app_view.style_sheets import button_style, splitter_style, table_style, universal_style, combo_box_style, label_style, line_edit_style, frame_style, scroll_bar_style
+from PyQt6.QtWidgets import QMainWindow, QSizePolicy
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from typing import Protocol
@@ -31,6 +32,10 @@ class Presenter(Protocol):
     def clear_slicer_binding(self) -> None:
         ...
     def slicer_settings_binding(self) -> None:
+        ...
+    def expand_filter_binding(self) -> None:
+        ...
+    def filter_binding(self) -> None:
         ...
     
 
@@ -88,12 +93,45 @@ class View(QMainWindow):
         # stretch to push menu items to top of menu
         self.menu.layout().addStretch()
 
-        # -------------------------------- main page container --------------------------------
-        self.main_page = FrameWidget(universal_style.hidden, VerticalBox())
+        # -------------------------------------- page --------------------------------------
+
+        # main page container
+        self.main_page = FrameWidget(universal_style.hidden, VerticalBox(spacing=40))
         self.page_splitter.addWidget(self.main_page)
-        #self.buildMainPage()       
+
+        # banner frame
+        self.banner = FrameWidget(universal_style.hidden, HorizontalBox(content_margins=[5,5,5,5], spacing=5), fixed_height=20)
+        self.main_page.layout().addWidget(self.banner)
+
+        # page container
+        self.page = FrameWidget(universal_style.hidden, VerticalBox(content_margins=[30,0,30,10], spacing=10))
+        self.page_scroll_area = ScrollWidget(universal_style.hidden,widget=self.page)
+        self.main_page.layout().addWidget(self.page_scroll_area)
+
+        # page header
+        self.header = LabelWidget(label_style.header, "Commercial Services Hive")
+        self.page.layout().addWidget(self.header)
+
+        # spacer to separate sub header from filters
+        self.page.layout().addSpacing(15)
+
+        # sub header and spacer to header from sub header 
+        self.sub_header = LabelWidget(label_style.sub_header, "Welcome to the Commercial Services Hive. Please select a navigation option to begin.", visible=False)
+        self.page.layout().addWidget(self.sub_header)
+
+        # filters
+        self.construct_filters(self.page.layout(), presenter.expand_filter_binding, presenter.filter_binding)
+
+        # data table
+        self.table = TableWidget(table_style.table, scroll_bar_style.vertical, scroll_bar_style.horizontal, visible=False)
+        self.page.layout().addWidget(self.table)
+
+        # add stretch to push content to top of page
+        self.page.layout().addStretch()
 
         # ----------------------------- splitter default position -----------------------------
+
+        # paget contents take horizontal priority over sidebar
         self.page_splitter.setStretchFactor(0, 0)
         self.page_splitter.setStretchFactor(1, 1)
 
@@ -179,7 +217,7 @@ class View(QMainWindow):
 
         # create a slicer widgets, bind, and add to parent layout
         for _ in range(count):
-            slicer = LineEditWidget(line_edit_style.input_box, "shabooya")
+            slicer = LineEditWidget(line_edit_style.input_box)
             slicer.textChanged.connect(slicer_binding)
             self.slicer_container.layout().addWidget(slicer)
 
@@ -188,6 +226,27 @@ class View(QMainWindow):
                                        fixed_width=26, tool_tip="Slicer Settings")
         slicer_settings.clicked.connect(settings_binding)
         self.slicer_container.layout().addWidget(slicer_settings)
+
+    
+    def construct_filters(self, parent: object, expand_filter_binding: callable, clear_binding: callable) -> None:
+        
+        # filter frame 
+        self.filter_frame = FrameWidget(frame_style.filter, VerticalBox(), vertical_size_policy=QSizePolicy.Policy.Minimum, visible=False)
+        parent.addWidget(self.filter_frame)
+
+        # header layout 
+        header_layout = HorizontalBox(spacing=10)
+        self.filter_frame.layout().addLayout(header_layout)
+
+        # expand filter button
+        self.expand_filter = ButtonWidget(button_style.filter, text="Filters", icon=QIcon("app_view/icons/chevron-down.svg"))
+        self.expand_filter.clicked.connect(expand_filter_binding)
+        header_layout.addWidget(self.expand_filter)
+
+        # clear filter button 
+        self.clear_filter = ButtonWidget(button_style.filter, text="Clear Filters", icon=QIcon("app_view/icons/clear-filter.svg"), visible=False, fixed_width=100)        
+        self.clear_filter.clicked.connect(clear_binding)
+        header_layout.addWidget(self.clear_filter)
 
 
     # ------------------------------ ui update functions ------------------------------
@@ -244,18 +303,15 @@ class View(QMainWindow):
             self.combo_box.setStyleSheet(combo_box_style.inactive)
 
 
-    def populate_combo(self, selection: str) -> None:
+    def populate_combo(self, label: str, options: list[str]) -> None:
 
         # show combo container
         self.combo_container.setVisible(True)
 
-        # get combo options based on navi selection
-        navi = navi_map[selection]
-
         # set combo label and populate dropdown options
-        self.combo_label.setText(navi["text"])
+        self.combo_label.setText(label)
         self.combo_box.clear()
-        self.combo_box.addItems(navi["options"])
+        self.combo_box.addItems(options)
 
 
     def populate_slicers(self, fields) -> None:
@@ -269,16 +325,16 @@ class View(QMainWindow):
             slicer.clear()
     
 
-    def toggle_slicer_visibility(self, active: bool) -> None:
+    def toggle_slicer_visibility(self, visible: bool) -> None:
 
         # update combo box style
-        self.slicer_container.setVisible(active)
+        self.slicer_container.setVisible(visible)
 
 
-    def toggle_clear_slicer_visibility(self, active: bool) -> None:
+    def toggle_clear_slicer_visibility(self, visible: bool) -> None:
 
         # update combo box style
-        self.clear_slicer_button.setVisible(active)
+        self.clear_slicer_button.setVisible(visible)
 
 
     def clear_slicers(self) -> None:
@@ -286,3 +342,19 @@ class View(QMainWindow):
         # clear all slicers values
         for slicer in self.slicer_container.findChildren(LineEditWidget):
             slicer.clear()
+
+    
+    def update_header(self, text: str) -> None:
+        self.header.setText(text)
+
+
+    def toggle_page_visibility(self, visible: bool) -> None:
+
+        # hide page contents other than header
+        self.sub_header.setVisible(visible)
+        self.filter_frame.setVisible(visible)
+        self.table.setVisible(visible)
+
+
+    def update_sub_header(self, text: str) -> None:
+        self.sub_header.setText(text)

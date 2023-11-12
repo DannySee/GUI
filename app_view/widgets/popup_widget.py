@@ -151,7 +151,7 @@ class SlicerSettingsPopup(QMessageBox):
 
         # list view to display selected slicer fields
         self.selected_field_list = ListWidget(list_style.list, self.slicer_fields, fixed_width=200, fixed_height=300)
-        main_layout.addWidget(selected_field_list)
+        main_layout.addWidget(self.selected_field_list)
 
         # layout to hold positional buttons
         position_layout = VerticalBox(spacing=5)

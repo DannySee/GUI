@@ -42,8 +42,8 @@ header = label_template.substitute(
 sub_header = label_template.substitute(
     background_color="transparent",
     text_size="16px",
-    text_style="italic",
-    padding="0px 0px 5px 0px",
+    text_style="normal",
+    padding="0px",
     text_color=color.text_dark
 )
 

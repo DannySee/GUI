@@ -8,7 +8,7 @@ table = Template(
         background-color: $background_light_1;
         border:1px solid $background_bright;
         border-radius: 10px;
-        color: #text_dark;
+        color: $text_dark;
         gridline-color: $light_gray_1;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
@@ -34,7 +34,7 @@ table = Template(
         background: $background_light_2;
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
-        color: #text_dark;
+        color: $text_dark;
         border-top-left-radius: 10px;
         border-bottom: 1px solid $background_bright;
         border-right: 1px solid $background_bright;
