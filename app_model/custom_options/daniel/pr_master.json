@@ -1,1 +1,9 @@
-{"slicers":["CUSTOMER","CONCEPT","PRICE_RULE","APPROVER","SR"]}
+{
+    "slicers": [
+        "CUSTOMER",
+        "CONCEPT",
+        "PRICE_RULE",
+        "APPROVER",
+        "SR"
+    ]
+}

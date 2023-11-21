@@ -1,1 +1,9 @@
-{"slicers": ["TEAM", "NOTES", "SR", "YEAR", "PERIOD"]}
+{
+    "slicers": [
+        "PRIMARY_KEY",
+        "NOTES",
+        "SR",
+        "YEAR",
+        "PERIOD"
+    ]
+}

@@ -15,8 +15,12 @@ combobox_template = Template(
         font-size: 14px;
         outline: 0;
     }
+    QComboBox::hover {
+        background-color: $background_darkest;
+    }
     QComboBox::drop-down {
         width: 30px;
+        padding-right: 3px;
         border-left: none;
         border-top-right-radius: 4px;
         border-bottom-right-radius: 4px;
@@ -43,6 +47,7 @@ combobox_template = Template(
 
 inactive = combobox_template.substitute(
     background_dark=color.background_dark, 
+    background_darkest=color.background_darkest,
     text_light=color.text_light, 
     light_gray_1=color.light_gray_1,
     text_color=color.text_dark
@@ -50,6 +55,15 @@ inactive = combobox_template.substitute(
 
 active = combobox_template.substitute(
     background_dark=color.background_dark, 
+    background_darkest=color.background_darkest,
+    text_light=color.text_light, 
+    light_gray_1=color.light_gray_1,
+    text_color=color.text_light
+)
+
+collapsed = combobox_template.substitute(
+    background_dark=color.background_dark, 
+    background_darkest=color.background_darkest,
     text_light=color.text_light, 
     light_gray_1=color.light_gray_1,
     text_color=color.text_light

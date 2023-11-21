@@ -1,8 +1,8 @@
 PRIMARY_KEY,CUSTOMER,ALT_NAME,PACKET,PRICE_RULE,NID,MASTER_PRN,PRICING_PRN,GROUP_NAME,VPNA,NAM,CUST_CONTACT,OT_URL,NOTES
-33808,PIROPOS,,C057PRPS,&PIROPOS,C057PRPS,HCIS,,C057PRPS,,,,,Lead 057 Kansas City
+33808,PIROPOS,na,C057P,&PIROPOS,C057PRPS,HCIS,,C057PRPS,,,,,Lead 057 Kansas City
 33807,PAPA JOES IACOMINIS,,PAPAJOES,&PAPAJOE,C015PPJS,015071,015072,,,,,,Lead 015 Cleveland
 33806,151 COFFEE,,151COFF,&151COFF,C006CFFE,015048,015049,,,,,,Lead House 006
-33805,ARIZONA PIZZA COMPANY,,ARIZPIZZ,&ARIZPIZ,ARPZ,015052,015053,,,,,,
+33805,ARIZONA PIZZA COMPANY,,ARIZPIZ,&ARIZPIZ,ARPZ,015052,015053,,,,,,
 33803,ORIGINAL PANCAKE HOUSE LCC SITE 012 BALTIMORE ONLY,,,&OPH12,C012OPCH,,,,,,,,OPH LEAD HOUSE 012
 33802,PRIMANTI BROTHERS CORPORATION Site 009,Site 009-PITTSBURGH and 051-Central PA ,PRIMBROS,&PRIMBRO,C009PMBR,Foodbuy GPO,,,,,,,Separate concept from 016 Primanti Bros.
 33801,MARCOS FRANCHISING LLC,,MRCOFRAN,&MARCOS,C005MRCO,014955,014956,,,,,,005 INTERMOUNTAIN LEAD
@@ -38,7 +38,7 @@ PRIMARY_KEY,CUSTOMER,ALT_NAME,PACKET,PRICE_RULE,NID,MASTER_PRN,PRICING_PRN,GROUP
 33771,LOS CUCOS,,,,C017LCMC,014143,014144,,,,,,017 - Lead House
 33770,HABACUS HEART OF BOSSIER,HABACUS MEXICAN RESTAURANT,HABACU,&HABACUS,C293HHBS,014104,014105,,,,,,293 - Lead House
 33769,METROPOLITAN MINESTRIES,,,&METRMIN,C037MTMT,014140,014141,,,,,,037 - Lead House
-33768,EATS RP,Boulevard Burgers and Brews,,&EATSRP,C007EATS,Entegra Select,NA,,,,,,
+33768,EATS RP,Boulevard Burgers and Brews,,&EATSRP,C007EATS,Entegra Select,,,,,,,
 33767,KAILASH ONE ,FUN POINT,,&KAILASH,C003KLSH,014131,014132,,,,,,
 33766,RED CHICKZ,,,&REDCHKZ,C045RDCK,014081,014082,,,,,,045 Lead House
 33765,CAMPUS LOUNGE,,CAMPUS,&CAMPUS,"C059CPLG
@@ -495,7 +495,7 @@ adervartanian@woworksusa.com",,
 33331,TACO YAMA (DBA SOCIAL TACO),,C194TCYM,,C194TCYM,,,,,,,,
 33330,TACO TREAT,HALFTIME,C043TCTT,,C043TCTT,,,,,,,,
 33329,TACO TIME IDAHO,,KHMMTCTT,,KHMMTCTT,,,,,,,,
-33328,TACO SHOPS OF WICHITA,,TACOSHOP,&TACOSHP,C057TCSP    ,NA,NA,,,,,,Customer tied to HCIS PRN
+33328,TACO SHOPS OF WICHITA,,TACOSHOP,&TACOSHP,C057TCSP    ,,,,,,,,Customer tied to HCIS PRN
 33327,TACO PROS INTERNATIONAL LLC,,C024TCOP,,C024TCOP,,,,,,,,
 33326,TACO PROJECT,,,,C054TCPJ,,,,,,,,
 33325,TACO MUNDO,,,,,,,,,,,,
@@ -3143,7 +3143,7 @@ paul.costello@sysco.com  daisy.hernandez@sysco.com",,,,
 30702,RITCHIE GROUP,PIEDMONT BREWERY & KITCHEN,RITCHIE ,&RITCHIE,C002RCGP,008890,008891,,,,,,Lead 002 Atlanta
 30701,ME RESTAURANT GROUP (RED PEPPER),"RED PEPPER, MAYA STEAK AND SEAFOOD",REDPEPP,&ATKABOB,C002REPE,013709,013710,,,,,,Lead 002 Atlanta
 30700,ATLANTA KABOB,"KARAM ENTERPRISES, ME RESTAURANT OF BUCKHEAD",,&ATKABOB,C002REPE,013709,013710,,,,,,Lead 002 Atlanta
-30699,MARIOS PIZZA,,C066MRPZ,&MARIOS,C066MRPZ,NA,NA,,,,,,Lead 066 New Mexico; prn 066472 CSM
+30699,MARIOS PIZZA,,C066MRPZ,&MARIOS,C066MRPZ,,,,,,,,Lead 066 New Mexico; prn 066472 CSM
 30698,33 BRICK STREET,,C011BRCK,,C011BRCK,,,,,,,,011
 30697,SWEET CHICK,,C306SWCK,&SWEETCH,C306SWCK,013723,013724,,,,,,
 30696,7 MILE GRILL INC,,7MILEGRL,&7MILEGR,C016SMGR,013757,013758,,,, ,,Lead 016 South Florida
@@ -3166,7 +3166,7 @@ paul.costello@sysco.com  daisy.hernandez@sysco.com",,,,
 30679,OAKED,OAKED 110 / OAKED 54 / TAPPED PIZZERIA / TALL TALES BREW,OAKED,&OAKED,C010OAKD,012254,012255,,,,,,
 30678,Leonard Pit BBQ,,LEONARD,,C014LPBQ,009524,009538,,,,,,014
 30677,Mr Subb,Effective 6/1/23 customer will be on a GPO BEP Consolidated Concepts,MRSUBB,&MRSUBB,C025MSBB,012879,,,craig.wittenberg@sysco.com,,,,
-30676,EMPIRE REGENCY HOSPITALITY,Westford Regency,EMPIRE,&EMPIRE,C056ERHP,N/A,N/A,,,,,,TIED TO ENTEGRA
+30676,EMPIRE REGENCY HOSPITALITY,Westford Regency,EMPIRE,&EMPIRE,C056ERHP,,,,,,,,TIED TO ENTEGRA
 30675,POST OAK LODGE LLC,Post Oak Lodge; Palapas;Bisou; Kiss,POSTOAKL,&POSTOAK,C067PSLD,na,na,,,Troy Willis-Director; Valerie Jackson-Fin Mgr,,,Lead 067 Houston; GPO Entegra Source 1
 30674,RELISH & BURRITO FAMOUS,Relish Big Tasty Burgers,,,C003RELH ,010544,010545,,,,,,
 30673,MEXCAL CANTINA PACIFICO,,,&MEXCALC,,013604,013605,,,,,,Lead House 067
@@ -3433,7 +3433,7 @@ Make sure no agreements are in the Deviated Queue before sending out reminders."
 30445,HAYSTACK BURGERS,,HAYSTACK,&HAYSTAC,C006HYBG,013218,013220,,,,,,"Foodbuy Client Rewards
 Lead 006 North Texas"
 30444,IHOP,,,,IHOP,,,IHOPIHOP,,David Antinoro-Director Contract Sales 061 Lincoln; Allegra Smith CST 005,,,CMU Restaurant
-30443,LA PASHA,,LAPASHA,&LAPASHA,C067LPSH,N/A,N/A,,,,,,"SOURCE 1 MEMBER, USE NID FOR ANY DEALS"
+30443,LA PASHA,,LAPASHA,&LAPASHA,C067LPSH,,,,,,,,"SOURCE 1 MEMBER, USE NID FOR ANY DEALS"
 30442,KOHR BROTHERS INC,,KOHRBROS,&KOHR,C010KRBR,013211,013212,,,,,,LH 010
 30441,VICIOUS BISCUIT,Vicious Biscuits,VICIOUS,&VICIOUS,C137VSBS,009822,009823,,,,,,137 Open Text
 30440,FINE ENTERTAINMENT GROUP,FINE CONCEPTS,FINEENT,&FINEENT,C017FNGP,GPO,GPO,C017FNGP,,,,,017 Lead House
@@ -3513,9 +3513,9 @@ Make sure no agreements are in the Deviated Queue before sending out reminders."
 30385,CHAPPS CAFE                                       ,,CHAPPS ,&CHAPPS,C006CPPC  ,009080,009081,,,,,,Lead 006 North Texas
 30384,REGINELLIS PIZZERIA,,REGINELL,&RGNLPZA,C023RGNL,011113,011115,,,,,,Lead 023 New Orleans
 30383,DGI FOOD SERVICES / DBA STEAMERS,DBA STEAMERS CLAM BAR AND GRILL / 2nd STREET CAFÉ,DGIFDSRV,&DGIFSVC,C003DGFD,012636,012637,,,,,,Lead 003 Jacksonville
-30382,VIBE CONCEPT RESTAURANTS,"Dusty Boot,Reivers,T Street Kitchen, Great Divide Brewery,Boneyard,T Street Roadhouse,Roadhouse @ Depot,Zuma Roadhouse,Kickapoo Tavern,Spankys,Luigis Pasta",VIBEREST,,C059VBCR,NA,NA,,,,,,Lead 059 Denver; prn 038778 Entegra GPO
-30381,TOBY KEITH GROUP,BELMAR CANTINA / HOLLYWOOD CORNERS / BURGER BAR / TLS TAILGATE TAVERN/ 405 BURGER BAR,TOBYKETH,&TOBYKTH,C026TBKH,NA,NA,,Kelly.Price@sysco.com,,,,Lead 026 Oklahoma; prn Entegra GPO
-30380,ROCK BARN AND STATEVILLE COUNTRY CLUB,,,local,C048RBSC,NA,NA,,,,,,Lead 048 Charlotte; prn 066464 CSM Consulting
+30382,VIBE CONCEPT RESTAURANTS,"Dusty Boot,Reivers,T Street Kitchen, Great Divide Brewery,Boneyard,T Street Roadhouse,Roadhouse @ Depot,Zuma Roadhouse,Kickapoo Tavern,Spankys,Luigis Pasta",VIBEREST,,C059VBCR,,,,,,,,Lead 059 Denver; prn 038778 Entegra GPO
+30381,TOBY KEITH GROUP,BELMAR CANTINA / HOLLYWOOD CORNERS / BURGER BAR / TLS TAILGATE TAVERN/ 405 BURGER BAR,TOBYKETH,&TOBYKTH,C026TBKH,,,,Kelly.Price@sysco.com,,,,Lead 026 Oklahoma; prn Entegra GPO
+30380,ROCK BARN AND STATEVILLE COUNTRY CLUB,,,local,C048RBSC,,,,,,,,Lead 048 Charlotte; prn 066464 CSM Consulting
 30379,CHARLESTON PLACE ACQUISITION LLC,,,&CHASPLC,C137CLPL,012996,012998,,,,,,Lead 137 Columbia
 30378,BRINKERMAGGIANOS,,,,BRINMAGI,,,,,,,,
 30377,LAS PALMAS - 073 Hampton Roads,,,&LASP073,,011010,011011,,,,,,
@@ -3739,7 +3739,7 @@ ocamarillo@costavida.com
 rmyouhan@costavida.com
 ",,
 30236,RODILLA SANCHEZ US LLC,,RODILLA,,C016RDSC,009221,009289,,,,,,
-30235,Coastal Hospitality,,,&COASTAL,CSHP,N/A,N/A,,,,,,FOODBUY MEMBER 073 IS THE LEAD HOUSE
+30235,Coastal Hospitality,,,&COASTAL,CSHP,,,,,,,,FOODBUY MEMBER 073 IS THE LEAD HOUSE
 30234,ACREAGE RESTAURANT,GHOST BOX PIZZA,ACREAGE,&ACREAGE,C059ACRT,012685,012686,,,,,,059 Open Text
 30233,BLUESTONE LANE,,BLUESTON,&BLUELN,C076BSLN,012115,012116,,SouthMarket_ProfitManagement@Sysco.com,SouthMarket_ProfitManagement@Sysco.com,SouthMarket_ProfitManagement@Sysco.com,,Lead House 076
 30232,LEGACY TERRACE,,LEGCYTRC,&LEGACY,LEGACY,,,,,,,,LEAD HOUSE 061 - Customer is part of Entegra Limited 035709
@@ -3785,7 +3785,7 @@ William Schwartz -Schwartz.william@az.sysco.com",,,Opentext folder is under Opco
 025-847301
 032-491746","067041
 069781 (No DPM price rule) ()",,Craig.Ostrander@sysco.com,Nicolas.Rodriguez@sysco.com,(Dina Perretta)  - dperretta@rpprocurement.com,,"Use both PRN 067033 (BurgerFi) & 007972 (Vizient Reef) when setting up a new contract.  If any overlaps occur, Vizents agreement takes precedence"
-30207,JOHNS INCREDIBLE PIZZA,JIPC,JIPIZZA,&JIPC,JIPC,N/A,N/A,,,,,,320 LEAD HOUSE
+30207,JOHNS INCREDIBLE PIZZA,JIPC,JIPIZZA,&JIPC,JIPC,,,,,,,,320 LEAD HOUSE
 30206,HILTON,HILTON HAMPTON / HSM / Harrison Group / Shamin,HILTON,"&HILTT1 Hilton Drop Tier 1 < $1,000
 &HILTT2 Hilton Drop Tier 2 $1,000-$1,249.99
 &HILTT3 Hilton Drop Tier 3 $1,250-$2,499.99
@@ -3874,7 +3874,7 @@ Make sure no agreements are in the Deviated Queue before sending out reminders."
 30175,MENIN HOSPITALITY ,,MENIN,&MENINHS,C016MNHP,009210,009278,C016MNHP,,,,,Need to use the NID is on Sodexo/Source 1 too 
 30174,FAMILY STYLE ,,FAMILYST,&FAMSTYL,C045FMSY,011832,011834,,,,,,CENTRALIZED
 30173,HUMMUS & PITA,,puli,&HUMMUS,C017HMMR,,,C017HMMR,,,,,
-30172,SKULLYS BARRR,,SKULLYS,&SKULLYS,,n/a,n/a,,,,,,Lead house 013 Central Texas; customer tied to PRN 038984 Entegra Source 1.
+30172,SKULLYS BARRR,,SKULLYS,&SKULLYS,,,,,,,,,Lead house 013 Central Texas; customer tied to PRN 038984 Entegra Source 1.
 30171,BAKED BEAR,,BAKDBEAR,&BKDBEAR,BKDBBKDB,011793,011794,,,,,,CENTRALIZED
 30170,AVRA,,puli,&AVRA,C076AVRA,012557,012558,,,,,,CENTRALIZED
 30169,PEI WEI ASIAN HOLDINGS,PF CHANGS,PSWXHOLD,,C017PWSH,,,,,, ,,017 IS THE LEAD HOUSE. ALSO 047 C047PEIW
@@ -3907,7 +3907,7 @@ Deals are sent in from Restaurant Partners"
 RRBNCORP
 RRBNFRAN",035014,"035022 Franchise
 071522 Corp 
-039313 - No PR Franchise",N/A,donald.arthur@sysco.com    NEW VPNA - daniel.chrzanowski@sysco.com,Steven.Franklin@sysco.com,"Cwinham@redrobin.com
+039313 - No PR Franchise",,donald.arthur@sysco.com    NEW VPNA - daniel.chrzanowski@sysco.com,Steven.Franklin@sysco.com,"Cwinham@redrobin.com
 Jcastillo@redrobin.com",,"If Ansara (opco 058) Sodexo deals overlap w/ direct ones, override or create new direct deals and exclude 058 BE member that also receives SDX deals.  Exclude customer group @RRBN058 to overlapping direct deals!! New VPNA -  Dan Chrzanowski as of 07/25/23"
 30159,FUDDRUCKERS,Fuddruckers CMU accts,FUDDRUCK,&FUDDRUC,FDRK,008704,008705,,,"Deborah.Smiley@sysco.com  
 larry.gerhardt@sysco.com
@@ -3933,12 +3933,12 @@ James.Hoge@sysco.com   ",christine.velasquez@veggiegrill.com,,Open Text-LCC-Site
 30146,WILDFLOWER BREAD CO,,WLDFLWR,Single Site MSA Price Rule is Local Until Renewal,WLDF,013141,013142,WLDFWLDF,,,,https://les.sysco.com/otcs/cs.exe?func=ll&objId=194063521&objAction=browse&sort=name,OPCO 049
 30145,SANFORD,Vizient,SANFORD,&VIZIENT,VZNTSNFD,,007271,VZNTSNFD,steve.kessler@sysco.com,LaSasha.Evans@sysco.com,"Stacy Fleming: Stacy.Fleming@good-sam.com
 Jacueline Krause-Stirling: Jackie.KrauseStirling@sanfordhealth.org",,Uses their own DPM Packet but files are in Vizient folder of OpenText (Healthcare)
-30144,WHICH WICH,"WW, Birdguesa ",WHICH,,WHICH,039693,"039701, 071043",N/A,Dave.Adamo@sysco.com, julie.jay@sysco.com,purchasing@whichwich.com,,
+30144,WHICH WICH,"WW, Birdguesa ",WHICH,,WHICH,039693,"039701, 071043",,Dave.Adamo@sysco.com, julie.jay@sysco.com,purchasing@whichwich.com,,
 30143,VELVET TACO ,,VELVET ,&VELVET ,VLVT,008100,008101,,Dave.Adamo@sysco.com,julie.jay@sysco.com,colby.wilson@velvettaco.com,,Open Text-CMU-Restaurant
 30142,LA MADELEINE,LE DUFF / BRIOCHE DOREE / MDLN,MADELEIN,&MDLN,"MDLN (La Madeleine)
 MDLNBROE (La Madeleine Brioche Doree)",49619,"049627 La Madeleine
 068825 Brioche Doree
-049635 No PR Parent",N/A,Kevin.Graham@sysco.com,Julie.Jay@sysco.com,"Mike Cobern: mcobern@leduffamerica.com
+049635 No PR Parent",,Kevin.Graham@sysco.com,Julie.Jay@sysco.com,"Mike Cobern: mcobern@leduffamerica.com
 Ruthie Trevino:  rtrevino@leduffamerica.com
 klamb@leduffamerica.com",,
 30141,FRONT BURNER,NO BAKE COOKIE DOUGH,FRNTBURN,&TWINPKS,TWPK,058206,"058214 - Twin Peaks
@@ -4013,7 +4013,7 @@ Dave (Dknowlden@AVIfoodsystems.com)",,"Customers approval needed on all contract
 Monthly Audit Customer"
 30132,LSG SKY CHEF,,LSG,"&LSGRETA  - RETAIL
 &LSGNON - NON RETAIL
-&LSGALKA - ALASKA AIRLINES",SKYC,039594,039602,N/A,clay.steadham@sysco.com,,"misty.fulgencio@lsgskychefs.com
+&LSGALKA - ALASKA AIRLINES",SKYC,039594,039602,,clay.steadham@sysco.com,,"misty.fulgencio@lsgskychefs.com
 yohanna.labrador@lsg-group.com",,
 30131,AVANTIC,,AVANTIC,&AVANTIC,AVLEAVLE,35717,,ABGHABGH,Guenthner.james@corp.sysco.com,avanticlodging@sysco.com,,,Avantic is tied to Foodbuy.  Load direct deals for Aimbridge to NID: ABGHABGH
 30130,DELAWARE NORTH,PATINA / DELW / DNC / Arvest Field,DELAWARE,"&DELW001, &DELW2.2, &DELWPAT, &DELCHASE",DELW,032524,"032532
@@ -4037,14 +4037,14 @@ mgoodman@spendifference.com",,CMU-Restaurants in Open Tex
 josh.ginsburg@buc-ees.com
 camila.romero@buc-ees.com",,"Set up as LC Rebate Basis
 Apply to BASE Allowances"
-30127,NEIMAN MARCUS,NMCS,NEIMAN,&NEIMAN,NMCS,N/A,014270, , , , ,,"use PRN for any deals since customer under FB Master. 006 IS THE LEAD HOUSE, CUSTOMER JOINED FOODBUY CORE TRUST EFF 4/1/23"
+30127,NEIMAN MARCUS,NMCS,NEIMAN,&NEIMAN,NMCS,,014270, , , , ,,"use PRN for any deals since customer under FB Master. 006 IS THE LEAD HOUSE, CUSTOMER JOINED FOODBUY CORE TRUST EFF 4/1/23"
 30126,KEKES BREAKFAST CAFE                             ,,,&KEKE,KEKEKEKE  ,010177,010203,,,,,,
 30125,LUCKY,LUCKY FINS / SMOKIN / Fins Restaurant Grp,LUCKYFIN," &LCKYFNS (Arizona 049)
  &LKYFINS (Idaho 040)
  &LUCKYFN (Denver 059)",LCKF,007473,"007475-059, 007499-049,007498-040",,sharron.culligan@sysco.com - Director Contract Sales,Marak.Christine@den.sysco.com,,,Lead 059 Denver
 30124,SK DEVELOPMENT,PSJ CELLAR; Off the Traxx; Pineda Inn Bar; Marker 99,SKDEV,&SKDEV,C032SKDV,009705,009726,,,,,,Lead 032 Southeast Florida
 30123,GROVE BAY HOSPITALITY,,GROVEBY,,C016GBHP,009199,009265,,,,,,"No agreements, Price rule only"
-30122,MAERSK LINE LIMITED,,MAERSK,,C073MRSK,N/A,N/A,,,,,,
+30122,MAERSK LINE LIMITED,,MAERSK,,C073MRSK,,,,,,,,
 30121,PIZZA MAN DAN,,PIZZAMAN,&PIZAMAN,PZMN,012599,012600,,,,,,
 30120,50 EGGS,YARDBIRDS,50EGGS,&50EGGS,C016EGGS,012445,012447,,,,,,
 30119,ATTILIOS KARENS CATERING,,ATTILIOS,&ATILLIO,C027ATTL,created,created,@ATTILIO,,,,,Lead House 027 Syracuse (customer tied to inactive alias=cannot tie to PRN yet)
@@ -4052,7 +4052,7 @@ Apply to BASE Allowances"
 &CL360B
 &CL360C
 &CL360D
-&CL360E",C037CBGF,N/A,N/A,,,,,,MEMBER OF AVENDRA CORE INSIGHTS GPO WHICH HAS ITS OWN PARENT. USE LCC NID FOR DIRECT DEALS 
+&CL360E",C037CBGF,,,,,,,,MEMBER OF AVENDRA CORE INSIGHTS GPO WHICH HAS ITS OWN PARENT. USE LCC NID FOR DIRECT DEALS 
 30117,GRINGOS ,GRINGOS SPRING,GRINGOS,&GRINGOS,,,,,,,southmarket_profitmanagement@sysco.com,,067-Lead House
 30116,PANCHEROS,,PANCHERO,&PNCHERO,C039PNCH,012247,012248,,Robert.tomlinson@sysco.com,christopher.rath@sysco.com,distribution@pancheros.com,,Lead House 039
 30115,AJ TUSA RESTAURANT GROUP,,TUSAREST,&AJTUSA,,012589,012593,,,,,,LEAD HOUSE 023
@@ -4068,7 +4068,7 @@ Apply to BASE Allowances"
 30105,FERNANDOS,,FERNANDO,&FERNAND,C061FERN,008242,008244,,,,,,061 Lincoln LEAD & ONLY
 30104,TAHER HAVASU,,TAHER,,TAHE,,,,,,,,
 30103,247 HOTELS,Twenty Four Seven Hotels,247HOTEL,,C320TFSH,,,,,,,,
-30102,AVENDRA CORE INSIGHTS,AVENDRA BYO,AVENBYO,N/A (this is a GPO),N/A,008604,"008605 CLUB 360
+30102,AVENDRA CORE INSIGHTS,AVENDRA BYO,AVENBYO,N/A (this is a GPO),,008604,"008605 CLUB 360
 008606 GECKOS
 008608 IRISH 31",,,,,,"This is a GPO, also includes Salems PRN 010620, California Pizza Kitchen PRN 070896 and 247 Hotels PRN 013035 under their own hiearchies"
 30101,BOCAS ,La Fontana / La Borejo,BOCA,&BOCAS,C016BCGP,009174,009242,,mark.safreed@sysco.com,,,,
@@ -4088,7 +4088,7 @@ Apply to BASE Allowances"
 Jennifer Patterson@sysco.com",Brad Karr - bkarr@xanterra.com,,"Open Text-CMU-Travel, Leisure / Monthly Audit Customer
 Xanterra Leisure Holding, LLC joining Foodbuy Hospitality 10.01.2023"
 30092,SP JOYLAND,,SPJOYLND,&JOYLAND,C060JOYL,012552,012553,,,,,,LEAD HOUSE 060
-30091,GRILL CONCEPTS,DAILY GRILL / PUBLIC SCHOOLS / GRLC,GRILL,&GRILL,GRLC,036582,036590,N/A,jennifer.carrillo@sysco.com,,"Patrick Northrup: pnorthrup@rpprocurement.com
+30091,GRILL CONCEPTS,DAILY GRILL / PUBLIC SCHOOLS / GRLC,GRILL,&GRILL,GRLC,036582,036590,,jennifer.carrillo@sysco.com,,"Patrick Northrup: pnorthrup@rpprocurement.com
 Matt Ogle: mogle@rpprocurement.com
 ahollowell@rpprocurement.com",,Open Text - LCC OpCo 045
 30090,BLACK MARKET ,,BLACK,&BLKMKT,C016BLMK,009173,009240,,,,,,
@@ -4113,7 +4113,7 @@ spersico@jerseymikes.com",,include opco 450 when downloading PRs
 &SSPAT5   250-399 cs
 &SSPAT6   400 & ABV cs
 &SSPA (TESTING PR, NOT FOR SHIPPING LOCS)",SSPA,008061,"008103 SHIPPING PARENT
-008062 NON SHIPPING PARENT",N/A,"maranda.keith@sysco.com -(Use this) 
+008062 NON SHIPPING PARENT",,"maranda.keith@sysco.com -(Use this) 
 
 
 
@@ -4137,7 +4137,7 @@ For overlaps w/Sodexo reach out to Gina for verification"
 ",,Check deviation Queue before sending Friendly Reminders
 30077,FUEL AMERICA,,FUELAMER,&FUELAMR,C056FLMR,012534,012535,,,,,,Lead House 056-Sysco Boston
 30076,GREAT HARVEST,GREAT HARVEST,GRTHARVT,&GRTHARV,GHBK,070169,070185,,Angela.Flenoy@sysco.com,,graces@greatharvestfranchising.com,,
-30075,YPS KANI,,YPKANI,&KANI,PENDING,N/A,N/A,,,,,,"ATLANTA IS THE LEAD HOUSE, ENTEGRA MEMBER"
+30075,YPS KANI,,YPKANI,&KANI,PENDING,,,,,,,,"ATLANTA IS THE LEAD HOUSE, ENTEGRA MEMBER"
 30074,FAMOUS DAVES,"BBQ HOLDINGS, Johnny Carinos",FAMODAVE,"&FMDVCMU
 &FMDV-03","FMDV
 ",007283,"007292-Do Not Use
@@ -4194,7 +4194,7 @@ barbara.kaczmarek@insidetrackdata.com",,
 ONSA includes 057 Kansas City - also ADD group !BCIPNON to customer eligibility in DPM 240.
 Carnival Cruise Outlets-Opco 016 Only-key local using group DVT400002"
 30043,LISI ITALIAN,,LISITALN,&LISITAL,C163LSIT,012506,012507,,,,,,
-30042,HENRI FISCUS LLC,HENRIS BAKERY & DELI / BUCKHEAD SALOON / MARIETTA SQUARE MARKET,HFISCUS,&HFISCUS,C002HRFS,N/A,N/A,,,,,,"CUSTOMER IS TIED TO AN ENTEGRA PARENT, USE NID FOR ANY DEALS"
+30042,HENRI FISCUS LLC,HENRIS BAKERY & DELI / BUCKHEAD SALOON / MARIETTA SQUARE MARKET,HFISCUS,&HFISCUS,C002HRFS,,,,,,,,"CUSTOMER IS TIED TO AN ENTEGRA PARENT, USE NID FOR ANY DEALS"
 30041,SMITH ORGANICS LLC / SMITH ORGANICS BONITA SPRINGS,LAKE PARK DINER,LAKEPARK,&LKPKDNR,,012504,012505,,,,,,Lead 037 West Coast Florida
 30040,SLAPFISH,,SLAPFISH,&SLPFSH,SLPF,012502,012503,,,,,,Lead House 320
 30039,MAMBO SEAFOOD,,puli,&MAMBOS,MBOSMBOS,,,,,,,,AGREEMENTS APPLY TO BASE
@@ -4212,7 +4212,7 @@ Sodexo Entegra BE Member"
  Larry Schuler: LSchuler@arcgrpinc.com
 Erin.Colombi@arcgrpinc.com
 ",,
-30033,WORLD OF BEER,WOB,WRLDOFBR,&WRLDOBR,WBFI,007811,007812,N/A,Angela.Flenoy@sysco.com,,"Julie Parrish    Jparrish@rpprocurement.com
+30033,WORLD OF BEER,WOB,WRLDOFBR,&WRLDOBR,WBFI,007811,007812,,Angela.Flenoy@sysco.com,,"Julie Parrish    Jparrish@rpprocurement.com
 Axel Diaz:  Axel.Diaz@insidertrackdata.com
 Marc Sawyer:      marc@wobfranchising.com
 Dina Perretta:     DPerretta@rpprocurement.com",, 
@@ -4804,7 +4804,7 @@ Chris McCool (cc)",,,,Lead House OPCO 006 - North Texas
 29534,Thomas Keller,Surf club,TKRG,LOCAL,TKRG,,,TKRGTKRG,LEAD HOUSE 050,050profitmanagementDL@sfo.sysco.com,50,,
 29533,Burneys Sweets,DMG BURNEYS,BURNEYS,&BURNEYS,C163DMGB,011012,011013,C163DMGB,LEAD HOUSE,southmarket_profitmanagement@sysco.com,163,,
 29532,PARROT PATIO,,PARROT,&PARROT,C037PRPT,,,,,,,,
-29531,MARTINS BBQ,FRESH HOSPITALITY,FRESHHOS,&MRTNBBQ,FHSPMBBQ,N/A,N/A,,,,,,BEP CONSOLIDATED CONCEPTS - 060 NASHVILLE
+29531,MARTINS BBQ,FRESH HOSPITALITY,FRESHHOS,&MRTNBBQ,FHSPMBBQ,,,,,,,,BEP CONSOLIDATED CONCEPTS - 060 NASHVILLE
 29530,PHELANS HOLDING PINCHERS,,puli,&PHELANS,,,,,,,,,
 29529,SOUTHERN BOYS CONCEPTS,,STHRNBOY,&STHRBOY,C010SOBO,,,,,,,,
 29528,SAND BAR & KIT,,RESTPART,&RPSANDB,,,,,,,,,
@@ -5125,11 +5125,11 @@ james.harlan@sysco.com Region VP"
 29264,HARVSET ROASTING,,puli,&HRVROST,,,,,,,,,
 29263,Watering Hole,,WATERHOL,&WATRHOL,,,CSM 066472, @WATRHOL,,,,,"Open Text-LCC-Site 061
 LCC Centralization from SBS"
-29262,WHEATFIELDS ,ANDRES TORTILLERY,WHEATFIE,&WHTFLDS,C061WTFD ,NA,CSM 066472, @WHEATFI,none,none,"061-Lincoln, Karen Bader",,"LCC from new SBS Managed OpSite, 061."
+29262,WHEATFIELDS ,ANDRES TORTILLERY,WHEATFIE,&WHTFLDS,C061WTFD ,,CSM 066472, @WHEATFI,none,none,"061-Lincoln, Karen Bader",,"LCC from new SBS Managed OpSite, 061."
 29261,YAHNUNDASIS GOLF CLUB,,YAHNUNGC,&YAHNUND,C027YHGC,,Entegra Select 038778, @YAHNUND,,,"027-Syracuse, Richard Ravas (Rick)",,"Lost this business, SR 28238250"
 29260,HOOK & REEL CAJUN SEAFOOD  & BAR,,puli,&HOOKREL,HRSBHRSB,008400,,HRSBHRSB,,,,,
 29259,DANIELS GRILL,,DANGRILL,&DANGRIL,C027DNGR,,,,,,,,
-29258,WOW BAO,WOW BAO DARK KITCHENS (like ghost kitchens),WOWBAO,n/a,C024WWBA,n/a,Groups only,see programs tab,none,"tessa.pulito@sysco.com
+29258,WOW BAO,WOW BAO DARK KITCHENS (like ghost kitchens),WOWBAO,,C024WWBA,,Groups only,see programs tab,none,"tessa.pulito@sysco.com
 brad.gregory@sysco.com",james.rinsem@sysco.com,,"This is an exception customer - some deals are entered by DPM as a courtesy verses all opcos having to handle locally. 
 Program managed by Sysco Chicago & James Rinsem
 ""Wow Bao"" in CAL, DPM packet, and Share-point.  Opentext is now available - LCC 024 Chi"
@@ -5390,7 +5390,7 @@ Agreements are consolidated for all concepts. For Agreements only, use KAHALA BR
 29063,HORNET THE DENVER,ACOVA,HORNET,"&HORNET
 &ACOVA",C059HORN,008682,"008683-Hornet
 008684-Acova",,,,,,
-29062,HOP N DROP,HOPS N DROPS,HOPNDROP,&HPDP,HPDP,NA,NA,,,,,,Tied to CSM Consulting-Use NID to load
+29062,HOP N DROP,HOPS N DROPS,HOPNDROP,&HPDP,HPDP,,,,,,,,Tied to CSM Consulting-Use NID to load
 29061,HOME TEAM BBQ,,HOMETEAM,,HTBQ,,,,,,,,
 29060,HOLLYWOOD CASINO,,puli,,,,,,,,,,
 29059,HAWKINS PAC OUT,,HAWKINS,,,,,@HAWKINS,,,,,
@@ -5575,7 +5575,7 @@ clientrelations@insidetrackdata.com",,
 28942,PENN GAMING,PINNACLE ENTERTAINMENT / AMERISTAR / PENN NATIONAL / MEADOWS RACETRACK,PENNGAME,"&PINNACL
 &PENN051  (some ship tos @ Central PA)",PNCL,CVVVV,"065409 PINNACLE
 045591 PENN
-008471 051 ",N/A,Travis.Hackney@sysco.com,"Sade.Cortez@sysco.com
+008471 051 ",,Travis.Hackney@sysco.com,"Sade.Cortez@sysco.com
 Gary.Hogan@sysco.com","corey.johnson@pngaming.com
 pamela.constance@pennentertainment.com",,All DC/DP agreements need to have customer type BASE
 28941,PAPPAS RESTAURANT,PAPPAS / PAPPADEAUX,PAPPAS,&PAPPAS,PAPP,070706,070714,, ,kara.hughes@sysco.com,Laurie Froystein    lfroystein@pappas.com,,067 Houston is the Lead House
@@ -5588,7 +5588,7 @@ These accounts are NOT on Vizient MSA, but on Entegras MSA.  Continue using Am"
 28937,ROMANOS,"ROMG, MAC Grill / RMG",ROMANOS,&ROMANOS,ROMG,068940,068957,,Hoai-Huong.Le@sysco.com,Krystle.Cannon@sysco.com,"jeffrey.meyer@macgrill.com
 Dan.lentes@macgrill.com",,CMU - Open Text Restaurant
 28936,CHICAGOS PIZZA TWIST,CGPT; Authentic Pizza ,CHIPIZZA,&CHIPIZZ,CGPT,008108,008109,,,,,,
-28935,ZOES KITCHEN,ZSKN,ZOES,&ZOES,ZOES,065847,065854,N/A,Joseph.Lynskey@sysco.com,nicolas.rodriguez@sysco.com,"Jeffrey.Bazinet@CAVA.com
+28935,ZOES KITCHEN,ZSKN,ZOES,&ZOES,ZOES,065847,065854,,Joseph.Lynskey@sysco.com,nicolas.rodriguez@sysco.com,"Jeffrey.Bazinet@CAVA.com
 jenny.roberts@cava.com
 frank.fountain@cava.com",,"Customer closing last location ending all agreements 3/30/23, SR 30402195"
 28934,SIZZLER USA,SIZZLER BMW; see notes regarding different MSAs,SIZLRUSA,"&SZUS022
@@ -5678,7 +5678,7 @@ tglossenger@rpprocurement.com",,Deals are sent in from Restaurant Partners
 28914,CONCEPT ENTERTAINMENT,THIRSTY LION / CONCEPTS ENTERTAINMENT,CONCEPTE,&CNPT000,CNPT,007512,007513,,,,,,
 28913,CHEEBURGER CHEEBURGER,"CHEEBURGER CHEEBURGER 
 PREMIER RESTAURANT  GROUP / CHEE",CHEEBURG,&CHEE,CHEE,PRN 039727,"PRN 039735
-PRN 039743  NO PR",N/A,robert.anderson2@sysco.com,,  rcooper@premierrestaurantgroup.com,,
+PRN 039743  NO PR",,robert.anderson2@sysco.com,,  rcooper@premierrestaurantgroup.com,,
 28912,SNOOZE EATERY,,SNOOZE,&SNOOZEA,SNOZ,"068627
 
 013-478727
@@ -5806,7 +5806,7 @@ EFF 030121 for 3 years",BNHN,"036079
 060228 Nathans
 050179 KFC (Miami)
 050187 Checkers",,,Jake.Clicquennoi@sysco.com,stefania.ochoa@areas.com; paula.lopez@areas.com,,
-28899,URBANE CAFE,URBN,URBANE,&URBANE,URBN,007579,7580,N/A,,,,,"Open Text-LCC -Site 101, Locked pricing allowed for price match across sites per MSA"
+28899,URBANE CAFE,URBN,URBANE,&URBANE,URBN,007579,7580,,,,,,"Open Text-LCC -Site 101, Locked pricing allowed for price match across sites per MSA"
 28898,STAR BUFFET,JBS FAMILY RESTAURANT / 4BS FAMILY RESTAURANTS,STARBUFF,"&STARBUF
 &STSTEAK",STRB,,,STRBSTRB,ronda.fulmore@sysco.com,,"Steve Schmidt
 mtgoldwing@msn.com",,"billy.koekemoer@sysco.com 
@@ -5860,22 +5860,22 @@ Customer Contact: Carlos Riveroll (jcrline@msn.com) DO NOT CONTACT.",,
 28883,RACE TRAC,,RACETRAC,"&RACTRAC       
 &RACTRWH",RCTC,7553,"007554                                              
 007721 (WAREHOUSE)",,Jerome.Cheney@sysco.com,racetrac@sysco.com,,,
-28882,TROPICAL SMOOTHIE,TRSC,TROPICAL,&TROPSMO,TRSC,039040,039057,N/A,Daniel.Chrzanowski@sysco.com,Natasha.Griffiths@sysco.com,"sburnett@tropicalsmoothie.com    
+28882,TROPICAL SMOOTHIE,TRSC,TROPICAL,&TROPSMO,TRSC,039040,039057,,Daniel.Chrzanowski@sysco.com,Natasha.Griffiths@sysco.com,"sburnett@tropicalsmoothie.com    
 DPerretta@rpprocurement.com
 jerlynne@creativepurchasing.com",,Open Text-CMU-Restaurant
-28881,RUTH CHRIS ,RUTHS HOSPITALITY / RUTH CHRIS FRANCHISE ,AM,&RTHCHRS,RUTS,PRN 007394,PRN 007395,N/A,,nicolas.rodriguez@sysco.com,"dan@Sundellandassociates.com
+28881,RUTH CHRIS ,RUTHS HOSPITALITY / RUTH CHRIS FRANCHISE ,AM,&RTHCHRS,RUTS,PRN 007394,PRN 007395,,,nicolas.rodriguez@sysco.com,"dan@Sundellandassociates.com
 jesse@sundellandassociates.com
 carol@sundellandassociates.com",,038-LCC for Open Text
 28880,NEKTER,NKTR,NEKTER,&Nekter,NKTR,007858,007859,,Darci.Erramouspe@sysco.com, tiffany.taylor@sysco.com,"lbales@nekterjuicebar.com
 oscar@nekterjuicebar.com",,
 28879,LE PEEP,DENVER 059,LEPEEP,"&LEPEEP
 &LEPEMA2",PEEP,PRN 066936,"PRN 066944
-PRN 066951 (MA2)",N/A,Gary Hammer:     ,,Tyrone: Mack: t.mack@hwholdingscorp.com,,LCC-059
-28878,HSRG,HAL SMITH RESTAURANT GROUP / THE GARAGE BURGER & GRILL / LOUIES ON THE LAKE / PUB W,HSRG,local,HSRG,070987,70995,N/A,Nathan Wickman-Director of Sales,,,,
-28877,HOT HEAD BURRITO,HHBT,,&HOTHEAD,HHBT,PRN 060277,PRN 060285,N/A,craig.ostrander@sysco.com,,Mike Wiedower:mike@foodserviceadvantage.com,,
-28876,CHEBA HUT,CHEBA HUT / CHBA,CHEBA,&CHEBA,CHBA,PRN 065979,PRN 065987,N/A,Joey.Palazzolo@sysco.com,chebahut@sysco.com,"Seth Larsen: Seth@chebahut.com
+PRN 066951 (MA2)",,Gary Hammer:     ,,Tyrone: Mack: t.mack@hwholdingscorp.com,,LCC-059
+28878,HSRG,HAL SMITH RESTAURANT GROUP / THE GARAGE BURGER & GRILL / LOUIES ON THE LAKE / PUB W,HSRG,local,HSRG,070987,70995,,Nathan Wickman-Director of Sales,,,,
+28877,HOT HEAD BURRITO,HHBT,,&HOTHEAD,HHBT,PRN 060277,PRN 060285,,craig.ostrander@sysco.com,,Mike Wiedower:mike@foodserviceadvantage.com,,
+28876,CHEBA HUT,CHEBA HUT / CHBA,CHEBA,&CHEBA,CHBA,PRN 065979,PRN 065987,,Joey.Palazzolo@sysco.com,chebahut@sysco.com,"Seth Larsen: Seth@chebahut.com
 janine@chebahut.com",,
-28875,ASPEN CREEK,ASPEN CREEK,ASPENCRK,&ASPEN,APCR,PRN 071233,PRN 071241,N/A,,Tom Brooks Direct of Contract Sales,Opsite 038 Lead House,,Check BEP Consolidated Concepts on the All-In-One Deviation Load file
+28875,ASPEN CREEK,ASPEN CREEK,ASPENCRK,&ASPEN,APCR,PRN 071233,PRN 071241,,,Tom Brooks Direct of Contract Sales,Opsite 038 Lead House,,Check BEP Consolidated Concepts on the All-In-One Deviation Load file
 28874,SMITH & WOLLENSKY/LEGAL SEAFOOD,DO NOT LOAD AGREEMENTS LOST BUSINESS / SMITH & WOLLENSKY - Customers terminating contract eff 4/01/23 SR 32051841,"SMTHWOLL
 LEGALSFD","&SMTHWOL
 &LEGALSF","SMWL
@@ -5948,16 +5948,16 @@ randy.dominguez@us.issworld.com",,Open Text - CMU FoodService Management - Custo
 &SMN14 - N14 Days
 &SMN21 - N21 Days
 &SMN28 - N28 Days",SMSH,068155,"068163
-007612 Albany only, no PR",N/A,Joey.Palazzolo@sysco.com,smashburger@sysco.com,"rhedlund@smashburger.com
+007612 Albany only, no PR",,Joey.Palazzolo@sysco.com,smashburger@sysco.com,"rhedlund@smashburger.com
 jgarkow@smashburger.com
 Jeff.Wickham@smashburger.com
 Seth.Pickett@smashburger.com",,Open Text - CMU RESTAURANT
-28843,SNAP KITCHEN,All Accounts are inactive.  Dead Sysco Account,puli,&SNAP,SNKH,069823,069831,N/A,,erin.graham@sysco.com,,,"Open Text-CMU-Travel, Leisure "
+28843,SNAP KITCHEN,All Accounts are inactive.  Dead Sysco Account,puli,&SNAP,SNKH,069823,069831,,,erin.graham@sysco.com,,,"Open Text-CMU-Travel, Leisure "
 28842,SMG SAVOR,SMGS/ASM Global Savor,SMG,"&ASMTR0
 &ASMTR1
 &ASMTR2
 &ASMTR3
-&ASMTR4",SMGS,067058,067066,N/A,Maranda.Keith@sysco.com,Kelsie.Burrer@sysco.com,"rmarion@smgworld.com
+&ASMTR4",SMGS,067058,067066,,Maranda.Keith@sysco.com,Kelsie.Burrer@sysco.com,"rmarion@smgworld.com
 Site 055 needs copy send to: Kristie.Murray@sysco.com",,TIERD NO PRN PRICE RULES - OT CMU - Foodservice Management
 28841,TERIYAKI MADNESS,,TERIMAD, &TERIYAK,TYMD,68833,68841,,Palazzolo.Joey@corp.sysco.com,teriyakimadness@sysco.com,"Joe Gordon - joe@teriyakimadness.com
 Bobby Kith - bobby@teriyakimadness.com
@@ -5982,7 +5982,7 @@ Kenneth.Hodges@sysco.com",,,Opentext folder is under LCC 055
 &RETAILW-Warehouse",NCDS,"PRN 007894- Direct 
 PRN 007892- Warehouse","PRN 007895-Direct 
 PRN 007893- Warehouse",,Debra Fitzgerald: Fitzgerald.Debra@corp.sysco.com,,,,
-28834,COUNTER BURGER,KAHALA / CUSTOM BURGERS/ BUILT/ CB/ BU / THE COUNTER,COUNTER,&COUNTER,CTBR,PRN 007282,PRN 007291,N/A,Darci Erramouspe,Amy.Carman@sysco.com,"Jennifer Garnatz:    jrgarnatz@kahalamgmt.com
+28834,COUNTER BURGER,KAHALA / CUSTOM BURGERS/ BUILT/ CB/ BU / THE COUNTER,COUNTER,&COUNTER,CTBR,PRN 007282,PRN 007291,,Darci Erramouspe,Amy.Carman@sysco.com,"Jennifer Garnatz:    jrgarnatz@kahalamgmt.com
 Sydney Nichols:    snichols@kahalamgmt.com",,"Send FRIENDLY REMINDERS in first round only.  This customer does not want it twice. 
 Agreements are consolidated for all concepts. For Agreements only, use KAHALA BRANDS (Restaurants) for OpenTxt, DPM Packet and share-point."
 28833,KEG,KEG STEAKHOUSE,THEKEG,&THEKEG,TKEG,07550,7551,,,,,,
@@ -5991,19 +5991,19 @@ TRFGBYGC
 TRGFOBGL",clay.steadham@sysco.com,,Cgallob@troon.com,,
 28831,BENCHMARK HOSPITALITY,BENCHMARK HOSPITALITY/PYRAMID GLOBAL HOSPITALITY,BNCHMARK,"&BKGHT1,&BKGHT2, &BKGHT3,&BKGHT4
 &BKPYRT1, &BKPYRT2, &BKPYRT3, &BKPYRT4",BKGH,007386,"007387 - Benchmark Hospitality
-013970 - Benchmark Pyramid",N/A,Guenthner.James@corp.sysco.com,Jennifer.Atwell@sysco.com,"Molly Preston mpreston@pyramidglobal.com
+013970 - Benchmark Pyramid",,Guenthner.James@corp.sysco.com,Jennifer.Atwell@sysco.com,"Molly Preston mpreston@pyramidglobal.com
 Patrick Berwald pberwald@pyramidglobal.com",,
 28830,GOODCENTS,MR GOODCENTS / MR GOODCENTS SUBS AND PASTA,GOODCENT,&GOOD,GOOD,071415,071423,,,"goodcentssubs@sysco.com
 Tyler.Moreno@sysco.com","Lee@leeplotkin.com
 donna@leeplotkin.com
 rfowles@goodcentssubs.com",,Pricing parent is tied to Entegra Buyers Edge programs.
 28829,YALLA MEDITERRANEAN,FAT BRANDS,YALLA,,,,,,,Amy.Carman@sysco.com,ALL LOCATIONS ARE CLOSED - NO MORE BUSINESS,,DEAD ACCOUNT
-28828,SAMMY WOODFIRE GRILL,LADEKI / SMWP,SAMMYS,&SAMMYS,SMWP,071027,071035,N/A,,,"Dave Ditzler - dditzler@procurementplus.net
+28828,SAMMY WOODFIRE GRILL,LADEKI / SMWP,SAMMYS,&SAMMYS,SMWP,071027,071035,,,,"Dave Ditzler - dditzler@procurementplus.net
 Rosie Tomasek - t.rosemary@ca.rr.com",,"036-LCC San Diego is the lead house, Centralized Customer. New GPO adds via Customer Group workbook on Sharepoint"
 28827,REAL MEX,XPERIENCE REST. GROUP / PROCUREMENT PARTNERS REAL MEX RESTAURANTS / RMXR / FM Restaurants / Chevys Fresh / XRG,REALMEX,"&RMEX 
 &RMEXCAL (CA only)","RMXR
 XRGX (?)",065417,"065425
-065433 (CA ONLY)",N/A,Kevin.Graham@sysco.com,Krystle.Cannon@sysco.com,"Purchasing@xperiencerg.com
+065433 (CA ONLY)",,Kevin.Graham@sysco.com,Krystle.Cannon@sysco.com,"Purchasing@xperiencerg.com
 Marlene.Lerma@xperiencerg.com
 Deb@scssaves.com
 Danielle@scssaves.com",,CMU
@@ -6105,7 +6105,7 @@ Danielle Macdonald (danielle@scssaves.com)",,
 &COPELN2 - no PRN",COPL,049379,"049387 (Restaurants)
 049403 (Cheesecake Bistro)
 049411 (Comedy Club)
-049395 (Copelands Restaurants)",N/A,Kevin.Graham@sysco.com,Vicki.Wood@sysco.com,"Alexandria Copeland - areuter@alcopeland.com
+049395 (Copelands Restaurants)",,Kevin.Graham@sysco.com,Vicki.Wood@sysco.com,"Alexandria Copeland - areuter@alcopeland.com
 Amy Bordlee - abordlee@alcopeland.com",,Foodbuy Committed Member
 28802,PUNCH BOWL SOCIAL,,PUNCHBWL,"&PUNCH
 &PNCHARG (059)",PBGR,068544,"068551 (Punch)
@@ -6239,7 +6239,7 @@ Hawaii is tied to all San Francisco deals"
 &SUBOK  OKLAHOMA
 &SUBSPOK  SPOKANE
 &SUBSYRA",SUBW,040907,"040915
-00747 (ALBANY 13-012)",N/A,,subway@sysco.com,,,"ALL NO PRN PRs, Open Text-CMU-Restaurant"
+00747 (ALBANY 13-012)",,,subway@sysco.com,,,"ALL NO PRN PRs, Open Text-CMU-Restaurant"
 28767,CENTERPLATE,CENTERPLATE / SVCA,CENTERPL,&SODCTRP,SODXCTRP,32607,Pricing Parent: 032615,,Robert.Wason@sysco.com,Jennifer.Vance@sysco.com,"DO NOT not send FRIENDLY REMINDERS to customer.  SEND TO JEN VANCE only!
 brian.cliett@centerplate.com
 Michael.Heil@sodexo.com",,"SODEXO MSA DIRECT, OPENTEXT = SODEXO folder"
@@ -6361,7 +6361,7 @@ HPP TIER2-EI10 HSPTLTY PRTNER (007181)
 HPP TIER2-EI20 HSPTLTY PRTNER (007182)
 HPP TIER3-EI10 HSPTLTY PRTNER (007183)
 HPP TIER3-EI20 HSPTLTY PRTNER (007184)
-HPP TIER4-EI10 HSPTLT",,ruth.painter@sysco.com,N/A,N/A,,10% OPCO 027. 20% OPCO 003 for PCI
+HPP TIER4-EI10 HSPTLT",,ruth.painter@sysco.com,,,,10% OPCO 027. 20% OPCO 003 for PCI
 28726,BLUE STAR,BLUE STAR / Trilogy / Chetola,BLUESTAR,&BLUESTR,BSTRBSTR,034637 Entegra,038778 Entegra Select SPS,@BLUESTR,,,,,Lead 049 Arizona.  Customer tied prn 034637 (Entegra Pricing Parent: 038778 (Entegra Select -SPS)
 28725,PRIME SERVICES,PRIME SVCS,PRIMESER,&PRIMESV,PRIM,038786,38802,, ,,,,
 28724,LAWRYS RESTAURANTS,LWRY,LAWRYS,&LAWRYS,LWRY,008026,008027,,,,"dyer.elsa@la.sysco.com
@@ -6385,9 +6385,9 @@ Michael Santos- NO UL   msantos@rocknconcepts.com",,006 LCC-Open Text
 Sydney Nichols:    snichols@kahalamgmt.com",,"Send FRIENDLY REMINDERS in first round only.  This customer does not want it twice. 
 Agreements are consolidated for all concepts. For Agreements only, use KAHALA BRANDS (Restaurants) for OpenTxt, DPM Packet and share-point."
 28715,BRAIN STORM SHELTER,,puli,&BRAIN,,7411,007412,,North Texas,,,,
-28714,Mambos Seafood,,MAMBOS,N/A,MBOSMBOS,,,,,,293,,
+28714,Mambos Seafood,,MAMBOS,,MBOSMBOS,,,,,,293,,
 28713,IKES LAIR,IKES LOVE & SANDWICHES,IKESLIAR,&IKELAIR,IKLR,,,IKLRIKLR,Lead House 050,Finance - Byron Maples,"031, 049",,Lead House 050 - Buyers Edge/Consolidated Concepts / Monthly Audit Customer
-28712,TIKKA SHACK,,puli,N/A,C067JWSH,,,,,,,,
+28712,TIKKA SHACK,,puli,,C067JWSH,,,,,,,,
 28711,SCHEELS,,puli,&SHAS,SHAS,008440,008442,,Lead House 195,,,,
 28710,MR BREWS TAPHOUSE,,MRBREWS,&MRBREWS,MBTPMBTP,012305,012306,,,,018 - Baraboo,, 
 28709,MAMA FU,"MMFU, East Side King",MAMAFU,&MAMAFU,MMFU,009960,010077,,Lead House 013,,,,
@@ -6407,7 +6407,7 @@ jprince@spendifference.com
 ",,
 28700,INTERNATIONAL GAMING TECHNOLOGY,INTERNATIONAL GAMING TECHNOLOGY,IGT,&IGTY,IGTY,007657,007659,IGTYIGTY,,,,,
 28699,HSI,FORUM / H S I,HSI,&HSI,HSIC,69963,69971,,OPCO 014 Lead House: HSI affiliated w/HCIS (do not load direct deals unless Victoria Gardner has approved),,,,HIS (AFF.WITH HCIS) - Price Rule: &HIS
-28698,HOME CHEF,HOME CHEF (KROGER),HOMECHEF,&HMECHEF,KROG,UNDER FOODBUY MASTER CORETRUST  PRN 007805,PRN 007974,N/A,Celicia.Broussard@sysco.com,Zachary.Casper@sysco.com,,,
+28698,HOME CHEF,HOME CHEF (KROGER),HOMECHEF,&HMECHEF,KROG,UNDER FOODBUY MASTER CORETRUST  PRN 007805,PRN 007974,,Celicia.Broussard@sysco.com,Zachary.Casper@sysco.com,,,
 28697,HERITAGE HOTELS,HERITAGE HOTEL / HTHG,HTGHOTEL,&HERHOTL,HTHG,,038984-Entegra Source One,HTHGHTHG,,,,,
 28696,HEALTH TRUST,Healthtrust/KINDRED/ HPGA,HEALTHTR,&HTKIND,HPGGKIND,"007760
 007802",,,Sabrina.Witherspoon@sysco.com,"Teena.Shields@sysco.com
@@ -6429,8 +6429,8 @@ Agreements are consolidated for all concepts. For Agreements only, use KAHALA BR
 28686,CHURCH OF SCIENTOLOGY,CHURCH OF SCIENTOLOGY,CHRCHSCI,,COST,007363,"007364 - FL
 007366 - CA",,Fred.Chambers@sysco.com,"Goulish.Serena@corp.sysco.com
 nicolas.rodriguez@sysco.com",,,
-28685,CHOICE HOTELS,CHOICE HOTELS,CHOICE,"&CHOICEA, &CHOICEB",CHOT,068866,068874,N/A,Amy.Snook@sysco.com,Shabnam.Hasan@sysco.com,,,
-28684,CATHOLIC CHARITIES,CATHOLIC CHARITIES (RETAIL),CATHOLIC,&CATHOLI,CTCH,PRN 007944,PRN 007945,N/A,,Teena Shields: Shields.Teena@corp.sysco.com,,,
+28685,CHOICE HOTELS,CHOICE HOTELS,CHOICE,"&CHOICEA, &CHOICEB",CHOT,068866,068874,,Amy.Snook@sysco.com,Shabnam.Hasan@sysco.com,,,
+28684,CATHOLIC CHARITIES,CATHOLIC CHARITIES (RETAIL),CATHOLIC,&CATHOLI,CTCH,PRN 007944,PRN 007945,,,Teena Shields: Shields.Teena@corp.sysco.com,,,
 28683,VAIL RESORTS,,VAIL,,VAIL,7530,7532,,,,,,
 28682,EL DORADO,TROPICANA,ELDORADO,"&ELDORAD
 &ELDR1.1
@@ -6449,7 +6449,7 @@ ELDRELDR",007221,"007222 SCIOTO DOWNS
 007232 EL DORADO RENO
 007233 SILVER LEGACY
 007234 LULA
-007504 ",N/A,travis.hackney@sysco.com,Jennifer.Atwell@sysco.com,"Dick Coker:  Dcoker@eldoradoresorts.com
+007504 ",,travis.hackney@sysco.com,Jennifer.Atwell@sysco.com,"Dick Coker:  Dcoker@eldoradoresorts.com
 clientrelations@insidetrackdata.com",,"&ELDORAD only PR with a PRN
 Caesars Entertainment has aquired El Dorado. Caesars and El Dorado may be listed together on agreement back up. "
 28681,AMERICAN RED CROSS,FEMA AMERICAN RED CROSS DISASTER RELIEF,AMERICAN,&REDC,REDC,7886,7887,,Scott Clipp (clipp.scott@corp.sysco.com),,,,Committed Foodbuy member
@@ -6475,13 +6475,13 @@ PRN 007917 (TREASURE TRUCK)
 PRN 007901 (VISTRA ENERGY) 
 PRN 007928 (AHOLD DIRECT) 
 PRN 007931 (AHOLD WAREHOUSE) 
-PRN 007939 (TEXAS RDHOUSE)",N/A,N/A,,,,
+PRN 007939 (TEXAS RDHOUSE)",,,,,,
 28677,WAGAMAMA,,WAGAMAMA,&WAGAMAM,WGMA,007397,007398,0,Eric Arthur:    Donald.Arthur@sysco.com,,Barb@sundellandassociates.com,,Open Text-CMU-Restaurant
 28676,MEDILODGE,PRESTIGE HEALTHCARE,NAVIGATO,&HCSGMST (HCSG no Parent),"NAVGMDLG
 NASVGPRST",0,0,0,waring.lisa@corp.sysco.com,zielinski.michelle@corp.sysco.com,Michelle Congleton: mcongelton@prestigehcm.com,,
 28675,ADVANCED HEALTHCARE,APEX / FORUM,FORUM3,&FORUM2,ADHS,Forums  Master-035477,037234 (shared w/ Complete Care use customer group instead of PRN),Customer Group @ADHS,Greg McCulloch (McCulloch.Greg@corp.sysco.com),Caryn Salinas (Salinas.Caryn@corp.sysco.com),,,
 28674,TARA CARES,FORUM / TARA,FORUM3,&FORUM2,TARA,Forums  Master-035477,Pricing Parent: 040840,,Lisa Waring (Waring.Lisa@corp.sysco.com),Ed Mouton (Mouton.Edward@corp.sysco.com),Darcy Vandameer: dvandermeersch@tarahc.com,,
-28673,UNIFIED STRATEGIES GROUP,USFG / Watson Vending & Foodservice ,UFSG,&UFSG,UFSG,068767,068775,N/A,Ryan.DeWitt@sysco.com,Melissa.Whiting@sysco.com,Matt Warner: mwarner@usgvend.com,,Open Text CMU-Food Service Management
+28673,UNIFIED STRATEGIES GROUP,USFG / Watson Vending & Foodservice ,UFSG,&UFSG,UFSG,068767,068775,,Ryan.DeWitt@sysco.com,Melissa.Whiting@sysco.com,Matt Warner: mwarner@usgvend.com,,Open Text CMU-Food Service Management
 28672,MED ASSETS,,puli,&MEDA,MEDA,037440 & 068007,,,Kessler.Steven@corp.sysco.com( DO NOT SEND CAL),Ramon.Daniel@corp.sysco.com(DO NOT SEND CAL),,,
 28671,PINKBERRY,"KAHALA, PB",PNKBERRY,&PNKBERY,NO NAID,PRN 007399,PRN 007400,,,John.Lewis@sysco.com    ?Lost Business?,"Jennifer Garnatz:    jrgarnatz@kahalamgmt.com
 Sydney Nichols:    snichols@kahalamgmt.com",,"Send FRIENDLY REMINDERS in first round only.  This customer does not want it twice. 
@@ -6490,13 +6490,13 @@ Agreements are consolidated for all concepts. For Agreements only, use KAHALA BR
 &TARGWAR-Warehouse","TRGT
 ","PRN 007902- Direct
 PRN 007904- Warehouse","PRN 007903- Direct 
-PRN 007905- Warehouse",N/A,Kristin Holt:holt.kristin@corp.sysco.com,,,,
-28669,PUBLIX,,PUBLIX,,,PRN 007907,PRN 007912,N/A,Retail customer N/A,Retail customer N/A,,,
+PRN 007905- Warehouse",,Kristin Holt:holt.kristin@corp.sysco.com,,,,
+28669,PUBLIX,,PUBLIX,,,PRN 007907,PRN 007912,,Retail customer N/A,Retail customer N/A,,,
 28668,BLACKFINN,SUPPORT SERVICES,Blackfin,&BLCKFIN,BFMF,66738,066749,,Jason Overcash,, Jason Murphy - Jmurphy@meetmeatthefinn.com,,
 28667,CHRISTIAN CAMP,CCCA,CCCA,&CCCA,CCCA,35378,,,059-Lead House,,MSA not renewed.  Customer no longer centralized.,,
 28666,NICA,National Independent Concessionaires / Funbiz,NICA,&NICA,NICA,009663,009664,NICANICA,clay.steadham@sysco.com,Tracy.Whiting@sysco.com,,,"under National Independent Concessionaries in OT (Travel/Leisure)
 Entegra direct account."
-28665,HISSHO SUSHI,LWIN FAMILY,HISSHO,&HISSHO,065375,034637,065375 Entegra-Hissho Sushi Parent,,NA,Doug Haney - Bruce.Haney@sysco.com,,,OT Folder in CMU/Food Service Mgmt/LWIN Family LLCC HSSH
+28665,HISSHO SUSHI,LWIN FAMILY,HISSHO,&HISSHO,065375,034637,065375 Entegra-Hissho Sushi Parent,,,Doug Haney - Bruce.Haney@sysco.com,,,OT Folder in CMU/Food Service Mgmt/LWIN Family LLCC HSSH
 28664,GANDOLFOS,,GANDOLFO,&GANDOFL,GAND,068783,068791,,Enrique Becerra,,,,"Lead House 005 - Intermoutain
 Do not use price rule &GAND"
 28663,BROTHERS BAR & GRILL,BBGR,BROTHERS,"&BRGGT1
@@ -6514,7 +6514,7 @@ Do not use price rule &GAND"
 28653,PROTEIN HOUSE,PHHK,PROHOUSE,&PRTNHSE,PHHKPHHK,007743,007746,,017-LV_Profit_Management@lv.sysco.com,,,,
 28652,SAVE A LOT,BEMISS GROCERY,SAVEALOT,"&SAVALFR- FRANCHISE
 &SAVALOT",SLVT,PRN 007896 MASTER RETAIL PRN,"PRN 007920- FRANCHISE
-PRN 007899",N/A,,,,,
+PRN 007899",,,,,,
 28651,WESTERN GOLF PROPERTIES,WGPP,WSTNGOLF,&WESTGLF,WGPP,037374,037382,,"OPCO 017 Lead House
 Lynn.schepers@sysco.com",,,,"Customer tied to VGM/Foodbuy Master.  037382, 041764, 071308, 007621 VGM Pricing Parents"
 28650,NATIONAL FOODS,"AccuContact, Inc / NFHS",NATIONFH,&NATNFH,NFHS,007797,007798,,,,,,
@@ -6531,11 +6531,11 @@ PRN 068098-ALASKA","11-ATLANTA KROGER PARENT: 067850
 21-CENTRAL KROGER PARENT: 067827
 24-LOUISVILLE KROGER PARENT: 067736
 25-DELTA KROGER PARENT: 067702
-26-NASHVILLE KROG",N/A,Jenna Moralez: Moralez.Jenna@corp.sysco.com,,,,User Defined Calendar
-28646,WALMART,,WALMART,&WALMART,WLMTSAMS; WLMTWLMT,PRN 007933,PRN 007934,N/A,Rebecca Kelley: Kelley.Rebecca@corp.sysco.com,,,,
-28645,SAMS CLUB,SAMS,SAMSCLUB,&SAMS,SAMS,PRN 007913,PRN 007915,N/A,Rebecca Kelley: Kelley.Rebecca@corp.sysco.com,,,,
+26-NASHVILLE KROG",,Jenna Moralez: Moralez.Jenna@corp.sysco.com,,,,User Defined Calendar
+28646,WALMART,,WALMART,&WALMART,WLMTSAMS; WLMTWLMT,PRN 007933,PRN 007934,,Rebecca Kelley: Kelley.Rebecca@corp.sysco.com,,,,
+28645,SAMS CLUB,SAMS,SAMSCLUB,&SAMS,SAMS,PRN 007913,PRN 007915,,Rebecca Kelley: Kelley.Rebecca@corp.sysco.com,,,,
 28644,FINE CONCEPTS,,,,,,,,,,,,
-28643,WAHOOS FISH TACO,LAMKONE RESTAURANTS,WAHOO,&WAHOO,WAHO,067363,067371,N/A,,"William.AllenJr@sysco.com
+28643,WAHOOS FISH TACO,LAMKONE RESTAURANTS,WAHOO,&WAHOO,WAHO,067363,067371,,,"William.AllenJr@sysco.com
 Catrina.Cabrera@sysco.com
 Johnnie.Sanford@sysco.com","Nicole Shaw  Nicole@creativepurchasing.com 
 Nick Armantrout   nick@creativepurchasing.com

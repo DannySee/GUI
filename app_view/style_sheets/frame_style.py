@@ -2,14 +2,63 @@ import app_view.style_sheets.color_palette as color
 from string import Template
 
 
-filter = Template(
+frame_template = Template(
     """
     QFrame {
-        background-color: $background_light_1;
-        border-radius: 10px;
-        border:1px solid $background_bright;
+        background-color: $background_color;
+        border-radius: $border_radius;
+        border: $border_color;
+        border-top: $top_border_color;
+        border-bottom: $bottom_border_color;
     }      
     """
-).substitute(background_light_1=color.background_light_1, 
-             background_bright=color.background_bright)
+)
+
+filter = frame_template.substitute(
+    background_color=color.background_light_1, 
+    border_color="1px solid " + color.background_bright,
+    border_radius="10px",
+    top_border_color="1px solid " + color.background_bright,
+    bottom_border_color="1px solid " + color.background_bright,
+)
+
+toolbar = frame_template.substitute(
+    background_color="transparent",
+    border_color= "none",
+    border_radius="0px",
+    top_border_color="none",
+    bottom_border_color="1px solid " + color.background_light_2,
+)
+
+status_bar = frame_template.substitute(
+    background_color=color.background_darkest,
+    border_color= "none",
+    border_radius="0px",
+    top_border_color="1px solid " + color.background_light_2,
+    bottom_border_color="1px solid transparent",
+)
+
+loader_empty = frame_template.substitute(
+    background_color="transparent", 
+    border_color="1px solid " + color.background_bright,
+    border_radius="10px",
+    top_border_color="1px solid " + color.background_bright,
+    bottom_border_color="1px solid " + color.background_bright,
+)
+
+loader_light = frame_template.substitute(
+    background_color=color.background_light_1, 
+    border_color="1px solid " + color.background_bright,
+    border_radius="10px",
+    top_border_color="1px solid " + color.background_bright,
+    bottom_border_color="1px solid " + color.background_bright,
+)
+
+loader_bright = frame_template.substitute(
+    background_color=color.background_light_2, 
+    border_color="none",
+    border_radius="10px",
+    top_border_color="none",
+    bottom_border_color="none",
+)
 

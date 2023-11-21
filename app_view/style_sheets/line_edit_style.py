@@ -13,6 +13,12 @@ input_box = Template(
         font-family: "Microsoft Sans Serif";
         font-size: 12px;
     }
+    QLineEdit::hover {
+        background-color: #141414;
+    }
+    QLineEdit::focus {
+        background-color: #141414;
+    }
     QLineEdit::placeholder {
         background-color: $background_dark;
         border: none;

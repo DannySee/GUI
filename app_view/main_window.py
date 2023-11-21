@@ -1044,6 +1044,7 @@ class MyWindow(QMainWindow):
         mainLayout.addWidget(positionFrame)
 
         mainFrame.setLayout(pageLayout)
+        popup.layout().addWidget(mainFrame, 0,)
         popup.layout().addWidget(mainFrame, 0, 0, 1, popup.layout().columnCount())
 
         fields = MyWindow.data.columns.tolist()
