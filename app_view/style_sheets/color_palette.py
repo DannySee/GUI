@@ -23,13 +23,11 @@ light_gray_3 = "#777777"
 
 blue = "#37446E"
 light_blue = "#425389"
+lightest_blue = "#4C5EA4"
 
 success_green = "#55865A"
 warning_yellow = "#E0C256"
+error_red = "#B45B5B"
 hive_orange = "#AC8E49"
-
-
-
-
 
 

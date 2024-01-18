@@ -1,10 +1,13 @@
 from __future__ import annotations
-from typing import Protocol
-from app_view.ui_map import combo_map, navi_map
-from app_view.widgets.dialog_widget import SlicerSettingsDialog, UnsavedChangesDialog, QIcon
-from PyQt6 import QtCore
+from typing import Protocol, Union
+from app_presenter.ui_map import combo_map, navi_map
+from app_view.widgets.dialog_widget import SlicerSettingsDialog, UnsavedChangesDialog, FileDialog
+from PyQt6 import QtCore, QtGui
+from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QTimer
-import pandas as pd  
+import pandas as pd 
+from pathlib import Path
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
 
 class Model(Protocol):
@@ -26,10 +29,22 @@ class Model(Protocol):
         ...
     def get_table_data(self) -> pd.DataFrame:
         ...
+    def export_table_data(self, directory: str) -> None:
+        ...
+    def import_table_data(self, file: str) -> str:
+        ...
+    def register_user(self, team: str, first_name: str, last_name: str, email: str, network_id: str, sus_id: str, password: str) -> None:
+        ...
+    def validate_user(self, email: str, password: str) -> dict:
+        ...
+    def auto_login(self) -> dict:
+        ...
+    def get_user_id(self) -> str:
+        ...
 
 
 class View(Protocol):
-    def init_ui(self, presenter: Presenter) -> None:
+    def init_ui(self, presenter: Presenter, navi_map: dict) -> None:
         ...
     def collapse_sidebar(self) -> None:
         ...
@@ -79,9 +94,19 @@ class View(Protocol):
         ...
     def toggle_save(self, enabled: bool) -> None:
         ...
+    def toggle_export(self, enabled: bool) -> None:
+        ...
     def populate_toolbox(self, tools: dict=None) -> None:
         ...
     def collapse_toolbox(self) -> None:
+        ...
+    def toggle_login_visibility(self, visible: bool) -> None:
+        ...
+    def toggle_register_visibility(self, visible: bool) -> None:
+        ...
+    def toggle_landing_page_visibility(self, visible: bool, user: str="") -> None:
+        ... 
+    def toggle_toolbar_visibility(self, visible: bool) -> None:
         ...
 
 
@@ -141,10 +166,15 @@ class Presenter:
                 self.view.toggle_save(False)
 
 
-    def set_table_data(self, df: pd.DataFrame=None) -> None:
+    def set_table_data(self, df: pd.DataFrame=None, model: object=None) -> None:
 
         # get table model and set binding 
-        table_model = self.model.get_table_model(self.combo_map["table"]) if df is None else self.model.update_table_model(df)
+        if model is None:
+            table_model = self.model.get_table_model(self.combo_map["table"]) if df is None else self.model.update_table_model(df)
+        else:
+            table_model = model
+
+        # set binding
         table_model.dataChanged.connect(self.changes_made)
 
         # update table
@@ -192,6 +222,13 @@ class Presenter:
             self.view.collapse_filters()
             self.filters_collapsed = True
 
+    
+    def alert(self, message: str) -> None:
+        popup = QMessageBox()
+        popup.setWindowTitle("Alert")
+        popup.setText(message)
+        popup.exec()
+
 
     # ------------------------ model listeners ------------------------
     def changes_made(self) -> None:
@@ -218,6 +255,87 @@ class Presenter:
 
             self.binding_callable = True
 
+
+    def login_binding(self, email: str, password: str) -> None:
+        if self.binding_callable:
+            self.binding_callable = False
+
+            # some validation logic to pull login information for SQL (try to remember credentials if user_profile is populated)
+
+            # temporary logic
+            res = self.model.validate_user(email, password)
+            if res['success'] == False: 
+                self.alert(res['message'])
+            else:
+                self.view.toggle_landing_page_visibility(True, res['user'])
+                self.view.toggle_login_visibility(False)
+
+            self.binding_callable = True
+
+
+    def register_binding(self) -> None:
+        if self.binding_callable:
+            self.binding_callable = False
+
+            self.view.toggle_login_visibility(False)
+            self.view.toggle_register_visibility(True)
+
+            self.binding_callable = True
+
+
+    def forgot_binding(self, email: str) -> None:
+        if self.binding_callable:
+            self.binding_callable = False
+            
+            if email == "": 
+                self.alert("Please enter a valid email address")
+            else:
+
+                # temporary logic 
+                ###### make sure to have logic in place to check computer network id compared to corresponding email/net id in database
+                self.alert("A temporary password has been sent to your email address")
+
+            self.binding_callable = True
+
+
+    def cancel_registration_binding(self) -> None:
+        if self.binding_callable:
+            self.binding_callable = False
+
+            self.view.toggle_register_visibility(False)
+            self.view.toggle_login_visibility(True)
+
+            self.binding_callable = True
+
+
+    def complete_registration_binding(self, team: str, first_name: str, last_name: str, email: str, 
+                                      network_id: str, sus_id: str, password: str, confirm_password: str) -> None:
+        if self.binding_callable:
+            self.binding_callable = False
+            
+            # validate registration information
+            if team == "": self.alert("No team selected!")
+            elif first_name == "": self.alert("No first name entered!")
+            elif last_name == "": self.alert("No last name entered!")
+            elif email == "": self.alert("No email entered!")
+            elif network_id == "": self.alert("No network id entered!")
+            elif sus_id == "": self.alert("No sus id entered!")
+            elif password == "": self.alert("No password entered!")
+            elif confirm_password == "": self.alert("Password Confirmation Required!")
+            elif password != confirm_password: self.alert("Passwords do not match!")
+            elif not email.endswith("@sysco.com"): self.alert("Invalid email address!")
+            elif network_id != self.model.get_user_id(): self.alert("Network ID does not Sysco ID!")
+            else:
+
+                # save registration information to SQL
+                self.model.register_user(team, first_name, last_name, email, network_id, sus_id, password)
+
+                # update ui
+                self.view.toggle_register_visibility(False)
+                self.view.toggle_landing_page_visibility(True, f"{first_name} {last_name}")
+
+            self.binding_callable = True
+        
 
     def navigation_binding(self):
         if self.binding_callable:
@@ -249,6 +367,10 @@ class Presenter:
                 #slicers
                 self.view.toggle_slicer_visibility(False)
 
+                # --------------------- update toolbar ---------------------
+                self.view.toggle_toolbar_visibility(False)
+                self.view.toggle_export(False)
+
                 # ----------------------- update page -----------------------
 
                 # update page label and hide sub label
@@ -271,6 +393,10 @@ class Presenter:
             # --------------------- update ui state ---------------------
             self.combo_map = combo_map[self.view.sender().currentText()]
 
+            # --------------------- update toolbar ---------------------
+            self.view.toggle_toolbar_visibility(True)
+            self.view.toggle_export(True)
+
             # ----------------------- update page -----------------------
 
             # update page sub header label and visibility
@@ -279,6 +405,10 @@ class Presenter:
 
             # update table data
             self.set_table_data()
+
+            # ----------------------- update status bar -----------------------
+            self.view.set_refresh_state(f"Last Refresh: {pd.Timestamp.now().day_name()} {pd.Timestamp.now().strftime('%I:%M %p')}")
+            self.view.toggle_status_bar_visibility(True)
 
             # ---------------------- update sidebar ----------------------
 
@@ -289,10 +419,6 @@ class Presenter:
             slicers = self.model.get_user_options()["slicers"]
             self.view.populate_slicers(slicers)
             if not self.sidebar_collapsed: self.view.toggle_slicer_visibility(True)
-
-            # ----------------------- update status bar -----------------------
-            self.view.set_refresh_state(f"Last Refresh: {pd.Timestamp.now().day_name()} {pd.Timestamp.now().strftime('%I:%M %p')}")
-            self.view.toggle_status_bar_visibility(True)
 
             # -------------- reset all page input (filter/slicer) --------------
             self.reset_page_input()
@@ -395,11 +521,59 @@ class Presenter:
 
 
     def import_binding(self) -> None:
-        pass
+        if self.binding_callable:
+            self.binding_callable = False
+
+            # handle unsaved changes
+            self.handle_unsaved_changes()
+
+            # setup file dialog to prompt user for file path
+            file_dialog = FileDialog("import")
+            if file_dialog.exec() == 1:
+
+                # show updated stats
+                QTimer.singleShot(0, lambda: self.view.set_save_status("Importing...", "yellow"))
+
+                # export file to selected path
+                file = file_dialog.selectedFiles()[0]
+                res = self.model.import_table_data(file) 
+                
+                if res is not None: 
+                    self.alert(res)
+
+                    # update status message with successful save message and then clear the status
+                    QTimer.singleShot(500, lambda: self.view.set_save_status("Import error!", "red"))
+                    QTimer.singleShot(2000, self.view.reset_save_status)
+                else:
+                    self.set_table_data()
+
+                    # update status message with successful save message and then clear the status
+                    QTimer.singleShot(500, lambda: self.view.set_save_status("Import complete!", "green"))
+                    QTimer.singleShot(2000, self.view.reset_save_status)
+
+            self.binding_callable = True
 
 
     def export_binding(self) -> None:
-        pass
+        if self.binding_callable:
+            self.binding_callable = False
+
+            #setup file dialog to prompt user for file path
+            file_dialog = FileDialog("export")
+            if file_dialog.exec() == 1:
+
+                # show updated stats
+                QTimer.singleShot(0, lambda: self.view.set_save_status("Exporting...", "yellow"))
+
+                # export file to selected path
+                directory = file_dialog.selectedFiles()[0]
+                self.model.export_table_data(directory)
+
+                # update status message with successful save message and then clear the status
+                QTimer.singleShot(500, lambda: self.view.set_save_status("Export complete!", "green"))
+                QTimer.singleShot(2000, self.view.reset_save_status)
+
+            self.binding_callable = True
 
 
     def filter_toggle_binding(self) -> None:
@@ -506,12 +680,15 @@ class Presenter:
             # handle unsaved changes
             self.handle_unsaved_changes()
 
+            # show loading state
+            QTimer.singleShot(0, lambda: self.view.set_refresh_state("Refreshing..."))
+
             # reset page input (filter/slicer)
             self.reset_page_input()
 
             # refresh model and update timestamp
             self.set_table_data()
-            self.view.set_refresh_state(f"Last Refresh: {pd.Timestamp.now().day_name()} {pd.Timestamp.now().strftime('%I:%M %p')}")
+            QTimer.singleShot(500, lambda: self.view.set_refresh_state(f"Last Refresh: {pd.Timestamp.now().day_name()} {pd.Timestamp.now().strftime('%I:%M %p')}"))
 
             self.binding_callable = True
 
@@ -539,7 +716,16 @@ class Presenter:
         if self.binding_callable:
             self.binding_callable = False
 
-            self.view.init_ui(self)
+            # initialize ui
+            self.view.init_ui(self, navi_map)
+
+            # attempt auto login procedure
+            res = self.model.auto_login()
+            if res['success']:
+                self.view.toggle_login_visibility(False)
+                self.view.toggle_landing_page_visibility(True, res['user'])
+
+            #show ui
             self.view.show()
 
             self.binding_callable = True

@@ -89,6 +89,15 @@ indicator_yellow = label_template.substitute(
     radius="7px",
 )
 
+indicator_red = label_template.substitute(
+    background_color=color.error_red,
+    text_size="12px",
+    text_style="normal",
+    padding="0px",
+    text_color=color.text_dark,
+    radius="7px",
+)
+
 indicator_neutral = label_template.substitute(
     background_color=color.light_gray_1,
     text_size="12px",

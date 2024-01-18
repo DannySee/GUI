@@ -2,7 +2,7 @@ import app_view.style_sheets.color_palette as color
 from string import Template
 
 
-input_box = Template(
+line_edit_template = Template(
     """
     QLineEdit {
         background-color: $background_dark;
@@ -11,7 +11,7 @@ input_box = Template(
         padding: 8px;
         color: $text_light;
         font-family: "Microsoft Sans Serif";
-        font-size: 12px;
+        font-size: $font_size;
     }
     QLineEdit::hover {
         background-color: #141414;
@@ -26,10 +26,23 @@ input_box = Template(
         padding: 8px;
         color: $text_dark;
         font-family: "Microsoft Sans Serif";
-        font-size: 12px;
+        font-size: $font_size;
     }
     """
-).substitute(background_dark=color.background_dark, 
-             text_light=color.text_light, 
-             text_dark=color.text_dark)
+)
+
+input_box = line_edit_template.substitute(
+    background_dark=color.background_dark, 
+    text_light=color.text_light, 
+    text_dark=color.text_dark,
+    font_size="12px"
+)
+
+form_input_box = line_edit_template.substitute(
+    background_dark=color.background_dark, 
+    text_light=color.text_light, 
+    text_dark=color.text_dark,
+    font_size="14px"
+)
+
 

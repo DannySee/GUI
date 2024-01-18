@@ -1,9 +1,9 @@
 {
     "slicers": [
-        "PRIMARY_KEY",
+        "TEAM",
+        "ASSOCIATE",
         "NOTES",
         "SR",
-        "YEAR",
-        "PERIOD"
+        "YEAR"
     ]
 }

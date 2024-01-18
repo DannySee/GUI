@@ -8,11 +8,11 @@ combobox_template = Template(
     QComboBox {
         background-color: $background_dark;
         border: none;
-        border-radius: 5px;
+        border-radius: $radius;
         padding: 8px;
         color: $text_color;
         font-family: "Microsoft Sans Serif";
-        font-size: 14px;
+        font-size: $size;
         outline: 0;
     }
     QComboBox::hover {
@@ -40,9 +40,19 @@ combobox_template = Template(
         color: $text_light;
         padding: 6px;
         font-family: "Microsoft Sans Serif";
-        font-size: 14px;
+        font-size: $size;
     }
     """
+)
+
+table_combo = combobox_template.substitute(
+    background_dark=color.background_dark, 
+    background_darkest=color.background_darkest,
+    text_light=color.text_light, 
+    light_gray_1=color.light_gray_1,
+    text_color=color.text_light,
+    size='12px',
+    radius='0px'
 )
 
 inactive = combobox_template.substitute(
@@ -50,7 +60,9 @@ inactive = combobox_template.substitute(
     background_darkest=color.background_darkest,
     text_light=color.text_light, 
     light_gray_1=color.light_gray_1,
-    text_color=color.text_dark
+    text_color=color.text_dark,
+    size='14px', 
+    radius='5px'
 )
 
 active = combobox_template.substitute(
@@ -58,7 +70,9 @@ active = combobox_template.substitute(
     background_darkest=color.background_darkest,
     text_light=color.text_light, 
     light_gray_1=color.light_gray_1,
-    text_color=color.text_light
+    text_color=color.text_light,
+    size='14px', 
+    radius='5px'
 )
 
 collapsed = combobox_template.substitute(
@@ -66,6 +80,7 @@ collapsed = combobox_template.substitute(
     background_darkest=color.background_darkest,
     text_light=color.text_light, 
     light_gray_1=color.light_gray_1,
-    text_color=color.text_light
+    text_color=color.text_light,
+    size='14px', 
+    radius='5px'
 )
-

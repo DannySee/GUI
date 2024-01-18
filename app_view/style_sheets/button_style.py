@@ -23,6 +23,19 @@ button_template = Template(
     """
 )
 
+toggle_discrete_blue = button_template.substitute(
+    background_color="transparent",
+    padding="8px",
+    border="none",
+    text_color=color.light_blue,
+    align="center",
+    border_radius="8px",
+    text_size="14px",
+    layout_direction="LeftToRight",
+    background_color_hover="transparent",
+    text_color_hover=color.lightest_blue
+)
+
 dialog_inactive = button_template.substitute(
     background_color=color.background_light_1,
     padding="8px",

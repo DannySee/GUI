@@ -1,6 +1,3 @@
-import sys
-import pandas as pd  
-
 from app_view.widgets.button_widget import ButtonWidget
 from app_view.widgets.combo_box_widget import ComboBoxWidget
 from app_view.widgets.frame_widget import FrameWidget
@@ -9,12 +6,11 @@ from app_view.widgets.scroll_area_widget import ScrollWidget, NoScrollWidget
 from app_view.widgets.splitter_widget import SplitterWidget
 from app_view.widgets.label_widget import LabelWidget
 from app_view.widgets.line_edit_widget import LineEditWidget
-from app_view.widgets.table_widget import TableWidget
+from app_view.widgets.table_widget import TableWidget, CustomDelegate
 from PyQt6.QtWidgets import QMainWindow, QSizePolicy
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon, QPixmap
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from typing import Protocol
-from app_view.ui_map import navi_map, combo_map
 from app_view.style_sheets import (button_style, splitter_style, table_style, universal_style, 
                                    combo_box_style, label_style, line_edit_style, frame_style, scroll_bar_style)
 
@@ -24,6 +20,17 @@ DEFAULT_MINIMUM_WIDTH = 200
 
 class Presenter(Protocol):
     def collapser_binding(self) -> None:
+        ...
+    def login_binding(self, email: str, password: str) -> None:
+        ...
+    def register_binding(self) -> None:
+        ...
+    def cancel_registration_binding(self) -> None:
+        ...
+    def complete_registration_binding(self, team: str, first_name: str, last_name: str, email: str, 
+                                      network_id: str, sus_id: str, password: str, confirm_password: str) -> None:
+        ...
+    def forgot_binding(self, email: str) -> None:
         ...
     def navigation_binding(self) -> None:
         ...
@@ -58,9 +65,13 @@ class View(QMainWindow):
         super().__init__()
         self.setGeometry(200, 500, 1000, 800)
         self.setWindowTitle("CS Hive")
+        self.navi_map = {}
 
         
-    def init_ui(self, presenter: Presenter) -> None:
+    def init_ui(self, presenter: Presenter, navi_map: dict) -> None:
+
+        # ------------------------------- save navigation map to object -----------------------
+        self.navi_map = navi_map
 
         # ------------------------------- application container -------------------------------
         self.app_container = FrameWidget(universal_style.dark_gray, VerticalBox(alignment=None))
@@ -73,7 +84,7 @@ class View(QMainWindow):
         # -------------------------------------- sidebar --------------------------------------
         
         # sidebar container
-        self.sidebar = FrameWidget(universal_style.light_gray_1, VerticalBox(), 
+        self.sidebar = FrameWidget(universal_style.light_gray_1, VerticalBox(), visible=False,
                                                 minimum_width=DEFAULT_MINIMUM_WIDTH, 
                                                 maximum_width=DEFAULT_MINIMUM_WIDTH+100)
         self.page_splitter.addWidget(self.sidebar)
@@ -114,6 +125,10 @@ class View(QMainWindow):
         self.page_scroll_area = ScrollWidget(universal_style.hidden,widget=self.page)
         self.main_page.layout().addWidget(self.page_scroll_area)
 
+        # user login
+        self.construct_login(self.page.layout(), presenter.login_binding, presenter.register_binding, presenter.forgot_binding)
+        self.construct_register(self.page.layout(), presenter.cancel_registration_binding, presenter.complete_registration_binding)
+        
         # landing page
         self.construct_landing_page(self.page.layout())
 
@@ -163,21 +178,20 @@ class View(QMainWindow):
         parent.addSpacing(20)
 
 
-
     def construct_navigation(self, parent: object, binding: callable) -> None:
 
         # sidebar navigation container
         self.navigation = FrameWidget(universal_style.hidden,VerticalBox(content_margins=[10,10,10,10],spacing=5), minimum_width=10)
-        self.navi_scroll_area = ScrollWidget(universal_style.hidden,widget=self.navigation,maximum_height=len(navi_map)*40+21)
+        self.navi_scroll_area = ScrollWidget(universal_style.hidden,widget=self.navigation,maximum_height=len(self.navi_map)*40+21)
         parent.addWidget(self.navi_scroll_area)
 
         # create a button widget for each navigation option, bind, and add to parent layout
-        for navi in navi_map:
+        for navi in self.navi_map:
             navi_button = ButtonWidget(
                 button_style.toggle_inactive, 
-                icon=navi_map[navi]["icon"], 
+                icon=self.navi_map[navi]["icon"], 
                 icon_size=[20,20], 
-                text=navi_map[navi]["text"], object_name=navi
+                text=self.navi_map[navi]["text"], object_name=navi
             )
             navi_button.clicked.connect(binding)
             self.navigation.layout().addWidget(navi_button)
@@ -259,37 +273,179 @@ class View(QMainWindow):
     def construct_toolbar(self, parent: object, save_binding: callable, import_binding: callable, export_binding: callable) -> None:
 
         # create toolbar container
-        self.toolbar = FrameWidget(frame_style.toolbar, 
-                                   HorizontalBox(content_margins=[5,2,5,2], spacing=2,alignment=Qt.AlignmentFlag.AlignLeft), 
-                                   vertical_size_policy=QSizePolicy.Policy.Maximum)
-        parent.addWidget(self.toolbar)
+        toolbar = FrameWidget(frame_style.toolbar, HorizontalBox(),fixed_height=26)
+        parent.addWidget(toolbar)
+
+        # toolbar container to toggle visibility of buttons
+        self.toolbar_container = FrameWidget(universal_style.hidden, HorizontalBox(content_margins=[5,2,5,2], spacing=2,alignment=Qt.AlignmentFlag.AlignLeft), visible=False)
+        toolbar.layout().addWidget(self.toolbar_container)
 
         # save button
         self.save_button = ButtonWidget(button_style.toolbar, text="Save", enabled=False)
         self.save_button.clicked.connect(save_binding)
-        self.toolbar.layout().addWidget(self.save_button)
+        self.toolbar_container.layout().addWidget(self.save_button)
 
-        # export button
-        self.export_button = ButtonWidget(button_style.toolbar, text="Export")
+         # export button
+        self.export_button = ButtonWidget(button_style.toolbar, text="Check Out", enabled=False)
         self.export_button.clicked.connect(export_binding)
-        self.toolbar.layout().addWidget(self.export_button)
+        self.toolbar_container.layout().addWidget(self.export_button)
 
         # import button
-        self.import_button = ButtonWidget(button_style.toolbar, text="Import")
+        self.import_button = ButtonWidget(button_style.toolbar, text="Check In")
         self.import_button.clicked.connect(import_binding)
-        self.toolbar.layout().addWidget(self.import_button)
+        self.toolbar_container.layout().addWidget(self.import_button)
 
+
+    def construct_login(self, parent: object, login_binding: callable, register_binding: callable, forgot_binding: callable) -> None:
+
+        # login page container
+        self.login_page = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter))
+        parent.addWidget(self.login_page)
+        
+        # login container
+        container = FrameWidget(universal_style.generic_border_pane, 
+                                layout=VerticalBox(content_margins=[20,20,20,20], spacing=10),
+                                horizontal_size_policy=QSizePolicy.Policy.Maximum, vertical_size_policy=QSizePolicy.Policy.Maximum)
+        self.login_page.layout().addWidget(container)
+
+        # login page header and sub header
+        login_header = LabelWidget(label_style.header, "Sign In")
+        container.layout().addWidget(login_header)
+        login_sub_header = LabelWidget(label_style.sub_header, "Commercial Services Hive        ")
+        container.layout().addWidget(login_sub_header)
+
+        # dividing line
+        dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1)
+        container.layout().addWidget(dividing_line)
+        container.layout().addSpacing(10)
+
+        # email inputbox 
+        email = LineEditWidget(line_edit_style.form_input_box, "Email")
+        container.layout().addWidget(email)
+
+        # password inputbox
+        password = LineEditWidget(line_edit_style.form_input_box, "Password", echo_mode=LineEditWidget.EchoMode.Password)
+        container.layout().addWidget(password)
+
+        # add spacer
+        container.layout().addSpacing(10)
+
+        # login button
+        login_button = ButtonWidget(button_style.dialog_primary, text="Login")
+        login_button.clicked.connect(lambda: login_binding(email.text(), password.text()))
+        container.layout().addWidget(login_button)
+
+        # add layout for register and forgot password buttons
+        button_layout = HorizontalBox(alignment=Qt.AlignmentFlag.AlignCenter)
+        container.layout().addLayout(button_layout)
+
+        # register button
+        register_button = ButtonWidget(button_style.toggle_discrete_blue, text="Register")
+        register_button.clicked.connect(register_binding)
+        button_layout.addWidget(register_button)
+
+        # spacer to separate register and forgot password buttons
+        button_layout.addStretch()
+
+        # forgot password button
+        self.forgot_button = ButtonWidget(button_style.toggle_discrete_blue, text="Forgot Password")
+        self.forgot_button.clicked.connect(lambda: forgot_binding(email.text()))
+        button_layout.addWidget(self.forgot_button)
+
+
+    def construct_register(self, parent: object, cancel_binding: callable, register_binding: callable) -> None:
+
+        # register page
+        self.register_page = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter), visible=False)
+        parent.addWidget(self.register_page)
+
+
+        # form container
+        container = FrameWidget(universal_style.generic_border_pane,
+                                        layout=VerticalBox(content_margins=[20,20,20,20], spacing=10),
+                                        horizontal_size_policy=QSizePolicy.Policy.Maximum, 
+                                        vertical_size_policy=QSizePolicy.Policy.Maximum)
+        self.register_page.layout().addWidget(container)
+
+        # register page label
+        register_header = LabelWidget(label_style.header, "Sign Up")
+        container.layout().addWidget(register_header)
+        register_sub_header = LabelWidget(label_style.sub_header, "Join the Commercial Services Hive")
+        container.layout().addWidget(register_sub_header)
+
+        # dividing line
+        dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1)
+        container.layout().addWidget(dividing_line)
+        container.layout().addSpacing(10)
+
+        # combo for team selection
+        teams = [navi['text'] for navi in self.navi_map.values()]
+        team_combo = ComboBoxWidget(combo_box_style.active, "--Select Team--")
+        team_combo.addItems(teams)
+        container.layout().addWidget(team_combo)
+
+        # register form fields
+        row = HorizontalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter)
+        container.layout().addLayout(row)
+        first_name = LineEditWidget(line_edit_style.form_input_box, "First Name")
+        row.addWidget(first_name)
+        last_name = LineEditWidget(line_edit_style.form_input_box, "Last Name")
+        row.addWidget(last_name)
+        email = LineEditWidget(line_edit_style.form_input_box, "Email")
+        container.layout().addWidget(email)
+        row = HorizontalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter)
+        container.layout().addLayout(row)
+        network_id = LineEditWidget(line_edit_style.form_input_box, "Network ID")
+        row.addWidget(network_id)
+        sus_id = LineEditWidget(line_edit_style.form_input_box, "SUS ID")
+        row.addWidget(sus_id)
+        password = LineEditWidget(line_edit_style.form_input_box, "Password", echo_mode=LineEditWidget.EchoMode.Password)
+        container.layout().addWidget(password)
+        confirm_password = LineEditWidget(line_edit_style.form_input_box, "Confirm Password", echo_mode=LineEditWidget.EchoMode.Password)
+        container.layout().addWidget(confirm_password)
+
+        # add spacer 
+        container.layout().addSpacing(10)
+
+        # register and cancel buttons
+        row = HorizontalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter)
+        container.layout().addLayout(row)
+        cancel_button = ButtonWidget(button_style.dialog_secondary, text="Cancel", fixed_width=140)
+        cancel_button.clicked.connect(cancel_binding)
+        row.addWidget(cancel_button)
+        register_button = ButtonWidget(button_style.dialog_primary, text="Register", fixed_width=140)
+        register_button.clicked.connect(lambda: register_binding(team_combo.currentText(), first_name.text(), last_name.text(), email.text(), network_id.text(), sus_id.text(), password.text(), confirm_password.text()))
+        row.addWidget(register_button)
+        
 
     def construct_landing_page(self, parent: object) -> None:
 
         # landing page container
-        self.landing_page = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter))
+        self.landing_page = FrameWidget(universal_style.hidden, VerticalBox(), visible=False)
         parent.addWidget(self.landing_page)
 
+        # landing page header
+        self.landing_page_header = LabelWidget(label_style.header, "")
+        self.landing_page.layout().addWidget(self.landing_page_header)
+
+        # spacer
+        self.landing_page.layout().addSpacing(10)
+
+        # landing page sub header
+        self.landing_page_sub_header = LabelWidget(label_style.sub_header, "")
+        self.landing_page.layout().addWidget(self.landing_page_sub_header)
+
+        # logo layout
+        logo_container = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter))
+        self.landing_page.layout().addWidget(logo_container)
+
+        # spacer 
+        logo_container.layout().addSpacing(20)
+
         # frame to hold icon
-        frame = FrameWidget(universal_style.generic_border_pane_transparent, VerticalBox(content_margins=[50,50,50,50],spacing=10, alignment=Qt.AlignmentFlag.AlignCenter),
+        container = FrameWidget(universal_style.generic_border_pane_round, VerticalBox(content_margins=[50,50,50,50],spacing=10, alignment=Qt.AlignmentFlag.AlignCenter),
                             vertical_size_policy=QSizePolicy.Policy.Fixed, horizontal_size_policy=QSizePolicy.Policy.Fixed)
-        self.landing_page.layout().addWidget(frame)
+        logo_container.layout().addWidget(container)
 
         # create hive image parameters
         max_width = 280
@@ -302,7 +458,7 @@ class View(QMainWindow):
             # create frame object and add to layout
             layout = HorizontalBox(alignment=Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(FrameWidget(universal_style.hive_segments, fixed_height=40, fixed_width=width))
-            frame.layout().addLayout(layout)
+            container.layout().addLayout(layout)
 
             # increment/decrement width
             width = width - 40 if over_the_hump else width + 40
@@ -471,7 +627,7 @@ class View(QMainWindow):
         # adjust navigation width and add text 
         self.navigation.setMaximumWidth(DEFAULT_MINIMUM_WIDTH + 100)
         for navi_button in self.navigation.findChildren(ButtonWidget):
-            navi_button.setText(navi_map[navi_button.objectName()]["text"])
+            navi_button.setText(self.navi_map[navi_button.objectName()]["text"])
 
         # adjust menu width and add text/visibility
         self.menu_container.setMaximumWidth(DEFAULT_MINIMUM_WIDTH + 1000)
@@ -571,6 +727,7 @@ class View(QMainWindow):
 
     def populate_table(self, model: object) -> None:
         self.table.setModel(model)
+        self.table.setItemDelegate(CustomDelegate())
 
 
     def populate_toolbox(self, tools: dict=None) -> None:
@@ -647,8 +804,7 @@ class View(QMainWindow):
 
         # set status indicator color
         if indicator == "red":
-            pass
-            #self.status_indicator.setStyleSheet(label_style.indicator_red)
+            self.status_indicator.setStyleSheet(label_style.indicator_red)
         elif indicator == "yellow":
             self.status_indicator.setStyleSheet(label_style.indicator_yellow)
         elif indicator == "green":
@@ -674,3 +830,36 @@ class View(QMainWindow):
     
     def toggle_save(self, enabled: bool) -> None:
         self.save_button.setEnabled(enabled)
+
+    
+    def toggle_export(self, enabled: bool) -> None:
+        self.export_button.setEnabled(enabled)
+
+    
+    def toggle_login_visibility(self, visible: bool) -> None:
+        self.login_page.setVisible(visible)
+
+
+    def toggle_register_visibility(self, visible: bool) -> None:
+        self.register_page.setVisible(visible)
+
+        # clear form
+        for field in self.register_page.findChildren(LineEditWidget):
+            field.clear()
+
+        # reset combo
+        self.register_page.findChild(ComboBoxWidget).setCurrentIndex(-1)
+
+
+    def toggle_landing_page_visibility(self, visible: bool, user: str="") -> None:
+        self.landing_page.setVisible(visible)
+        self.sidebar.setVisible(visible)
+
+        # populate landing page header and sub header if user is provided
+        if user != "":
+            self.landing_page_header.setText(f"Hi {user}!")
+            self.landing_page_sub_header.setText("Welcome to the Commercial Services Hive")
+
+
+    def toggle_toolbar_visibility(self, visible: bool) -> None:
+        self.toolbar_container.setVisible(visible)

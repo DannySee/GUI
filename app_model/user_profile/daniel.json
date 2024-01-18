@@ -1,0 +1,9 @@
+{
+    "team": "Quality Assurance",
+    "first_name": "Daniel",
+    "last_name": "Clark",
+    "email": "daniel.clark@sysco.com",
+    "network_id": "daniel",
+    "sus_id": "MUDAC000",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$O89Y1nsTi0MYm2FjQjkZ2g$QHMjbAYGQ7oPH+kkHksBncVG/SPUuI3XOIgJQaMDW2A"
+}

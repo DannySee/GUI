@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QFileDialog
 from PyQt6.QtGui import QStandardItem, QStandardItemModel, QIcon
 from PyQt6.QtCore import QItemSelectionModel
 from app_view.style_sheets import universal_style, label_style, list_style, button_style
@@ -31,6 +31,10 @@ class SlicerSettingsDialog(QDialog):
                     index = self.slicer_fields.indexFromItem(item)
                     self.selected_field_list.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
 
+                    if not self.apply_button.isEnabled():
+                        self.apply_button.setEnabled(True)
+                        self.apply_button.setStyleSheet(button_style.dialog_primary)
+
 
         def position_up_binding():
             selected = self.selected_field_list.selectionModel().selectedRows()
@@ -43,6 +47,10 @@ class SlicerSettingsDialog(QDialog):
                     self.slicer_fields.removeRow(selected_row + 1)
                     index = self.slicer_fields.indexFromItem(item)
                     self.selected_field_list.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
+
+                    if not self.apply_button.isEnabled():
+                        self.apply_button.setEnabled(True)
+                        self.apply_button.setStyleSheet(button_style.dialog_primary)
 
 
         def position_down_binding():
@@ -57,6 +65,10 @@ class SlicerSettingsDialog(QDialog):
                     index = self.slicer_fields.indexFromItem(item)
                     self.selected_field_list.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
 
+                    if not self.apply_button.isEnabled():
+                        self.apply_button.setEnabled(True)
+                        self.apply_button.setStyleSheet(button_style.dialog_primary)
+
 
         def position_bottom_binding():
             selected = self.selected_field_list.selectionModel().selectedRows()
@@ -69,6 +81,10 @@ class SlicerSettingsDialog(QDialog):
                     self.slicer_fields.removeRow(selected_row)
                     index = self.slicer_fields.indexFromItem(item)
                     self.selected_field_list.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select)
+
+                    if not self.apply_button.isEnabled():
+                        self.apply_button.setEnabled(True)
+                        self.apply_button.setStyleSheet(button_style.dialog_primary)
 
 
         # ------------------------------------ selection button bindings ------------------------------------
@@ -204,13 +220,13 @@ class SlicerSettingsDialog(QDialog):
         all_field_model = QStandardItemModel()
         slicer_model = QStandardItemModel()
 
-        # divide fields into appropriate models
+        # create model for all fields
         for field in all_fields:
-            item = QStandardItem(field)
-            if field in slicer_fields:
-                slicer_model.appendRow(item)
-            else:
-                all_field_model.appendRow(item)
+            if not field in slicer_fields: all_field_model.appendRow(QStandardItem(field))
+
+        # create model for existing slicer fields
+        for field in slicer_fields:
+            slicer_model.appendRow(QStandardItem(field))
 
         return all_field_model, slicer_model
     
@@ -265,4 +281,16 @@ class UnsavedChangesDialog(QDialog):
         # add stretch to center buttons
         button_layout.addStretch()
 
+
+class FileDialog(QFileDialog):
+    def __init__(self, option: ["import", "export"]):
+        super().__init__()
+        self.setDirectory(r'/Users/daniel/python_projects/GUI/app_view')
+
+        if option == "export":
+            self.setFileMode(QFileDialog.FileMode.Directory)
+            self.setOption(QFileDialog.Option.ShowDirsOnly)
+        elif option == "import":
+            self.setFileMode(QFileDialog.FileMode.AnyFile)
+            self.setNameFilter("*.csv")
 

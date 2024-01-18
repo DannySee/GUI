@@ -13,7 +13,7 @@ generic_border_pane = f"""
     border-radius:10px;
 """
 
-generic_border_pane_transparent = f"""
+generic_border_pane_round = f"""
     background-color:{color.background_light_1};
     border:1px solid {color.background_bright};
     border-radius:50px;
