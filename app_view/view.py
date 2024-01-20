@@ -7,6 +7,7 @@ from app_view.widgets.splitter_widget import SplitterWidget
 from app_view.widgets.label_widget import LabelWidget
 from app_view.widgets.line_edit_widget import LineEditWidget
 from app_view.widgets.table_widget import TableWidget, CustomDelegate
+from app_view.widgets.titlebar_widget import TitleBarWidget
 from PyQt6.QtWidgets import QMainWindow, QSizePolicy
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
@@ -64,8 +65,9 @@ class View(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setGeometry(200, 500, 1000, 800)
-        self.setWindowTitle("CS Hive")
-        self.navi_map = {}
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.titleBar = TitleBarWidget()
+        self.setMenuWidget(self.titleBar)
 
         
     def init_ui(self, presenter: Presenter, navi_map: dict) -> None:
@@ -74,7 +76,7 @@ class View(QMainWindow):
         self.navi_map = navi_map
 
         # ------------------------------- application container -------------------------------
-        self.app_container = FrameWidget(universal_style.dark_gray, VerticalBox(alignment=None))
+        self.app_container = FrameWidget(universal_style.dark_gray, VerticalBox(alignment=None), parent=self)
         self.setCentralWidget(self.app_container)
 
         # ---------------------- splitter to separate sidebar main page ----------------------
@@ -90,7 +92,7 @@ class View(QMainWindow):
         self.page_splitter.addWidget(self.sidebar)
         
         # sidebar collapser button and spacer to separate collapser button from navigation buttons
-        self.construct_sidebar_collapser(self.sidebar.layout(), presenter.collapser_binding)
+        self.construct_sidebar_collapser(self.sidebar, presenter.collapser_binding)
 
         # sidebar splitter to separate navigation buttons from menu dropdowns
         self.sidebar_splitter = SplitterWidget(Qt.Orientation.Vertical, splitter_style.visible,False, width=1)
@@ -100,60 +102,60 @@ class View(QMainWindow):
         self.construct_navigation(self.sidebar_splitter, presenter.navigation_binding)
 
         # sidebar menu box
-        self.menu = FrameWidget(universal_style.hidden, VerticalBox(content_margins=[10,10,10,10],spacing=5))
-        self.menu_scroll_area = ScrollWidget(universal_style.hidden, widget=self.menu)
+        self.menu = FrameWidget(universal_style.hidden, VerticalBox(content_margins=[10,10,10,10],spacing=5), parent=self.sidebar_splitter)
+        self.menu_scroll_area = ScrollWidget(universal_style.hidden, widget=self.menu, parent=self.sidebar_splitter)
         self.sidebar_splitter.addWidget(self.menu_scroll_area)
 
         # sidebar menu items
-        self.construct_menu(self.menu.layout(), presenter.combo_binding, presenter.toolbox_binding)
+        self.construct_menu(self.menu, presenter.combo_binding, presenter.toolbox_binding)
 
         # quick slicers
-        self.construct_slicers(self.menu.layout(), presenter.slicer_binding, presenter.clear_slicer_binding, 
+        self.construct_slicers(self.menu, presenter.slicer_binding, presenter.clear_slicer_binding, 
                                presenter.slicer_settings_binding)
 
         # -------------------------------------- page --------------------------------------
 
         # main page container
-        self.main_page = FrameWidget(universal_style.hidden, VerticalBox())
+        self.main_page = FrameWidget(universal_style.hidden, VerticalBox(), parent=self.page_splitter)
         self.page_splitter.addWidget(self.main_page)
 
         # toolbar 
-        self.construct_toolbar(self.main_page.layout(), presenter.save_binding, presenter.import_binding, presenter.export_binding)
+        self.construct_toolbar(self.main_page, presenter.save_binding, presenter.import_binding, presenter.export_binding)
 
         # page container
-        self.page = FrameWidget(universal_style.hidden, VerticalBox(content_margins=[30,40,30,30], spacing=10))
-        self.page_scroll_area = ScrollWidget(universal_style.hidden,widget=self.page)
+        self.page = FrameWidget(universal_style.hidden, VerticalBox(content_margins=[30,40,30,30], spacing=10), parent=self.main_page)
+        self.page_scroll_area = ScrollWidget(universal_style.hidden,widget=self.page, parent=self.main_page)
         self.main_page.layout().addWidget(self.page_scroll_area)
 
         # user login
-        self.construct_login(self.page.layout(), presenter.login_binding, presenter.register_binding, presenter.forgot_binding)
-        self.construct_register(self.page.layout(), presenter.cancel_registration_binding, presenter.complete_registration_binding)
+        self.construct_login(self.page, presenter.login_binding, presenter.register_binding, presenter.forgot_binding)
+        self.construct_register(self.page, presenter.cancel_registration_binding, presenter.complete_registration_binding)
         
         # landing page
-        self.construct_landing_page(self.page.layout())
+        self.construct_landing_page(self.page)
 
         # page header
-        self.header = LabelWidget(label_style.header)
+        self.header = LabelWidget(label_style.header, parent=self.page)
         self.page.layout().addWidget(self.header)
 
         # spacer to separate sub header from filters
         self.page.layout().addSpacing(15)
 
         # sub header and spacer to header from sub header 
-        self.construct_sub_header(self.page.layout(), presenter.refresh_binding)
+        self.construct_sub_header(self.page, presenter.refresh_binding)
 
         # filters
-        self.construct_filters(self.page.layout(), presenter.filter_toggle_binding, presenter.clear_filter_binding)
+        self.construct_filters(self.page, presenter.filter_toggle_binding, presenter.clear_filter_binding)
 
         # data table
         self.table = TableWidget(table_style.table, scroll_bar_style.table_vertical, scroll_bar_style.table_horizontal, visible=False)
         self.page.layout().addWidget(self.table)
 
         # hidden table container for loading/mid page purposes
-        self.construct_page_placeholder(self.page.layout())
+        self.construct_page_placeholder(self.page)
 
         # status bar 
-        self.construct_status_bar(self.main_page.layout())
+        self.construct_status_bar(self.main_page)
 
         # ----------------------------- splitter default position -----------------------------
 
@@ -166,23 +168,23 @@ class View(QMainWindow):
     def construct_sidebar_collapser(self, parent: object, binding: callable) -> None:
 
         # collapse button widget and bind to presenter operation
-        self.sidebar_collapser_button = ButtonWidget(button_style.discrete,icon=QIcon("app_view/icons/double-chevron-left.svg"))
+        self.sidebar_collapser_button = ButtonWidget(button_style.discrete,icon=QIcon("app_view/icons/double-chevron-left.svg"), parent=parent)
         self.sidebar_collapser_button.clicked.connect(binding)
 
         # create custom layout to push button to right of sidebar and add to parent layout
         sidebar_collapser_layout = HorizontalBox(content_margins=[5,5,5,5], alignment=Qt.AlignmentFlag.AlignRight)
         sidebar_collapser_layout.addWidget(self.sidebar_collapser_button)
-        parent.addLayout(sidebar_collapser_layout)
+        parent.layout().addLayout(sidebar_collapser_layout)
 
         # create spacer
-        parent.addSpacing(20)
+        parent.layout().addSpacing(20)
 
 
     def construct_navigation(self, parent: object, binding: callable) -> None:
 
         # sidebar navigation container
-        self.navigation = FrameWidget(universal_style.hidden,VerticalBox(content_margins=[10,10,10,10],spacing=5), minimum_width=10)
-        self.navi_scroll_area = ScrollWidget(universal_style.hidden,widget=self.navigation,maximum_height=len(self.navi_map)*40+21)
+        self.navigation = FrameWidget(universal_style.hidden,VerticalBox(content_margins=[10,10,10,10],spacing=5), minimum_width=10, parent=parent)
+        self.navi_scroll_area = ScrollWidget(universal_style.hidden,widget=self.navigation,maximum_height=len(self.navi_map)*40+21, parent=parent)
         parent.addWidget(self.navi_scroll_area)
 
         # create a button widget for each navigation option, bind, and add to parent layout
@@ -191,7 +193,8 @@ class View(QMainWindow):
                 button_style.toggle_inactive, 
                 icon=self.navi_map[navi]["icon"], 
                 icon_size=[20,20], 
-                text=self.navi_map[navi]["text"], object_name=navi
+                text=self.navi_map[navi]["text"], object_name=navi, 
+                parent=parent
             )
             navi_button.clicked.connect(binding)
             self.navigation.layout().addWidget(navi_button)
@@ -201,35 +204,35 @@ class View(QMainWindow):
 
         # sidebar combo container
         self.menu_container = FrameWidget(universal_style.hidden, vertical_size_policy=QSizePolicy.Policy.Fixed,visible=False,
-                                          layout=VerticalBox(content_margins=[0,20,0,10], spacing=5), minimum_width=10)
-        parent.addWidget(self.menu_container)
+                                          layout=VerticalBox(content_margins=[0,20,0,10], spacing=5), minimum_width=10, parent=parent)
+        parent.layout().addWidget(self.menu_container)
 
         # combo label
-        self.combo_label = LabelWidget(label_style.combo)
+        self.combo_label = LabelWidget(label_style.combo, parent=self.menu_container)
         self.menu_container.layout().addWidget(self.combo_label)
 
         # disabled button to hold collapsed combo icon
-        self.combo_icon = ButtonWidget(button_style.combo, visible=False, icon_size=[20,20], fixed_width=36)
+        self.combo_icon = ButtonWidget(button_style.combo, visible=False, icon_size=[20,20], fixed_width=36, parent=self.menu_container)
         self.menu_container.layout().addWidget(self.combo_icon)
         self.menu_container.layout().addSpacing(5)
 
         # combo dropdowns
-        self.combo_box = ComboBoxWidget(combo_box_style.inactive, "--Select Data--")
+        self.combo_box = ComboBoxWidget(combo_box_style.inactive, "--Select Data--", parent=self.menu_container)
         self.combo_box.currentIndexChanged.connect(combo_binding)
         self.menu_container.layout().addWidget(self.combo_box)
 
         # toolbox button 
-        self.toolbox_button = ButtonWidget(button_style.toggle_inactive, "Toolbox", icon=QIcon("app_view/icons/toolbox.svg"), icon_size=[20,20])
+        self.toolbox_button = ButtonWidget(button_style.toggle_inactive, "Toolbox", icon=QIcon("app_view/icons/toolbox.svg"), icon_size=[20,20], parent=self.menu_container)
         self.toolbox_button.clicked.connect(toobox_binding)
         self.menu_container.layout().addWidget(self.toolbox_button)
 
         # toolbox container
-        self.toolbox_container = FrameWidget(universal_style.generic_border_pane, VerticalBox(content_margins=[5,5,5,5],spacing=5), visible=False)
+        self.toolbox_container = FrameWidget(universal_style.generic_border_pane, VerticalBox(content_margins=[5,5,5,5],spacing=5), visible=False, parent=self.menu_container)
         self.menu_container.layout().addWidget(self.toolbox_container)
 
         # dividing line
         self.menu_container.layout().addSpacing(10)
-        self.dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1)
+        self.dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1, parent=self.menu_container)
         self.menu_container.layout().addWidget(self.dividing_line)
 
 
@@ -238,19 +241,19 @@ class View(QMainWindow):
 
         # slicer container
         self.slicer_container = FrameWidget(universal_style.hidden, VerticalBox(spacing=5), 
-                                            visible=False, vertical_size_policy=QSizePolicy.Policy.Maximum)
-        parent.addWidget(self.slicer_container)
+                                            visible=False, vertical_size_policy=QSizePolicy.Policy.Maximum, parent=parent)
+        parent.layout().addWidget(self.slicer_container)
 
         # layout to hold label and clear slicer button
         slicer_layout = HorizontalBox()
 
         # slicer label and stretch separator
-        slicer_label = LabelWidget(label_style.slicer, "Quick Slicers")
+        slicer_label = LabelWidget(label_style.slicer, "Quick Slicers", parent=self.slicer_container)
         slicer_layout.addWidget(slicer_label)
         slicer_layout.addStretch()
 
         # clear slicer button
-        self.clear_slicer_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/clear-filter.svg"), visible=False)
+        self.clear_slicer_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/clear-filter.svg"), visible=False, parent=self.slicer_container)
         self.clear_slicer_button.clicked.connect(clear_binding)
         slicer_layout.addWidget(self.clear_slicer_button)
 
@@ -259,13 +262,13 @@ class View(QMainWindow):
 
         # create a slicer widgets, bind, and add to parent layout
         for _ in range(count):
-            slicer = LineEditWidget(line_edit_style.input_box)
+            slicer = LineEditWidget(line_edit_style.input_box, parent=self.slicer_container)
             slicer.textChanged.connect(slicer_binding)
             self.slicer_container.layout().addWidget(slicer)
 
         # slicer settings button
         slicer_settings = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/settings.svg"),
-                                       fixed_width=26, tool_tip="Slicer Settings")
+                                       fixed_width=26, tool_tip="Slicer Settings", parent=self.slicer_container)
         slicer_settings.clicked.connect(settings_binding)
         self.slicer_container.layout().addWidget(slicer_settings)
 
@@ -273,25 +276,25 @@ class View(QMainWindow):
     def construct_toolbar(self, parent: object, save_binding: callable, import_binding: callable, export_binding: callable) -> None:
 
         # create toolbar container
-        toolbar = FrameWidget(frame_style.toolbar, HorizontalBox(),fixed_height=26)
-        parent.addWidget(toolbar)
+        toolbar = FrameWidget(frame_style.toolbar, HorizontalBox(), fixed_height=26, parent=parent)
+        parent.layout().addWidget(toolbar)
 
         # toolbar container to toggle visibility of buttons
-        self.toolbar_container = FrameWidget(universal_style.hidden, HorizontalBox(content_margins=[5,2,5,2], spacing=2,alignment=Qt.AlignmentFlag.AlignLeft), visible=False)
+        self.toolbar_container = FrameWidget(universal_style.hidden, HorizontalBox(content_margins=[5,2,5,2], spacing=2,alignment=Qt.AlignmentFlag.AlignLeft), visible=False, parent=toolbar)
         toolbar.layout().addWidget(self.toolbar_container)
 
         # save button
-        self.save_button = ButtonWidget(button_style.toolbar, text="Save", enabled=False)
+        self.save_button = ButtonWidget(button_style.toolbar, text="Save", enabled=False, parent=self.toolbar_container)
         self.save_button.clicked.connect(save_binding)
         self.toolbar_container.layout().addWidget(self.save_button)
 
          # export button
-        self.export_button = ButtonWidget(button_style.toolbar, text="Check Out", enabled=False)
+        self.export_button = ButtonWidget(button_style.toolbar, text="Check Out", enabled=False, parent=self.toolbar_container)
         self.export_button.clicked.connect(export_binding)
         self.toolbar_container.layout().addWidget(self.export_button)
 
         # import button
-        self.import_button = ButtonWidget(button_style.toolbar, text="Check In")
+        self.import_button = ButtonWidget(button_style.toolbar, text="Check In", parent=self.toolbar_container)
         self.import_button.clicked.connect(import_binding)
         self.toolbar_container.layout().addWidget(self.import_button)
 
@@ -299,39 +302,38 @@ class View(QMainWindow):
     def construct_login(self, parent: object, login_binding: callable, register_binding: callable, forgot_binding: callable) -> None:
 
         # login page container
-        self.login_page = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter))
-        parent.addWidget(self.login_page)
+        self.login_page = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter), parent=parent)
+        parent.layout().addWidget(self.login_page)
         
         # login container
-        container = FrameWidget(universal_style.generic_border_pane, 
-                                layout=VerticalBox(content_margins=[20,20,20,20], spacing=10),
-                                horizontal_size_policy=QSizePolicy.Policy.Maximum, vertical_size_policy=QSizePolicy.Policy.Maximum)
+        container = FrameWidget(universal_style.generic_border_pane, layout=VerticalBox(content_margins=[20,20,20,20], spacing=10),
+                                horizontal_size_policy=QSizePolicy.Policy.Maximum, vertical_size_policy=QSizePolicy.Policy.Maximum, parent=self.login_page)
         self.login_page.layout().addWidget(container)
 
         # login page header and sub header
-        login_header = LabelWidget(label_style.header, "Sign In")
+        login_header = LabelWidget(label_style.header, "Sign In", parent=container)
         container.layout().addWidget(login_header)
-        login_sub_header = LabelWidget(label_style.sub_header, "Commercial Services Hive        ")
+        login_sub_header = LabelWidget(label_style.sub_header, "Commercial Services Hive", parent=container)
         container.layout().addWidget(login_sub_header)
 
         # dividing line
-        dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1)
+        dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1, parent=container)
         container.layout().addWidget(dividing_line)
         container.layout().addSpacing(10)
 
         # email inputbox 
-        email = LineEditWidget(line_edit_style.form_input_box, "Email")
+        email = LineEditWidget(line_edit_style.form_input_box, "Email", parent=container)
         container.layout().addWidget(email)
 
         # password inputbox
-        password = LineEditWidget(line_edit_style.form_input_box, "Password", echo_mode=LineEditWidget.EchoMode.Password)
+        password = LineEditWidget(line_edit_style.form_input_box, "Password", echo_mode=LineEditWidget.EchoMode.Password, parent=container)
         container.layout().addWidget(password)
 
         # add spacer
         container.layout().addSpacing(10)
 
         # login button
-        login_button = ButtonWidget(button_style.dialog_primary, text="Login")
+        login_button = ButtonWidget(button_style.dialog_primary, text="Login", parent=container)
         login_button.clicked.connect(lambda: login_binding(email.text(), password.text()))
         container.layout().addWidget(login_button)
 
@@ -340,7 +342,7 @@ class View(QMainWindow):
         container.layout().addLayout(button_layout)
 
         # register button
-        register_button = ButtonWidget(button_style.toggle_discrete_blue, text="Register")
+        register_button = ButtonWidget(button_style.toggle_discrete_blue, text="Register", parent=container)
         register_button.clicked.connect(register_binding)
         button_layout.addWidget(register_button)
 
@@ -348,7 +350,7 @@ class View(QMainWindow):
         button_layout.addStretch()
 
         # forgot password button
-        self.forgot_button = ButtonWidget(button_style.toggle_discrete_blue, text="Forgot Password")
+        self.forgot_button = ButtonWidget(button_style.toggle_discrete_blue, text="Forgot Password", parent=container)
         self.forgot_button.clicked.connect(lambda: forgot_binding(email.text()))
         button_layout.addWidget(self.forgot_button)
 
@@ -356,52 +358,53 @@ class View(QMainWindow):
     def construct_register(self, parent: object, cancel_binding: callable, register_binding: callable) -> None:
 
         # register page
-        self.register_page = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter), visible=False)
-        parent.addWidget(self.register_page)
+        self.register_page = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter), visible=False, parent=parent)
+        parent.layout().addWidget(self.register_page)
 
 
         # form container
         container = FrameWidget(universal_style.generic_border_pane,
                                         layout=VerticalBox(content_margins=[20,20,20,20], spacing=10),
                                         horizontal_size_policy=QSizePolicy.Policy.Maximum, 
-                                        vertical_size_policy=QSizePolicy.Policy.Maximum)
+                                        vertical_size_policy=QSizePolicy.Policy.Maximum, 
+                                        parent=self.register_page)
         self.register_page.layout().addWidget(container)
 
         # register page label
-        register_header = LabelWidget(label_style.header, "Sign Up")
+        register_header = LabelWidget(label_style.header, "Sign Up", parent=container)
         container.layout().addWidget(register_header)
-        register_sub_header = LabelWidget(label_style.sub_header, "Join the Commercial Services Hive")
+        register_sub_header = LabelWidget(label_style.sub_header, "Join the Commercial Services Hive", parent=container)
         container.layout().addWidget(register_sub_header)
 
         # dividing line
-        dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1)
+        dividing_line = FrameWidget(universal_style.bright_gray, fixed_height=1, parent=container)
         container.layout().addWidget(dividing_line)
         container.layout().addSpacing(10)
 
         # combo for team selection
         teams = [navi['text'] for navi in self.navi_map.values()]
-        team_combo = ComboBoxWidget(combo_box_style.active, "--Select Team--")
+        team_combo = ComboBoxWidget(combo_box_style.active, "--Select Team--", parent=container)
         team_combo.addItems(teams)
         container.layout().addWidget(team_combo)
 
         # register form fields
         row = HorizontalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter)
         container.layout().addLayout(row)
-        first_name = LineEditWidget(line_edit_style.form_input_box, "First Name")
+        first_name = LineEditWidget(line_edit_style.form_input_box, "First Name", parent=container)
         row.addWidget(first_name)
-        last_name = LineEditWidget(line_edit_style.form_input_box, "Last Name")
+        last_name = LineEditWidget(line_edit_style.form_input_box, "Last Name", parent=container)
         row.addWidget(last_name)
-        email = LineEditWidget(line_edit_style.form_input_box, "Email")
+        email = LineEditWidget(line_edit_style.form_input_box, "Email", parent=container)
         container.layout().addWidget(email)
         row = HorizontalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter)
         container.layout().addLayout(row)
-        network_id = LineEditWidget(line_edit_style.form_input_box, "Network ID")
+        network_id = LineEditWidget(line_edit_style.form_input_box, "Network ID", parent=container)
         row.addWidget(network_id)
-        sus_id = LineEditWidget(line_edit_style.form_input_box, "SUS ID")
+        sus_id = LineEditWidget(line_edit_style.form_input_box, "SUS ID", parent=container)
         row.addWidget(sus_id)
-        password = LineEditWidget(line_edit_style.form_input_box, "Password", echo_mode=LineEditWidget.EchoMode.Password)
+        password = LineEditWidget(line_edit_style.form_input_box, "Password", echo_mode=LineEditWidget.EchoMode.Password, parent=container)
         container.layout().addWidget(password)
-        confirm_password = LineEditWidget(line_edit_style.form_input_box, "Confirm Password", echo_mode=LineEditWidget.EchoMode.Password)
+        confirm_password = LineEditWidget(line_edit_style.form_input_box, "Confirm Password", echo_mode=LineEditWidget.EchoMode.Password, parent=container)
         container.layout().addWidget(confirm_password)
 
         # add spacer 
@@ -410,10 +413,10 @@ class View(QMainWindow):
         # register and cancel buttons
         row = HorizontalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter)
         container.layout().addLayout(row)
-        cancel_button = ButtonWidget(button_style.dialog_secondary, text="Cancel", fixed_width=140)
+        cancel_button = ButtonWidget(button_style.dialog_secondary, text="Cancel", fixed_width=140, parent=container)
         cancel_button.clicked.connect(cancel_binding)
         row.addWidget(cancel_button)
-        register_button = ButtonWidget(button_style.dialog_primary, text="Register", fixed_width=140)
+        register_button = ButtonWidget(button_style.dialog_primary, text="Register", fixed_width=140, parent=container)
         register_button.clicked.connect(lambda: register_binding(team_combo.currentText(), first_name.text(), last_name.text(), email.text(), network_id.text(), sus_id.text(), password.text(), confirm_password.text()))
         row.addWidget(register_button)
         
@@ -421,22 +424,22 @@ class View(QMainWindow):
     def construct_landing_page(self, parent: object) -> None:
 
         # landing page container
-        self.landing_page = FrameWidget(universal_style.hidden, VerticalBox(), visible=False)
-        parent.addWidget(self.landing_page)
+        self.landing_page = FrameWidget(universal_style.hidden, VerticalBox(), visible=False, parent=parent)
+        parent.layout().addWidget(self.landing_page)
 
         # landing page header
-        self.landing_page_header = LabelWidget(label_style.header, "")
+        self.landing_page_header = LabelWidget(label_style.header, "", parent=self.landing_page)
         self.landing_page.layout().addWidget(self.landing_page_header)
 
         # spacer
         self.landing_page.layout().addSpacing(10)
 
         # landing page sub header
-        self.landing_page_sub_header = LabelWidget(label_style.sub_header, "")
+        self.landing_page_sub_header = LabelWidget(label_style.sub_header, "", parent=self.landing_page)
         self.landing_page.layout().addWidget(self.landing_page_sub_header)
 
         # logo layout
-        logo_container = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter))
+        logo_container = FrameWidget(universal_style.hidden, VerticalBox(alignment=Qt.AlignmentFlag.AlignCenter), parent=self.landing_page)
         self.landing_page.layout().addWidget(logo_container)
 
         # spacer 
@@ -444,7 +447,7 @@ class View(QMainWindow):
 
         # frame to hold icon
         container = FrameWidget(universal_style.generic_border_pane_round, VerticalBox(content_margins=[50,50,50,50],spacing=10, alignment=Qt.AlignmentFlag.AlignCenter),
-                            vertical_size_policy=QSizePolicy.Policy.Fixed, horizontal_size_policy=QSizePolicy.Policy.Fixed)
+                            vertical_size_policy=QSizePolicy.Policy.Fixed, horizontal_size_policy=QSizePolicy.Policy.Fixed, parent=logo_container)
         logo_container.layout().addWidget(container)
 
         # create hive image parameters
@@ -457,7 +460,7 @@ class View(QMainWindow):
 
             # create frame object and add to layout
             layout = HorizontalBox(alignment=Qt.AlignmentFlag.AlignCenter)
-            layout.addWidget(FrameWidget(universal_style.hive_segments, fixed_height=40, fixed_width=width))
+            layout.addWidget(FrameWidget(universal_style.hive_segments, fixed_height=40, fixed_width=width, parent=container))
             container.layout().addLayout(layout)
 
             # increment/decrement width
@@ -468,22 +471,22 @@ class View(QMainWindow):
     def construct_filters(self, parent: object, fitler_toggle_binding: callable, clear_filter_binding: callable) -> None:
         
         # filter frame 
-        self.filter_container = FrameWidget(frame_style.filter, VerticalBox(), vertical_size_policy=QSizePolicy.Policy.Minimum, visible=False)
-        parent.addWidget(self.filter_container)
+        self.filter_container = FrameWidget(frame_style.filter, VerticalBox(), vertical_size_policy=QSizePolicy.Policy.Minimum, visible=False, parent=parent)
+        parent.layout().addWidget(self.filter_container)
 
         # header layout 
         header_layout = HorizontalBox(spacing=10)
         self.filter_container.layout().addLayout(header_layout)
 
         # expand filter button
-        self.filter_toggle = ButtonWidget(button_style.filter, text="Filters", icon=QIcon("app_view/icons/chevron-down.svg"))
+        self.filter_toggle = ButtonWidget(button_style.filter, text="Filters", icon=QIcon("app_view/icons/chevron-down.svg"), parent=self.filter_container)
         self.filter_toggle.clicked.connect(fitler_toggle_binding)
         header_layout.addWidget(self.filter_toggle)
 
         # clear filter button 
         self.clear_filter = ButtonWidget(button_style.clear_filter, text="Clear Filters", 
                                          icon=QIcon("app_view/icons/clear-filter.svg"), 
-                                         visible=False, fixed_width=120)        
+                                         visible=False, fixed_width=120, parent=self.filter_container)        
         self.clear_filter.clicked.connect(clear_filter_binding)
         header_layout.addWidget(self.clear_filter)
 
@@ -492,18 +495,18 @@ class View(QMainWindow):
 
         # sub header layout
         self.sub_header_container = FrameWidget(universal_style.hidden, HorizontalBox(), visible=False, 
-                                                vertical_size_policy=QSizePolicy.Policy.Maximum)
-        parent.addWidget(self.sub_header_container)
+                                                vertical_size_policy=QSizePolicy.Policy.Maximum, parent=parent)
+        parent.layout().addWidget(self.sub_header_container)
 
         # sub header label 
-        self.sub_header = LabelWidget(label_style.sub_header)
+        self.sub_header = LabelWidget(label_style.sub_header, parent=self.sub_header_container)
         self.sub_header_container.layout().addWidget(self.sub_header)
 
         # add strech to separate label from 
         self.sub_header_container.layout().addStretch()
 
         # refresh timestamp 
-        self.refresh = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/refresh.svg"), tool_tip="Refresh")
+        self.refresh = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/refresh.svg"), tool_tip="Refresh", parent=self.sub_header_container)
         self.refresh.clicked.connect(refresh_binding)
         self.sub_header_container.layout().addWidget(self.refresh)
 
@@ -511,35 +514,35 @@ class View(QMainWindow):
     def construct_page_placeholder(self, parent: object) -> None:
 
         # loading container
-        self.page_placeholder = FrameWidget(universal_style.hidden, VerticalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter), visible=False)
-        parent.addWidget(self.page_placeholder)
+        self.page_placeholder = FrameWidget(universal_style.hidden, VerticalBox(spacing=10, alignment=Qt.AlignmentFlag.AlignCenter), visible=False, parent=parent)
+        parent.layout().addWidget(self.page_placeholder)
 
         # add spacer
         self.page_placeholder.layout().addSpacing(6)
 
         # sub header 
         ph_sub_header_layout = HorizontalBox()
-        ph_sub_header_label = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=400)
+        ph_sub_header_label = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=400, parent=self.page_placeholder)
         ph_sub_header_layout.addWidget(ph_sub_header_label)
         ph_sub_header_layout.addStretch()
-        ph_sub_header_button = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=160)
+        ph_sub_header_button = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=160, parent=self.page_placeholder)
         ph_sub_header_layout.addWidget(ph_sub_header_button)
         self.page_placeholder.layout().addLayout(ph_sub_header_layout)
 
         # filters
-        ph_filters = FrameWidget(frame_style.loader_light, VerticalBox([10,0,10,0], alignment=Qt.AlignmentFlag.AlignCenter), fixed_height=38)
+        ph_filters = FrameWidget(frame_style.loader_light, VerticalBox([10,0,10,0], alignment=Qt.AlignmentFlag.AlignCenter), fixed_height=38, parent=self.page_placeholder)
         self.page_placeholder.layout().addWidget(ph_filters)
         ph_filters_layout = HorizontalBox()
-        ph_filter_label = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=300)
+        ph_filter_label = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=300, parent=self.page_placeholder)
         ph_filters_layout.addWidget(ph_filter_label)
         ph_filters_layout.addStretch()
-        ph_filter_button = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=220)
+        ph_filter_button = FrameWidget(frame_style.loader_bright, fixed_height=20, maximum_width=220, parent=self.page_placeholder)
         ph_filters_layout.addWidget(ph_filter_button)
         ph_filters.layout().addLayout(ph_filters_layout)
 
         # table
-        ph_table = FrameWidget(universal_style.hidden, VerticalBox([20,20,20,20], spacing=20, alignment=Qt.AlignmentFlag.AlignTop))
-        ph_table_scroll = NoScrollWidget(universal_style.generic_border_pane, widget=ph_table, minimum_height=100)
+        ph_table = FrameWidget(universal_style.hidden, VerticalBox([20,20,20,20], spacing=20, alignment=Qt.AlignmentFlag.AlignTop), parent=self.page_placeholder)
+        ph_table_scroll = NoScrollWidget(universal_style.generic_border_pane, widget=ph_table, minimum_height=100, parent=self.page_placeholder)
         self.page_placeholder.layout().addWidget(ph_table_scroll)
 
         # table contents
@@ -549,13 +552,13 @@ class View(QMainWindow):
             if padding:
                 row_layout = HorizontalBox(alignment=Qt.AlignmentFlag.AlignLeft)
                 row_layout.addSpacing(40)
-                ph_row = FrameWidget(frame_style.loader_bright, fixed_height=20)
+                ph_row = FrameWidget(frame_style.loader_bright, fixed_height=20, parent=self.page_placeholder)
                 row_layout.addWidget(ph_row)
                 row_layout.addSpacing(40)
                 ph_table.layout().addLayout(row_layout)
                 padding = False
             else:
-                ph_row = FrameWidget(frame_style.loader_bright, fixed_height=20)
+                ph_row = FrameWidget(frame_style.loader_bright, fixed_height=20, parent=self.page_placeholder)
                 ph_table.layout().addWidget(ph_row)
                 padding = True
     
@@ -563,33 +566,33 @@ class View(QMainWindow):
     def construct_status_bar(self, parent: object) -> None:
 
         # status bar container
-        status_container = FrameWidget(frame_style.status_bar, HorizontalBox(), fixed_height=25)
-        parent.addWidget(status_container)
+        status_container = FrameWidget(frame_style.status_bar, HorizontalBox(), fixed_height=25, parent=parent)
+        parent.layout().addWidget(status_container)
 
         # status bar
         self.status_bar = FrameWidget(universal_style.hidden, visible=False,
-                                      layout=HorizontalBox(content_margins=[20,2,20,2], spacing=10, alignment=Qt.AlignmentFlag.AlignRight))
+            layout=HorizontalBox(content_margins=[20,2,20,2], spacing=10, alignment=Qt.AlignmentFlag.AlignRight), parent=status_container)
         status_container.layout().addWidget(self.status_bar)
 
         # status message
-        self.status_indicator = LabelWidget(label_style.indicator_neutral, fixed_width=14, fixed_height=14)
+        self.status_indicator = LabelWidget(label_style.indicator_neutral, fixed_width=14, fixed_height=14, parent=self.status_bar)
         self.status_bar.layout().addWidget(self.status_indicator)
-        self.save_status = LabelWidget(label_style.status, "No Changes")
+        self.save_status = LabelWidget(label_style.status, "No Changes", parent=self.status_bar)
         self.status_bar.layout().addWidget(self.save_status)
 
         # add stretch to center status message 
         self.status_bar.layout().addStretch()
 
         # table info
-        self.table_status = LabelWidget(label_style.status)
+        self.table_status = LabelWidget(label_style.status, parent=self.status_bar)
         self.status_bar.layout().addWidget(self.table_status)
 
         # add divinding line to separate table status from refresh state
-        dividing_line = FrameWidget(universal_style.bright_gray, fixed_width=1)
+        dividing_line = FrameWidget(universal_style.bright_gray, fixed_width=1, parent=self.status_bar)
         self.status_bar.layout().addWidget(dividing_line)
  
          # refresh state
-        self.refresh_state = LabelWidget(label_style.status)
+        self.refresh_state = LabelWidget(label_style.status, parent=self.status_bar)
         self.status_bar.layout().addWidget(self.refresh_state)
      
 
@@ -732,7 +735,7 @@ class View(QMainWindow):
 
     def populate_toolbox(self, tools: dict=None) -> None:
         if tools is None: 
-            self.toolbox_container.layout().addWidget(LabelWidget(label_style.slicer, "No tools added yet!"))
+            self.toolbox_container.layout().addWidget(LabelWidget(label_style.slicer, "No tools added yet!", parent=self.toolbox_container))
 
         # activate button and show toolbox
         self.toolbox_button.setStyleSheet(button_style.toggle_active)
@@ -764,7 +767,7 @@ class View(QMainWindow):
 
             # create filter field + binding and add to grid
             value = filter_map[field] if field in filter_map else ""
-            filter = LineEditWidget(line_edit_style.input_box, field, value)
+            filter = LineEditWidget(line_edit_style.input_box, field, value, parent=self.filter_container)
             filter.textChanged.connect(binding)
 
             # add widget to apprioriate grid cell

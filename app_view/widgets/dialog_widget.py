@@ -140,7 +140,7 @@ class SlicerSettingsDialog(QDialog):
         self.setLayout(VerticalBox(content_margins=[20,20,20,20], spacing=20))
 
         # popup header and spacer
-        popup_label = LabelWidget(label_style.text_bright, "Select (5) Quick Slicer fields to display in the sidebar.")
+        popup_label = LabelWidget(label_style.text_bright, "Select (5) Quick Slicer fields to display in the sidebar.", parent=self)
         self.layout().addWidget(popup_label)
 
         # layout to hold widgets
@@ -148,7 +148,7 @@ class SlicerSettingsDialog(QDialog):
         self.layout().addLayout(main_layout)
 
         # list view to display all available fields
-        self.all_field_list = ListWidget(list_style.list, self.all_fields, fixed_width=200, fixed_height=300)
+        self.all_field_list = ListWidget(list_style.list, self.all_fields, fixed_width=200, fixed_height=300, parent=self)
         main_layout.addWidget(self.all_field_list)
         
         # layout to hold selection buttons
@@ -157,19 +157,19 @@ class SlicerSettingsDialog(QDialog):
 
         # selection buttons and stretch spacers to center buttons 
         selection_layout.addStretch()
-        self.add_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-right.svg"), enabled=False)
+        self.add_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-right.svg"), enabled=False, parent=self)
         self.add_button.clicked.connect(add_button_binding)
         selection_layout.addWidget(self.add_button)
-        self.remove_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-left.svg"))
+        self.remove_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-left.svg"), parent=self)
         self.remove_button.clicked.connect(remove_button_binding)
         selection_layout.addWidget(self.remove_button)
-        self.remove_all_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/double-chevron-left.svg"))
+        self.remove_all_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/double-chevron-left.svg"), parent=self)
         self.remove_all_button.clicked.connect(remove_all_button_binding)
         selection_layout.addWidget(self.remove_all_button)
         selection_layout.addStretch()
 
         # list view to display selected slicer fields
-        self.selected_field_list = ListWidget(list_style.list, self.slicer_fields, fixed_width=200, fixed_height=300)
+        self.selected_field_list = ListWidget(list_style.list, self.slicer_fields, fixed_width=200, fixed_height=300, parent=self)
         main_layout.addWidget(self.selected_field_list)
 
         # layout to hold positional buttons
@@ -178,16 +178,16 @@ class SlicerSettingsDialog(QDialog):
 
         # positional buttons and stretch spacers to center buttons
         position_layout.addStretch()
-        position_top_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/double-chevron-up.svg"))
+        position_top_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/double-chevron-up.svg"), parent=self)
         position_top_button.clicked.connect(position_top_binding)
         position_layout.addWidget(position_top_button)
-        position_up_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-up.svg"))
+        position_up_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-up.svg"), parent=self)
         position_up_button.clicked.connect(position_up_binding)
         position_layout.addWidget(position_up_button)
-        position_down_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-down.svg"))
+        position_down_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/chevron-down.svg"), parent=self)
         position_down_button.clicked.connect(position_down_binding)
         position_layout.addWidget(position_down_button)
-        position_bottom_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/double-chevron-down.svg"))
+        position_bottom_button = ButtonWidget(button_style.discrete, icon=QIcon("app_view/icons/double-chevron-down.svg"), parent=self)
         position_bottom_button.clicked.connect(position_bottom_binding)
         position_layout.addWidget(position_bottom_button)
         position_layout.addStretch()
@@ -197,7 +197,7 @@ class SlicerSettingsDialog(QDialog):
         self.layout().addLayout(button_layout)
 
         # reset defaults button
-        self.reset_button = ButtonWidget(button_style.dialog_tertiary, "Reset Defaults", fixed_width=120)
+        self.reset_button = ButtonWidget(button_style.dialog_tertiary, "Reset Defaults", fixed_width=120, parent=self)
         self.reset_button.clicked.connect(self.reset_defaults)
         button_layout.addWidget(self.reset_button)
 
@@ -205,10 +205,10 @@ class SlicerSettingsDialog(QDialog):
         button_layout.addStretch()
 
         # apply and cancel buttons
-        self.apply_button = ButtonWidget(button_style.dialog_inactive, "Apply", fixed_width=80, enabled=False)
+        self.apply_button = ButtonWidget(button_style.dialog_inactive, "Apply", fixed_width=80, enabled=False, parent=self)
         self.apply_button.clicked.connect(self.accepted)
         button_layout.addWidget(self.apply_button)
-        self.cancel_button = ButtonWidget(button_style.dialog_secondary, "Cancel", fixed_width=80)
+        self.cancel_button = ButtonWidget(button_style.dialog_secondary, "Cancel", fixed_width=80, parent=self)
         self.cancel_button.clicked.connect(self.reject)
         button_layout.addWidget(self.cancel_button)
 
@@ -260,7 +260,7 @@ class UnsavedChangesDialog(QDialog):
         self.setLayout(VerticalBox(content_margins=[20,20,20,20], spacing=20))
 
         # popup header
-        popup_label = LabelWidget(label_style.text_bright, "You have unsaved changes. Would you like to save them?")
+        popup_label = LabelWidget(label_style.text_bright, "You have unsaved changes. Would you like to save them?", parent=self)
         self.layout().addWidget(popup_label)
 
         # create layout for buttons
@@ -271,10 +271,10 @@ class UnsavedChangesDialog(QDialog):
         button_layout.addStretch()
 
         # save, discard buttons
-        self.save_button = ButtonWidget(button_style.dialog_primary, "Save", fixed_width=80)
+        self.save_button = ButtonWidget(button_style.dialog_primary, "Save", fixed_width=80, parent=self)
         self.save_button.clicked.connect(self.accept)
         button_layout.addWidget(self.save_button)
-        self.discard_button = ButtonWidget(button_style.dialog_secondary, "Discard", fixed_width=80)
+        self.discard_button = ButtonWidget(button_style.dialog_secondary, "Discard", fixed_width=80, parent=self)
         self.discard_button.clicked.connect(self.reject)
         button_layout.addWidget(self.discard_button)
 

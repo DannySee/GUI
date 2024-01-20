@@ -11,6 +11,7 @@ if __name__ == "__main__":
     model = Model()
     view = View()
     presenter = Presenter(model, view)
+    
     presenter.run()
 
     sys.exit(app.exec())

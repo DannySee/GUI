@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QSize
 class TableWidget(QTableView):
     def __init__(self, style_sheet, vertical_scroll_style=None, horizontal_scroll_style=None, visible=True,
                  vertical_policy=QSizePolicy.Policy.Expanding, horizontal_policy=QSizePolicy.Policy.Expanding, minimum_height=300):
+        
         super().__init__()
 
         """

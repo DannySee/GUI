@@ -725,7 +725,6 @@ class Presenter:
                 self.view.toggle_login_visibility(False)
                 self.view.toggle_landing_page_visibility(True, res['user'])
 
-            #show ui
             self.view.show()
 
             self.binding_callable = True
