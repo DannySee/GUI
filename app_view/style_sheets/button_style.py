@@ -192,6 +192,34 @@ combo = button_template.substitute(
     text_color_hover=color.text_light
 )
 
+titlebar_generic = button_template.substitute(
+    background_color="transparent",
+    padding="6px",
+    border="none",
+    text_color=color.text_dark,
+    border_radius="0px",
+    text_size="14px",
+    layout_direction="LeftToRight",
+    background_color_hover=color.background_light_2,
+    align="center",
+    text_color_hover=color.text_light
+)
+
+titlebar_close = button_template.substitute(
+    background_color="transparent",
+    padding="6px",
+    border="none",
+    text_color=color.text_dark,
+    border_radius="0px",
+    text_size="14px",
+    layout_direction="LeftToRight",
+    background_color_hover=color.close_red,
+    align="center",
+    text_color_hover=color.text_light
+)
+
+
+
 
 
 

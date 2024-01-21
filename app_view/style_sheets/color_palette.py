@@ -29,5 +29,6 @@ success_green = "#55865A"
 warning_yellow = "#E0C256"
 error_red = "#B45B5B"
 hive_orange = "#AC8E49"
+close_red = "#A03B3B"
 
 

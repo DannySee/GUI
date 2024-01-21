@@ -27,6 +27,14 @@ toolbar = frame_template.substitute(
     border_color= "none",
     border_radius="0px",
     top_border_color="none",
+    bottom_border_color="none",
+)
+
+titlebar = frame_template.substitute(
+    background_color=color.background_darkest,
+    border_color= "none",
+    border_radius="0px",
+    top_border_color="none",
     bottom_border_color="1px solid " + color.background_light_2,
 )
 

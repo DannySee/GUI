@@ -1,39 +1,33 @@
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
+from app_view.widgets.button_widget import ButtonWidget
+from app_view.widgets.layout_widget import HorizontalBox
+from app_view.widgets.label_widget import LabelWidget
+from app_view.style_sheets import button_style, label_style, frame_style, universal_style
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QLabel
 from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QIcon
 
 class TitleBarWidget(QFrame):
     def __init__(self):
+
         super().__init__()
-        self.layout = QHBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.title = QLabel("My Application")
-        self.minimizeBtn = QPushButton("-")
-        self.maximizeBtn = QPushButton("□")
-        self.closeBtn = QPushButton("X")
+        self.layout = HorizontalBox()
+        self.setStyleSheet(frame_style.titlebar)
 
+        self.icon = ButtonWidget(universal_style.hidden, icon=QIcon("icon.svg"), parent=self)
+        self.title = LabelWidget(label_style.titlebar, "Hive", parent=self)
+        self.minimizeBtn = ButtonWidget(button_style.titlebar_generic, icon=QIcon("app_view/icons/window-minimize.svg"), parent=self)
+        self.maximizeBtn = ButtonWidget(button_style.titlebar_generic, icon=QIcon("app_view/icons/window-maximize.svg"), parent=self)
+        self.closeBtn = ButtonWidget(button_style.titlebar_close, icon=QIcon("app_view/icons/window-close.svg"), parent=self)
+
+        self.layout.addWidget(self.icon)
+        self.layout.addStretch()
         self.layout.addWidget(self.title)
         self.layout.addStretch()
         self.layout.addWidget(self.minimizeBtn)
         self.layout.addWidget(self.maximizeBtn)
         self.layout.addWidget(self.closeBtn)
         self.setLayout(self.layout)
-
-        # Styling
-        self.setStyleSheet("""
-            QFrame {
-                background-color: #181818;
-                color: white;
-            }
-            QPushButton {
-                border: none;
-                background-color: #181818;
-                color: white;
-            }
-            QPushButton:hover {
-                background-color: red;
-            }
-        """)
 
         self.minimizeBtn.clicked.connect(self.on_minimize)
         self.maximizeBtn.clicked.connect(self.on_maximize)

@@ -9,11 +9,14 @@ from app_view.widgets.line_edit_widget import LineEditWidget
 from app_view.widgets.table_widget import TableWidget, CustomDelegate
 from app_view.widgets.titlebar_widget import TitleBarWidget
 from PyQt6.QtWidgets import QMainWindow, QSizePolicy
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt, QRect, QSize, QPoint
+from PyQt6.QtGui import QIcon, QMouseEvent, QCursor
 from typing import Protocol
 from app_view.style_sheets import (button_style, splitter_style, table_style, universal_style, 
                                    combo_box_style, label_style, line_edit_style, frame_style, scroll_bar_style)
+
+
+
 
 
 DEFAULT_MINIMUM_WIDTH = 200
@@ -62,18 +65,132 @@ class Presenter(Protocol):
     
 
 class View(QMainWindow): 
+
     def __init__(self):
         super().__init__()
-        self.setGeometry(200, 500, 1000, 800)
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.titleBar = TitleBarWidget()
-        self.setMenuWidget(self.titleBar)
 
-        
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setGeometry(200, 500, 1000, 800)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        self.edgeMargin = 10
+        self.dragPos = QPoint()
+        self.resizing = False
+        self.resizeDirection = None
+        self.setMouseTracking(True)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        self.dragPos = event.globalPosition().toPoint()
+        self.resizing, self.resizeDirection = self.detectResizeRegion(self.dragPos)
+        if not self.resizing:
+            self.dragPos = event.globalPosition().toPoint()
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if event.buttons() == Qt.MouseButton.LeftButton and self.resizing:
+            self.setCursorShape(self.mapFromGlobal(QCursor.pos()))
+            self.performResize(event.globalPosition().toPoint())
+        elif event.buttons() == Qt.MouseButton.LeftButton:
+            self.move(self.pos() + (event.globalPosition().toPoint() - self.dragPos))
+            self.dragPos = event.globalPosition().toPoint()
+        else:
+            self.setCursorShape(self.mapFromGlobal(QCursor.pos()))
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self.resizing = False
+        self.setCursor(Qt.CursorShape.ArrowCursor)
+
+
+    def setCursorShape(self, pos: QPoint):
+        resizing, direction = self.detectResizeRegion(self.mapToGlobal(pos))
+        if resizing:
+            if direction in ['top-left', 'bottom-right']:
+                self.setCursor(Qt.CursorShape.SizeFDiagCursor)
+            elif direction in ['top-right', 'bottom-left']:
+                self.setCursor(Qt.CursorShape.SizeBDiagCursor)
+            elif direction in ['left', 'right']:
+                self.setCursor(Qt.CursorShape.SizeHorCursor)
+            elif direction in ['top', 'bottom']:
+                self.setCursor(Qt.CursorShape.SizeVerCursor)
+        else:
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+
+    def detectResizeRegion(self, globalPos):
+        rect = self.geometry()
+        topLeft = rect.topLeft()
+        bottomRight = rect.bottomRight()
+
+        inLeft = abs(globalPos.x() - topLeft.x()) < self.edgeMargin
+        inRight = abs(globalPos.x() - bottomRight.x()) < self.edgeMargin
+        inTop = abs(globalPos.y() - topLeft.y()) < self.edgeMargin
+        inBottom = abs(globalPos.y() - bottomRight.y()) < self.edgeMargin
+
+        if inTop and inLeft:
+            return True, 'top-left'
+        elif inTop and inRight:
+            return True, 'top-right'
+        elif inBottom and inLeft:
+            return True, 'bottom-left'
+        elif inBottom and inRight:
+            return True, 'bottom-right'
+        elif inLeft:
+            return True, 'left'
+        elif inRight:
+            return True, 'right'
+        elif inTop:
+            return True, 'top'
+        elif inBottom:
+            return True, 'bottom'
+        return False, None
+
+    def performResize(self, globalPos):
+        rect = QRect(self.geometry())
+        if 'left' in self.resizeDirection:
+            rect.setLeft(globalPos.x())
+        if 'right' in self.resizeDirection:
+            rect.setRight(globalPos.x())
+        if 'top' in self.resizeDirection:
+            rect.setTop(globalPos.y())
+        if 'bottom' in self.resizeDirection:
+            rect.setBottom(globalPos.y())
+        self.setGeometry(rect)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              
     def init_ui(self, presenter: Presenter, navi_map: dict) -> None:
 
         # ------------------------------- save navigation map to object -----------------------
         self.navi_map = navi_map
+
+        # ------------------------------- title bar -------------------------------
+        self.titleBar = TitleBarWidget()
+        self.setMenuWidget(self.titleBar)
 
         # ------------------------------- application container -------------------------------
         self.app_container = FrameWidget(universal_style.dark_gray, VerticalBox(alignment=None), parent=self)

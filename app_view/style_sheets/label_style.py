@@ -35,6 +35,15 @@ slicer = label_template.substitute(
     radius="0px",
 )
 
+titlebar = label_template.substitute(
+    background_color="transparent",
+    text_size="14px",
+    text_style="normal",
+    padding="0px",
+    text_color=color.text_dark,
+    radius="0px",
+)
+
 header = label_template.substitute(
     background_color="transparent",
     text_size="34px",
