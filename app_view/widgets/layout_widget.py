@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 class VerticalBox(QVBoxLayout):
     def __init__(self, content_margins=[0,0,0,0], spacing=0, spacer_item=None, alignment=Qt.AlignmentFlag.AlignTop):
         super().__init__()
+        
         self.setContentsMargins(*content_margins)
         self.setSpacing(spacing)
 

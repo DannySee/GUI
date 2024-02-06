@@ -1,9 +1,0 @@
-{
-    "slicers": [
-        "CUSTOMER",
-        "CONCEPT",
-        "PRICE_RULE",
-        "APPROVER",
-        "SR"
-    ]
-}

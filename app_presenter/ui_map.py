@@ -24,7 +24,7 @@ navi_map = {
         "page_header": "Deviated Agreements Team",
         "text":"Deviated Agreements",
         "icon":QIcon("app_view/icons/deviated-agreements.svg"),
-        "options":["DPM Agreements", "Customer Profile", "Deviation Loads", "Org Chart"],
+        "options":["DPM Agreements", "Customer Profile", "Deviation Loads", "Account Assignments", "DPM Org"],
     },
     "navi_usda": {
         "page_header": "USDA Agreements Team",
@@ -43,47 +43,37 @@ navi_map = {
 combo_map = {
     "SMS Agreements": {
         "sub_header": "SMS Agreements",
-        "table": None
+        "table": None,
+        "hidden": [0]
     },
     "Costing": {
         "sub_header": "Costing",
-        "table": None
+        "table": None,
+        "hidden": [0]
     },
     "Audit History": {
         "sub_header": "Audit History",
-        "table": None
+        "table": None,
+        "hidden": [0]
     },
     "Account Assignments": {
         "sub_header": "Deviated Account Assignments",
         "table": "cal_account_assignments",
-        "options": {
-            4: "TEAM_LEAD",
-            5: "TIER_1",
-            6: "TIER_2",
-            7: "TIER_3",
-            13: "CUST_TYPE",
-        },
         "hidden": [0,18,19,20,21,22]
     },
     "REBA Tracker": {
         "sub_header": "REBA Tracker",
-        "table": None
+        "table": None,
+        "hidden": [0]
     },
     "CIR Agreements": {
         "sub_header": "Agreements",
-        "table": None
+        "table": None,
+        "hidden": [0]
     },
     "DPM Agreements": {
         "sub_header": "Agreements",
         "table": "cal_programs",
-        "options": {
-            1: "DAB",
-            8: "VEND_AGMT_TYPE",
-            10: "COST_BASIS",
-            11: "CUST_AGMT_TYPE",
-            13: "REBATE_BASIS",
-            15: "APPROP_NAME",
-        },
         "date": [4,5],
         "hidden": [0]
     },
@@ -97,28 +87,29 @@ combo_map = {
         "table": "cal_deviation_loads",
         "hidden": [0]
     },
-    "Org Chart": {
-        "sub_header": "Org Chart",
-        "table": "ul_org",
-        "options": {
-            1: "TEAM_LEAD",
-            2: "ASSOCIATE"
-        },
+    "DPM Org": {
+        "sub_header": "Team Org",
+        "table": "team_org",
         "hidden": [0]
     },
     "USDA Agreements": {
         "sub_header": "Agreements",
-        "table": None
+        "table": None,
+        "hidden": [0]
     },
     "Bot Tracker": {
         "sub_header": "Bot Tracker",
-        "table": None
+        "table": None,
+        "hidden": [0]
     },
+    # STOPPED HERE - PICK BACK UP ON OPTIONS DROPDOWNS. ######################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
     "Price Rule Approval": {
         "sub_header": "Price Rule Approval Tracker",
         "table": "pr_master",
         "options": {
-            3: "CUSTOMER",
             5: "APPROVER",
             6: "APP_STATUS",
             9: "AUDIT_FLAG",
@@ -169,6 +160,7 @@ combo_map = {
     },
     "Quality: Price Rule": { 
         "sub_header": "Quality Metrics: Price Rule Accuracy",
-        "table": "dash_pricerule"
+        "table": "dash_pricerule",
+        "hidden": [0]
     },
 }

@@ -6,7 +6,6 @@ class ScrollWidget(QScrollArea):
     def __init__(self, style_sheet, layout=None, minimum_height=100, maximum_height=None, 
                  widget=None, scroll_policy=Qt.ScrollBarPolicy.ScrollBarAlwaysOff, 
                  minimum_width=100, visible=True, parent=None):
-        
         super().__init__(parent)
 
         self.setWidgetResizable(True)

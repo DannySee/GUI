@@ -5,8 +5,8 @@ class FrameWidget(QFrame):
     def __init__(self, style_sheet, layout=None, minimum_width=100, maximum_width=None, fixed_height=None, fixed_width=None, 
                  maximum_height=None, vertical_size_policy=QSizePolicy.Policy.Expanding, 
                  horizontal_size_policy=QSizePolicy.Policy.Expanding, visible=True, parent=None):
-        
         super().__init__(parent)
+        
         self.setStyleSheet(style_sheet)
         self.setMinimumWidth(minimum_width)
         self.setSizePolicy(horizontal_size_policy, vertical_size_policy)

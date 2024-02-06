@@ -7,6 +7,10 @@ import shutil
 from typing import Union
 from datetime import datetime
 from argon2 import PasswordHasher
+from app_model import connections as db
+from sqlalchemy import text
+import pyodbc
+from typing import Protocol
 
 
 # TEMPORARY
@@ -23,13 +27,13 @@ class Model:
         self.user = getpass.getuser()
         self.ph = PasswordHasher()
 
-    def get_user_options(self):
+    def get_user_options(self, table: str):
 
         # create user profile if it doesn't exist
         if not os.path.exists(f"app_model/custom_options/{self.user}"): self.create_user_profile(self.user)
 
         # get user defined table options
-        with open(f"app_model/custom_options/{self.user}/{self.table}.json", "r") as file:
+        with open(f"app_model/custom_options/{self.user}/{table}.json", "r") as file:
             options = json.load(file)
 
         return options
@@ -85,22 +89,53 @@ class Model:
             shutil.copy(f"app_model/custom_options/default/{file}", f"app_model/custom_options/{user}/{file}")
 
 
-    def handle_changes(self):
+    def handle_changes(self) -> None:
         self.table_changes = self.model.get_table_changes()
 
 
-    def get_table_model(self, table: str) -> object:
+    def get_table_model(self, table: str) -> tuple[object, dict]:
 
-        # pull data and create model
-        df = pd.read_csv(f"app_model/session_data/{table}.csv", keep_default_na=False)
-        self.model = TableModel(df, df, self.table_changes)
+        engine = db.sql_server_engine()
+
+        with engine.connect() as connection:
+            data_query = text(f"SELECT * FROM {table}")
+            data = pd.read_sql(data_query, connection)
+
+            options_query = text(f"""
+                SELECT * FROM table_options
+                WHERE TABLE_NAME = :table
+                ORDER BY DROP_OPTION DESC
+            """)
+            options_result = connection.execute(options_query, {'table': table}).mappings().all()
+
+            options = {}
+            for option in options_result:
+
+                # dynamic options
+                if option['STATIC'] == 0:
+                    parameters = option['DROP_OPTION'].split(";")
+                    query = f"SELECT DISTINCT {parameters[0]} FROM {parameters[1]}"
+                    
+                    if len(parameters) > 2:
+                        query += " WHERE " + " AND ".join(parameters[2:])
+                    
+                    query += f" ORDER BY {parameters[0]}"
+                    dynamic_query = text(query)
+                    dynamic_options = connection.execute(dynamic_query).fetchall()
+                    options[option['FIELD_INDEX']] = [opt[0] for opt in dynamic_options]
+
+                # static options
+                else:
+                    options.setdefault(option['FIELD_INDEX'], ['', ]).insert(0, option['DROP_OPTION'])
+
+        self.model = TableModel(data, data, self.table_changes)
 
         # connect change listener and assign table data
         self.model.dataChanged.connect(self.handle_changes)
         self.table_data = self.model.get_table_data().astype(str)
         self.table = table
 
-        return self.model
+        return self.model, options
     
 
     def update_table_model(self, df: pd.DataFrame) -> object:
@@ -112,19 +147,46 @@ class Model:
         return self.model
     
 
-    def save_changes(self) -> None:
+    def save_changes(self) -> bool:
 
-        # this is all temporary - to be replaced by server acctions
-        df = pd.read_csv(f"app_model/session_data/{self.table}.csv")
+        with db.sql_server() as sql_server:  # This opens the connection
+            try:
+                for row in self.table_changes:
+                    updates = ", ".join([f"{col} = ?" for col in self.table_changes[row]])
+                    query = f"UPDATE {self.table} SET {updates} WHERE PRIMARY_KEY = ?"
+                    params = list(self.table_changes[row].values()) + [row]
+                    print(updates)
+                    print( params)
+                    sql_server.execute(query, params)
 
-        for row in self.table_changes:
-            for col in self.table_changes[row]:
-                df.loc[row, col] = self.table_changes[row][col]
-                
-        df.to_csv(f"app_model/session_data/{self.table}.csv", index=False)
+                # If all updates are successful, commit the transaction
+                sql_server.commit()
+
+            except pyodbc.DataError as e:
+                sql_server.rollback()
+                print("Upload Failed: Data Error")
+                return False
+
+            except Exception as e:
+                # If an error occurs, rollback the transaction
+                sql_server.rollback()
+                # Handle or raise the exception as needed
+                print(f"Update failed: {e}")
+                return False
+                    
+        # commenting out for now - this is how the local CSV is saved, but I want to see how the server will handle this
+        #df = pd.read_csv(f"app_model/session_data/{self.table}.csv")
+
+        #for row in self.table_changes:
+        #    for col in self.table_changes[row]:
+        #        df.loc[row, col] = self.table_changes[row][col]
+        #        
+        #df.to_csv(f"app_model/session_data/{self.table}.csv", index=False)
 
         # This is perminent
         self.clear_changes()
+
+        return True
 
 
     def get_table_changes(self) -> dict:
@@ -352,11 +414,13 @@ class TableModel(QtCore.QAbstractTableModel):
         return False
     
     def handleChanges(self, row, col, value):
-        if row not in self.table_changes: 
-            self.table_changes[row] = {} 
+
+        primary_key = str(self.table_data.iloc[row].PRIMARY_KEY)
+        if primary_key not in self.table_changes: 
+            self.table_changes[primary_key] = {} 
 
         column_name = self._data.columns[col]  
-        self.table_changes[row][column_name] = value  
+        self.table_changes[primary_key][column_name] = value  
         print(self.table_changes)
 
 
@@ -377,49 +441,3 @@ class TableModel(QtCore.QAbstractTableModel):
     
 ############################## in construction ############################### 
 # --------------------------- department classes ---------------------------
-class QualityAssuranceToolbox():
-    def __init__(self):
-        super().__init__()
-        self.table = "quality_assurance"
-        self.model = Model()
-        self.table_model = self.model.get_table_model(self.table)
-        self.table_data = self.model.get_table_data()
-        self.table_changes = self.model.get_table_changes()
-        self.options = self.model.get_user_options()
-        self.options = self.options["quality_assurance"]
-
-    def get_table_model(self) -> object:
-        return self.table_model
-    
-
-    def get_table_data(self) -> pd.DataFrame:
-        return self.table_data
-    
-
-    def get_table_changes(self) -> dict:
-        return self.table_changes
-    
-
-    def get_options(self) -> dict:
-        return self.options
-    
-
-    def update_table_model(self, df: pd.DataFrame) -> object:
-        self.table_model = self.model.update_table_model(df)
-        return self.table_model
-    
-
-    def save_changes(self) -> None:
-        self.model.save_changes()
-    
-
-    def clear_changes(self) -> None:
-        self.model.clear_changes()
-    
-
-    def update_user_options(self, option: str, options: list[str]) -> None:
-        self.model.update_user_options(option, options)
-    
-
-    def reset_user_profile(self, option: str) -> None:
-        self.options = self.model.reset_user_profile(option)

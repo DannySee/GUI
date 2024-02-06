@@ -1,1 +1,9 @@
-{"slicers": ["CUSTOMER", "PROGRAM_DESCRIPTION", "LEAD_VA", "LEAD_CA", "PACKET"]}
+{
+    "slicers": [
+        "CUSTOMER",
+        "PROGRAM_DESCRIPTION",
+        "LEAD_VA",
+        "LEAD_CA",
+        "COMMENTS"
+    ]
+}

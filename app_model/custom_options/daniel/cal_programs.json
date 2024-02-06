@@ -1,9 +1,0 @@
-{
-    "slicers": [
-        "CUSTOMER",
-        "PROGRAM_DESCRIPTION",
-        "LEAD_CA",
-        "PACKET",
-        "COST_BASIS"
-    ]
-}

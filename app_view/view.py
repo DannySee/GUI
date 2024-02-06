@@ -8,16 +8,14 @@ from app_view.widgets.label_widget import LabelWidget
 from app_view.widgets.line_edit_widget import LineEditWidget
 from app_view.widgets.table_widget import TableWidget, CustomDelegate
 from app_view.widgets.titlebar_widget import TitleBarWidget
+from app_view.widgets.spinner_widget import SpinnerWidget
 from PyQt6.QtWidgets import QMainWindow, QSizePolicy
-from PyQt6.QtCore import Qt, QRect, QSize, QPoint
-from PyQt6.QtGui import QIcon, QMouseEvent, QCursor
+from PyQt6.QtCore import Qt, QRect, QPoint, QEvent, QModelIndex
+from PyQt6.QtGui import QIcon, QMouseEvent, QHoverEvent
 from typing import Protocol
 from app_view.style_sheets import (button_style, splitter_style, table_style, universal_style, 
                                    combo_box_style, label_style, line_edit_style, frame_style, scroll_bar_style)
-
-
-
-
+import time
 
 DEFAULT_MINIMUM_WIDTH = 200
 
@@ -42,7 +40,7 @@ class Presenter(Protocol):
         ...
     def slicer_binding(self) -> None:
         ...
-    def clear_slicer_binding(self) -> None:
+    def slicer_binding(self, field: str, value: str) -> None:
         ...
     def slicer_settings_binding(self) -> None:
         ...
@@ -56,7 +54,7 @@ class Presenter(Protocol):
         ...
     def clear_filter_binding(self) -> None:
         ...
-    def filter_binding(self) -> None:
+    def filter_binding(self, field: str, value: str) -> None:
         ...
     def refresh_binding(self) -> None:
         ...
@@ -69,128 +67,27 @@ class View(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # ------------------------------- window properties -------------------------------
+
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         self.setGeometry(200, 500, 1000, 800)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self.setMinimumSize(400,400)
         self.edgeMargin = 10
         self.dragPos = QPoint()
         self.resizing = False
         self.resizeDirection = None
-        self.setMouseTracking(True)
+        self.toggle = False
 
-    def mousePressEvent(self, event: QMouseEvent):
-        self.dragPos = event.globalPosition().toPoint()
-        self.resizing, self.resizeDirection = self.detectResizeRegion(self.dragPos)
-        if not self.resizing:
-            self.dragPos = event.globalPosition().toPoint()
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        if event.buttons() == Qt.MouseButton.LeftButton and self.resizing:
-            self.setCursorShape(self.mapFromGlobal(QCursor.pos()))
-            self.performResize(event.globalPosition().toPoint())
-        elif event.buttons() == Qt.MouseButton.LeftButton:
-            self.move(self.pos() + (event.globalPosition().toPoint() - self.dragPos))
-            self.dragPos = event.globalPosition().toPoint()
-        else:
-            self.setCursorShape(self.mapFromGlobal(QCursor.pos()))
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        self.resizing = False
-        self.setCursor(Qt.CursorShape.ArrowCursor)
-
-
-    def setCursorShape(self, pos: QPoint):
-        resizing, direction = self.detectResizeRegion(self.mapToGlobal(pos))
-        if resizing:
-            if direction in ['top-left', 'bottom-right']:
-                self.setCursor(Qt.CursorShape.SizeFDiagCursor)
-            elif direction in ['top-right', 'bottom-left']:
-                self.setCursor(Qt.CursorShape.SizeBDiagCursor)
-            elif direction in ['left', 'right']:
-                self.setCursor(Qt.CursorShape.SizeHorCursor)
-            elif direction in ['top', 'bottom']:
-                self.setCursor(Qt.CursorShape.SizeVerCursor)
-        else:
-            self.setCursor(Qt.CursorShape.ArrowCursor)
-
-    def detectResizeRegion(self, globalPos):
-        rect = self.geometry()
-        topLeft = rect.topLeft()
-        bottomRight = rect.bottomRight()
-
-        inLeft = abs(globalPos.x() - topLeft.x()) < self.edgeMargin
-        inRight = abs(globalPos.x() - bottomRight.x()) < self.edgeMargin
-        inTop = abs(globalPos.y() - topLeft.y()) < self.edgeMargin
-        inBottom = abs(globalPos.y() - bottomRight.y()) < self.edgeMargin
-
-        if inTop and inLeft:
-            return True, 'top-left'
-        elif inTop and inRight:
-            return True, 'top-right'
-        elif inBottom and inLeft:
-            return True, 'bottom-left'
-        elif inBottom and inRight:
-            return True, 'bottom-right'
-        elif inLeft:
-            return True, 'left'
-        elif inRight:
-            return True, 'right'
-        elif inTop:
-            return True, 'top'
-        elif inBottom:
-            return True, 'bottom'
-        return False, None
-
-    def performResize(self, globalPos):
-        rect = QRect(self.geometry())
-        if 'left' in self.resizeDirection:
-            rect.setLeft(globalPos.x())
-        if 'right' in self.resizeDirection:
-            rect.setRight(globalPos.x())
-        if 'top' in self.resizeDirection:
-            rect.setTop(globalPos.y())
-        if 'bottom' in self.resizeDirection:
-            rect.setBottom(globalPos.y())
-        self.setGeometry(rect)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-              
+    
     def init_ui(self, presenter: Presenter, navi_map: dict) -> None:
 
         # ------------------------------- save navigation map to object -----------------------
         self.navi_map = navi_map
 
         # ------------------------------- title bar -------------------------------
-        self.titleBar = TitleBarWidget()
-        self.setMenuWidget(self.titleBar)
+        self.title_bar = TitleBarWidget()
+        self.setMenuWidget(self.title_bar)
 
         # ------------------------------- application container -------------------------------
         self.app_container = FrameWidget(universal_style.dark_gray, VerticalBox(alignment=None), parent=self)
@@ -252,8 +149,12 @@ class View(QMainWindow):
         self.construct_landing_page(self.page)
 
         # page header
+        self.header_layout = HorizontalBox(spacing=10)
+        self.page.layout().addLayout(self.header_layout)
         self.header = LabelWidget(label_style.header, parent=self.page)
-        self.page.layout().addWidget(self.header)
+        self.header_layout.addWidget(self.header)
+        self.spinner = SpinnerWidget()
+        self.header_layout.addWidget(self.spinner)
 
         # spacer to separate sub header from filters
         self.page.layout().addSpacing(15)
@@ -280,8 +181,6 @@ class View(QMainWindow):
         self.page_splitter.setStretchFactor(0, 0)
         self.page_splitter.setStretchFactor(1, 1)
 
-
-    # ------------------------------ ui cunstructor functions ------------------------------
     def construct_sidebar_collapser(self, parent: object, binding: callable) -> None:
 
         # collapse button widget and bind to presenter operation
@@ -379,8 +278,8 @@ class View(QMainWindow):
 
         # create a slicer widgets, bind, and add to parent layout
         for _ in range(count):
-            slicer = LineEditWidget(line_edit_style.input_box, parent=self.slicer_container)
-            slicer.textChanged.connect(slicer_binding)
+            slicer = LineEditWidget(line_edit_style.input_box, parent=self.slicer_container, debounce_event=slicer_binding)
+            #slicer.focusOutEvent().connect(slicer_binding)
             self.slicer_container.layout().addWidget(slicer)
 
         # slicer settings button
@@ -658,9 +557,9 @@ class View(QMainWindow):
         ph_filters.layout().addLayout(ph_filters_layout)
 
         # table
-        ph_table = FrameWidget(universal_style.hidden, VerticalBox([20,20,20,20], spacing=20, alignment=Qt.AlignmentFlag.AlignTop), parent=self.page_placeholder)
-        ph_table_scroll = NoScrollWidget(universal_style.generic_border_pane, widget=ph_table, minimum_height=100, parent=self.page_placeholder)
-        self.page_placeholder.layout().addWidget(ph_table_scroll)
+        self.ph_table = FrameWidget(universal_style.hidden, VerticalBox([20,20,20,20], spacing=20, alignment=Qt.AlignmentFlag.AlignTop), parent=self.page_placeholder)
+        self.ph_table_scroll = NoScrollWidget(universal_style.generic_border_pane, widget=self.ph_table, minimum_height=100, parent=self.page_placeholder)
+        self.page_placeholder.layout().addWidget(self.ph_table_scroll)
 
         # table contents
         padding = True
@@ -672,11 +571,11 @@ class View(QMainWindow):
                 ph_row = FrameWidget(frame_style.loader_bright, fixed_height=20, parent=self.page_placeholder)
                 row_layout.addWidget(ph_row)
                 row_layout.addSpacing(40)
-                ph_table.layout().addLayout(row_layout)
+                self.ph_table.layout().addLayout(row_layout)
                 padding = False
             else:
                 ph_row = FrameWidget(frame_style.loader_bright, fixed_height=20, parent=self.page_placeholder)
-                ph_table.layout().addWidget(ph_row)
+                self.ph_table.layout().addWidget(ph_row)
                 padding = True
     
 
@@ -814,7 +713,6 @@ class View(QMainWindow):
         # update combo box style
         self.clear_slicer_button.setVisible(visible)
 
-
     def clear_slicers(self) -> None:
 
         # hide clear slicer button
@@ -845,9 +743,15 @@ class View(QMainWindow):
         self.sub_header.setText(text)
 
 
-    def populate_table(self, model: object) -> None:
+    def populate_table(self, model: object, options: dict, hidden_columns: list[int]) -> None:
         self.table.setModel(model)
-        self.table.setItemDelegate(CustomDelegate())
+        self.table.setItemDelegate(CustomDelegate(options))
+
+        for idx in range(self.table.model().columnCount(QModelIndex())):
+            if idx in hidden_columns:
+                self.table.hideColumn(idx)
+            else:
+                self.table.showColumn(idx)
 
 
     def populate_toolbox(self, tools: dict=None) -> None:
@@ -884,8 +788,7 @@ class View(QMainWindow):
 
             # create filter field + binding and add to grid
             value = filter_map[field] if field in filter_map else ""
-            filter = LineEditWidget(line_edit_style.input_box, field, value, parent=self.filter_container)
-            filter.textChanged.connect(binding)
+            filter = LineEditWidget(line_edit_style.input_box, field, value, parent=self.filter_container, debounce_event=binding)
 
             # add widget to apprioriate grid cell
             if index % 7 == 0: row += 1
@@ -983,3 +886,102 @@ class View(QMainWindow):
 
     def toggle_toolbar_visibility(self, visible: bool) -> None:
         self.toolbar_container.setVisible(visible)
+
+    
+    def start_spinner(self) -> None:
+        self.spinner.start()
+
+
+    def stop_spinner(self) -> None:
+        self.spinner.stop()
+
+
+    def toggle_combo_functionality(self, enabled: bool) -> None:
+        self.combo_box.setEnabled(enabled)
+
+    # ------------------------------ ui event functions ------------------------------
+
+    def mousePressEvent(self, event: QMouseEvent):
+        self.dragPos = event.globalPosition().toPoint()
+        self.resizing, self.resizeDirection = self.detectResizeRegion(self.dragPos)
+        if not self.resizing:
+            self.dragPos = event.globalPosition().toPoint()
+
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if event.buttons() == Qt.MouseButton.LeftButton and self.resizing:
+            self.performResize(event.globalPosition().toPoint())
+
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self.resizing = False
+
+
+    def detectResizeRegion(self, globalPos):
+        rect = self.geometry()
+        topLeft = rect.topLeft()
+        bottomRight = rect.bottomRight()
+
+        inLeft = abs(globalPos.x() - topLeft.x()) < self.edgeMargin 
+        inRight = abs(globalPos.x() - bottomRight.x()) < self.edgeMargin
+        inTop = abs(globalPos.y() - topLeft.y()) < self.edgeMargin 
+        inBottom = abs(globalPos.y() - bottomRight.y()) < self.edgeMargin
+
+        if inTop and inLeft:
+            return True, 'top-left'
+        elif inTop and inRight:
+            return True, 'top-right'
+        elif inBottom and inLeft:
+            return True, 'bottom-left'
+        elif inBottom and inRight:
+            return True, 'bottom-right'
+        elif inLeft:
+            return True, 'left'
+        elif inRight:
+            return True, 'right'
+        elif inTop:
+            return True, 'top'
+        elif inBottom:
+            return True, 'bottom'
+        return False, None
+
+
+    def performResize(self, globalPos):
+        rect = QRect(self.geometry())
+        if 'left' in self.resizeDirection:
+            rect.setLeft(globalPos.x())
+        if 'right' in self.resizeDirection:
+            rect.setRight(globalPos.x())
+        if 'top' in self.resizeDirection:
+            rect.setTop(globalPos.y())
+        if 'bottom' in self.resizeDirection:
+            rect.setBottom(globalPos.y())
+        self.setGeometry(rect)
+
+
+    def event(self, event):
+        if event.type() == QEvent.Type.HoverMove:
+            hoverEvent = event  # Type hinting for clarity
+            assert isinstance(hoverEvent, QHoverEvent), "Event is expected to be a QHoverEvent"
+            self.updateCursorShape(hoverEvent.position().toPoint())
+        return super().event(event)
+
+
+    def updateCursorShape(self, pos: QPoint):
+        rect = self.rect()
+        leftEdge = pos.x() < self.edgeMargin and pos.y() > self.title_bar.height()
+        rightEdge = pos.x() > rect.width() - self.edgeMargin and pos.y() > self.title_bar.height()
+        bottomEdge = pos.y() > rect.height() - self.edgeMargin
+
+        if rightEdge and bottomEdge:
+            self.setCursor(Qt.CursorShape.SizeFDiagCursor)
+        elif leftEdge and bottomEdge:
+            self.setCursor(Qt.CursorShape.SizeBDiagCursor)
+        elif leftEdge or rightEdge:
+            self.setCursor(Qt.CursorShape.SizeHorCursor)
+        elif bottomEdge:
+            self.setCursor(Qt.CursorShape.SizeVerCursor)
+        else:
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+
+    

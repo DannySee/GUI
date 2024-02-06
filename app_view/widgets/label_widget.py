@@ -6,8 +6,8 @@ from PyQt6.QtCore import Qt
 
 class LabelWidget(QLabel):
     def __init__(self, style_sheet, text="", visible=True, fixed_width=None, fixed_height=None, parent=None):
-
         super().__init__(parent)
+        
         self.setText(text)
         self.setStyleSheet(style_sheet)
         self.setVisible(visible)

@@ -5,7 +5,6 @@ from PyQt6.QtCore import Qt
 
 class ListWidget(QListView):
     def __init__(self, style_sheet, options, fixed_height=None, fixed_width=None, parent=None):  
-
         super().__init__(parent)
 
         self.setStyleSheet(style_sheet)

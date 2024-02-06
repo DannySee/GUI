@@ -4,16 +4,17 @@ from app_presenter.ui_map import combo_map, navi_map
 from app_view.widgets.dialog_widget import SlicerSettingsDialog, UnsavedChangesDialog, FileDialog
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QThread, QObject, pyqtSignal
 import pandas as pd 
 from pathlib import Path
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
+import time
 
 
 class Model(Protocol):
-    def get_user_options(self) -> dict:
+    def get_user_options(self, table: str) -> dict:
         ...
-    def get_table_model(self, table: str) -> object:
+    def get_table_model(self, table: str) -> tuple[object, dict]:
         ...
     def update_table_model(self, df: pd.DataFrame) -> object:
         ...
@@ -21,7 +22,7 @@ class Model(Protocol):
         ...
     def reset_user_profile(self, option: str) -> None:
         ...
-    def save_changes(self) -> None:
+    def save_changes(self) -> bool:
         ...
     def clear_changes(self) -> None:
         ...
@@ -40,6 +41,8 @@ class Model(Protocol):
     def auto_login(self) -> dict:
         ...
     def get_user_id(self) -> str:
+        ...
+    def get_table_options(self) -> dict:
         ...
 
 
@@ -72,7 +75,7 @@ class View(Protocol):
         ...
     def toggle_page_visibility(self, visible: bool) -> None:
         ...
-    def populate_table(self, model: object) -> None:
+    def populate_table(self, model: object, options: dict, hidden_columns: list[int]) -> None:
         ...
     def expand_filters(self, fields: list[str], filter_map: dict, binding: callable) -> None:
         ...
@@ -108,6 +111,25 @@ class View(Protocol):
         ... 
     def toggle_toolbar_visibility(self, visible: bool) -> None:
         ...
+    def start_spinner(self) -> None:
+        ...
+    def stop_spinner(self) -> None:
+        ...
+    def toggle_combo_functionality(self, enabled: bool) -> None:
+        ...
+
+
+class Worker(QObject):
+    finished = pyqtSignal()
+    
+    def setFunction(self, func, *args, **kwargs):
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+        self.func(*self.args, **self.kwargs)
+        self.finished.emit()
 
 
 class Presenter:
@@ -117,6 +139,8 @@ class Presenter:
         # model and view references
         self.model = model
         self.view = view
+        self.thread = None
+        self.worker = None
 
         # -------------------- ui state trackers --------------------
 
@@ -140,6 +164,49 @@ class Presenter:
         self.filters_collapsed = True
         self.sidebar_collapsed = False
         self.binding_callable = True
+
+    # ------------------------ threading -------------------------------
+    def setup_thread(self):
+        if self.thread is not None:
+            if self.thread.isRunning():
+                self.thread.quit()  # Request thread to quit
+                self.thread.wait()  # Wait for the thread to finish
+
+        self.thread = QThread()  # Create a new thread
+        self.worker = Worker()  # Create a new worker
+        self.worker.moveToThread(self.thread)
+
+        self.thread.started.connect(self.worker.run)
+
+
+    def start_worker(self, func, callback=None, *args, **kwargs):
+        self.setup_thread()
+        
+        # Set up the worker function
+        self.worker.setFunction(func, *args, **kwargs)
+        
+        # Clear previous connections to avoid multiple callbacks
+        try:
+            self.worker.finished.disconnect()
+        except TypeError:
+            # No connections exist yet, which is fine
+            pass
+            
+        # Connect the finished signal to the callback if provided
+        if callback:
+            self.worker.finished.connect(callback)
+
+        self.worker.finished.connect(self.worker_finished)
+        
+        # Start the thread
+        if not self.thread.isRunning():
+            self.thread.start()
+
+
+    def worker_finished(self):
+        self.thread.quit()
+        self.thread.deleteLater
+        self.worker.deleteLater
 
 
     # ------------------------ helper functions ------------------------
@@ -166,38 +233,53 @@ class Presenter:
                 self.view.toggle_save(False)
 
 
-    def set_table_data(self, df: pd.DataFrame=None, model: object=None) -> None:
+    def update_table_data(self, df: pd.DataFrame) -> None:
 
         # get table model and set binding 
-        if model is None:
-            table_model = self.model.get_table_model(self.combo_map["table"]) if df is None else self.model.update_table_model(df)
-        else:
-            table_model = model
+        self.table_model = self.model.update_table_model(df)
 
         # set binding
-        table_model.dataChanged.connect(self.changes_made)
+        self.table_model.dataChanged.connect(self.changes_made)
 
         # update table
-        self.view.populate_table(table_model)
+        self.view.populate_table(self.table_model, self.table_options, self.combo_map['hidden'])
 
         # update status bar with row count
-        self.view.set_table_status(f"Rows: {table_model.rowCount(0)}   Columns: {table_model.columnCount(0)}")
+        self.view.set_table_status(f"Rows: {self.table_model.rowCount(0)}   Columns: {self.table_model.columnCount(0)}")
+                
 
+    def set_table_data(self, model: object = None) -> None:
 
+        # refresh/pull data
+        if model is None:
+            self.table_model, self.table_options = self.model.get_table_model(self.table) 
+
+        # import data
+        else:
+            self.table_model = model
+
+        
     def save_table(self) -> None:
 
         # set status message
         QTimer.singleShot(0, lambda: self.view.set_save_status("Saving changes...", "yellow"))
 
         # synch table changes to server
-        self.model.save_changes()
+        success = self.model.save_changes()
 
-        # update status message with successful save message and then clear the status
-        QTimer.singleShot(500, lambda: self.view.set_save_status("Changes saved!", "green"))
-        QTimer.singleShot(2000, self.view.reset_save_status)
+        if success:
 
-        # disable save button 
-        self.view.toggle_save(False)
+            # update status message with successful save message and then clear the status
+            QTimer.singleShot(500, lambda: self.view.set_save_status("Changes saved!", "green"))
+            QTimer.singleShot(2000, self.view.reset_save_status)
+
+            # disable save button 
+            self.view.toggle_save(False)
+
+        else:
+            # update status message with successful save message and then clear the status
+            QTimer.singleShot(500, lambda: self.view.set_save_status("Error: changes could not be saved!", "red"))
+            QTimer.singleShot(2000, lambda: self.view.set_save_status("Unsaved changes", "yellow"))
 
 
     def reset_page_input(self) -> None:
@@ -205,13 +287,13 @@ class Presenter:
         # reset slicer ui state tracker and visibility
         if self.slicer_map != {}:
             self.free_slicers()
-            self.view.toggle_clear_slicer_visibility(False)
             self.view.clear_slicers()
 
         # reset filter ui state tracker and visibility
         if self.filtered_data is not None:
             self.free_filters()
             self.view.toggle_clear_filter_visibility(False)
+            
         if not self.filters_collapsed:
             self.show_slicers_hide_filters()
 
@@ -383,61 +465,89 @@ class Presenter:
             self.binding_callable = True
 
 
+    def worker_callback(self):
+
+        # ----------------------- update page -----------------------
+
+        # update page sub header label and visibility
+        self.view.stop_spinner()  # Stop the spinner
+        self.view.update_sub_header(self.combo_map["sub_header"])
+        self.view.toggle_page_visibility(True)
+
+        # populate table data
+        self.view.populate_table(self.table_model, self.table_options, self.combo_map['hidden'])
+        self.view.set_table_status(f"Rows: {self.table_model.rowCount(0)}   Columns: {self.table_model.columnCount(0)}")
+
+        # ------------------------ update toolbar --------------------------
+
+        self.view.toggle_toolbar_visibility(True)
+        self.view.toggle_export(True)
+        
+        # ----------------------- update status bar -----------------------
+
+        self.view.set_refresh_state(f"Last Refresh: {pd.Timestamp.now().day_name()} {pd.Timestamp.now().strftime('%I:%M %p')}")
+        self.view.toggle_status_bar_visibility(True)
+
+        # ------------------------- update sidebar -------------------------
+
+        # update combo box style
+        self.view.toggle_combo_focus(True)
+        self.view.toggle_combo_functionality(True)
+
+        # populate slicers options and hide clear button
+        slicers = self.model.get_user_options(self.table)["slicers"]
+        self.view.populate_slicers(slicers)
+        if not self.sidebar_collapsed: self.view.toggle_slicer_visibility(True)
+
+        # -------------- reset all page input (filter/slicer) --------------
+        self.reset_page_input()
+
+        # ----------- create table change listners and reset bindings --------
+        self.table_model.dataChanged.connect(self.changes_made)
+        self.binding_callable = True
+
+
+    def lock_navigation(self):
+
+        # reset toolbox
+        if not self.toolbox_collapsed:
+            self.view.collapse_toolbox()
+            self.toolbox_collapsed = True
+
+        # hide ui elements
+        self.view.toggle_slicer_visibility(False)
+        self.view.toggle_toolbar_visibility(False)
+        self.view.toggle_export(False)
+        self.view.toggle_page_visibility(False)
+        self.view.toggle_combo_functionality(False)
+
+
     def combo_binding(self):
         if self.binding_callable:
             self.binding_callable = False
 
-            # --------------------- save table changes ---------------------
+            # Handle unsaved changes and update UI state
             self.handle_unsaved_changes()
-
-            # --------------------- update ui state ---------------------
             self.combo_map = combo_map[self.view.sender().currentText()]
+            self.table = self.combo_map["table"]
 
-            # --------------------- update toolbar ---------------------
-            self.view.toggle_toolbar_visibility(True)
-            self.view.toggle_export(True)
+            # update ui for processing 
+            self.lock_navigation()
+            
+            # Setup a timer for flashing the loading indicator
+            self.view.start_spinner()          
 
-            # ----------------------- update page -----------------------
-
-            # update page sub header label and visibility
-            self.view.update_sub_header(self.combo_map["sub_header"])
-            self.view.toggle_page_visibility(True)
-
-            # update table data
-            self.set_table_data()
-
-            # ----------------------- update status bar -----------------------
-            self.view.set_refresh_state(f"Last Refresh: {pd.Timestamp.now().day_name()} {pd.Timestamp.now().strftime('%I:%M %p')}")
-            self.view.toggle_status_bar_visibility(True)
-
-            # ---------------------- update sidebar ----------------------
-
-            # update combo box style
-            self.view.toggle_combo_focus(True)
-
-            # populate slicers options and hide clear button
-            slicers = self.model.get_user_options()["slicers"]
-            self.view.populate_slicers(slicers)
-            if not self.sidebar_collapsed: self.view.toggle_slicer_visibility(True)
-
-            # -------------- reset all page input (filter/slicer) --------------
-            self.reset_page_input()
-
-            self.binding_callable = True
+            # Start the worker with the data operation
+            self.start_worker(self.set_table_data, callback=self.worker_callback)
 
 
-    def slicer_binding(self):
+    def slicer_binding(self, field: str, value: str) -> None:
         if self.binding_callable:
             self.binding_callable = False
 
-            # get slicer field and value
-            slicer = self.view.sender()
-            field = slicer.placeholderText()
-            value = slicer.text()
-
             # update slicer map
             if value == "": 
-                self.slicer_map.pop(field)
+                if field in self.slicer_map: self.slicer_map.pop(field)
             else:
                 self.slicer_map[field] = value
 
@@ -458,7 +568,7 @@ class Presenter:
             self.sliced_data = df
 
             # refresh model and update table
-            self.set_table_data(df)
+            self.update_table_data(df)
 
             self.binding_callable = True
 
@@ -475,7 +585,7 @@ class Presenter:
 
             # refresh model and update table
             df = self.filtered_data if self.filtered_data is not None else self.model.get_table_data()
-            self.set_table_data(df)
+            self.update_table_data(df)
 
             self.binding_callable = True
 
@@ -485,7 +595,7 @@ class Presenter:
             self.binding_callable = False
 
             # get slicer fields and all fields from active table
-            slicers = self.model.get_user_options()["slicers"]
+            slicers = self.model.get_user_options(self.table)["slicers"]
             all_fields = self.model.get_table_data().columns.tolist()
         
             # create popup dialog
@@ -609,22 +719,16 @@ class Presenter:
                 # collapse filters and show slicers
                 self.show_slicers_hide_filters()
                 
-
             self.binding_callable = True
 
 
-    def filter_binding(self) -> None:
+    def filter_binding(self, field: str, value: str) -> None:
         if self.binding_callable:
             self.binding_callable = False
 
-            # get filter filed and value
-            filter = self.view.sender()
-            field = filter.placeholderText()
-            value = filter.text()
-
             # update filter map 
             if value == "":
-                self.filter_map.pop(field)
+                if field in self.filter_map: self.filter_map.pop(field)
             else:
                 self.filter_map[field] = value
                 
@@ -645,7 +749,7 @@ class Presenter:
             self.filtered_data = df
 
             # refresh model and update table
-            self.set_table_data(df)
+            self.update_table_data(df)
 
             self.binding_callable = True
 
@@ -668,7 +772,7 @@ class Presenter:
                     df = df[df[field].str.contains(value, case=False)]
 
             # refresh model and update table
-            self.set_table_data(df)
+            self.update_table_data(df)
 
             self.binding_callable = True
 
@@ -681,14 +785,16 @@ class Presenter:
             self.handle_unsaved_changes()
 
             # show loading state
-            QTimer.singleShot(0, lambda: self.view.set_refresh_state("Refreshing..."))
+            self.view.set_refresh_state("Refreshing...")
 
-            # reset page input (filter/slicer)
-            self.reset_page_input()
+            # hide ui elements
+            self.lock_navigation()
 
-            # refresh model and update timestamp
-            self.set_table_data()
-            QTimer.singleShot(500, lambda: self.view.set_refresh_state(f"Last Refresh: {pd.Timestamp.now().day_name()} {pd.Timestamp.now().strftime('%I:%M %p')}"))
+            # Setup a timer for flashing the loading indicator
+            self.view.start_spinner()
+
+            # Start the worker with the data operation
+            self.start_worker(self.set_table_data, callback=self.worker_callback)
 
             self.binding_callable = True
 

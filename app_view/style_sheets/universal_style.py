@@ -6,6 +6,8 @@ light_gray_1 = f"background-color: {color.background_light_1}; border: none;"
 light_gray_2 = f"background-color: {color.background_light_2}; border: none;"
 dark_gray = f"background-color: {color.background_dark}; border: none;"
 darkest_gray = f"background-color: {color.background_darkest}; border: none;"
+darkest_gray = f"background-color: {color.background_darkest}; border: none;"
+discrete_padding = "background-color: transparent; border: none; padding: 0px 10px 0px 10px;"
 
 generic_border_pane = f"""
     background-color:{color.background_light_1};

@@ -5,8 +5,8 @@ from PyQt6.QtCore import QSize
 class ButtonWidget(QPushButton):
     def __init__(self, style_sheet, text=None, icon=None, icon_size=None, visible=True, enabled=True,
                  fixed_height=None, fixed_width=None, layout=None, object_name=None, tool_tip=None, parent=None):
-        
         super().__init__(parent)
+        
         self.setStyleSheet(style_sheet)
         self.setVisible(visible)
         self.setEnabled(enabled)

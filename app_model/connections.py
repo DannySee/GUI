@@ -2,9 +2,6 @@ import pyodbc
 import sqlalchemy
 
 
-sql_server = sqlalchemy.create_engine("mssql+pyodbc://MS248CSSQL01.SYSCO.NET/Pricing_Agreements?driver=SQL+Server&autocommit=true")
-
-
 # dictionary of all opsites 3 (key=3 digit number, value=3 digit number + name)
 site_names = {
     '001': '001 - Jackson',
@@ -111,3 +108,17 @@ def sus(site):
 
     return cnn_sus
 
+
+def sql_server():
+    server = pyodbc.connect(
+        driver='{SQL Server}',
+        server='MS248CSSQL01.SYSCO.NET',
+        database='hive',
+        autocommit=False)
+    
+    return server
+
+# same sql_server function but creating a sqlalchemy engine
+def sql_server_engine():
+    engine = sqlalchemy.create_engine('mssql+pyodbc://MS248CSSQL01.SYSCO.NET/hive?driver=SQL+Server')
+    return engine

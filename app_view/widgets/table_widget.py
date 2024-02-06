@@ -6,7 +6,6 @@ from PyQt6.QtCore import Qt, QSize
 class TableWidget(QTableView):
     def __init__(self, style_sheet, vertical_scroll_style=None, horizontal_scroll_style=None, visible=True,
                  vertical_policy=QSizePolicy.Policy.Expanding, horizontal_policy=QSizePolicy.Policy.Expanding, minimum_height=300):
-        
         super().__init__()
 
         """
@@ -42,7 +41,7 @@ class TableWidget(QTableView):
         self.setSizePolicy(horizontal_policy, vertical_policy)
         self.setMinimumHeight(minimum_height) 
         self.setStyleSheet(style_sheet)
-        #self.setItemDelegate(CustomDelegate(style_sheet))
+        self.setSortingEnabled(True)
         self.setVisible(visible)
 
         if style_sheet is not None: self.setStyleSheet(style_sheet)
@@ -51,20 +50,24 @@ class TableWidget(QTableView):
 
 
 class CustomDelegate(QStyledItemDelegate):
-    def __init__(self):
+    def __init__(self, options, hidden_columns=None):
         super().__init__()
+        self.options = options
 
     def createEditor(self, parent, option, index):
+
+        value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
         
-        # only create editor if column name is 'TEAM_LEAD'
-        if index.column() == 1:
+        if index.column() in self.options:
+            drop_options = self.options[index.column()]
             editor = QComboBox(parent)
             editor.setEditable(False)
-            editor.addItems(['DIANA MENDEZ', 'BRENDA MANFRA', 'AARON CHUNG'])
+            editor.addItems(drop_options)
             editor.setStyleSheet(combo_box_style.table_combo)
 
+            editor.setCurrentText(value)
+
         else:
-            value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
             editor = super().createEditor(parent, option, index)
             editor.setMinimumWidth(option.rect.width())
             editor.setStyleSheet(table_style.table)
@@ -76,8 +79,8 @@ class CustomDelegate(QStyledItemDelegate):
         if isinstance(editor, QComboBox):
             text = index.model().data(index, Qt.ItemDataRole.EditRole)
             idx = editor.findText(text)
-            if idx >= 0:
-                editor.setCurrentIndex(idx)
+            #if idx >= 0:
+                #editor.setCurrentIndex(idx)
 
     def setModelData(self, editor, model, index):  
         if isinstance(editor, QComboBox):

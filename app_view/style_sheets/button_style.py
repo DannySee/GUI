@@ -218,12 +218,15 @@ titlebar_close = button_template.substitute(
     text_color_hover=color.text_light
 )
 
-
-
-
-
-
-
-
-
-
+titlebar_icon = button_template.substitute(
+    background_color="transparent",
+    padding="0px 0px 0px 15px",
+    border="none",
+    text_color=color.text_dark,
+    border_radius="0px",
+    text_size="14px",
+    layout_direction="LeftToRight",
+    background_color_hover="none",
+    align="center",
+    text_color_hover=color.text_light
+)

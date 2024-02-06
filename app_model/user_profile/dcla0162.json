@@ -1,9 +1,9 @@
 {
-    "team": "Deviated Agreements",
+    "team": "Quality Assurance",
     "first_name": "Daniel",
     "last_name": "Clark",
     "email": "daniel.clark@sysco.com",
     "network_id": "dcla0162",
     "sus_id": "MUDAC000",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$2XQa2nYrLm8OMJLqRfy3BA$ZyuhAcwKkTnUaje5AGm+zWAZ+7ddaGDW6kvBjZ2kCuY"
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$Xydw91IoyqilaKyAJyYVig$+4DeAN16rCLxn5dZdX5elZmQry3VKTL+4L9DAskPwvg"
 }
