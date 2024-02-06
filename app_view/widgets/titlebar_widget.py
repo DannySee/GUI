@@ -1,7 +1,8 @@
 from app_view.widgets.button_widget import ButtonWidget
 from app_view.widgets.layout_widget import HorizontalBox
 from app_view.widgets.label_widget import LabelWidget
-from app_view.style_sheets import button_style, label_style, frame_style
+from app_view.widgets.frame_widget import FrameWidget
+from app_view.style_sheets import button_style, label_style, frame_style, universal_style
 from PyQt6.QtWidgets import QFrame, QApplication
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QIcon
@@ -11,28 +12,41 @@ class TitleBarWidget(QFrame):
     def __init__(self):
 
         super().__init__()
+
+        fixed_height = 35
         
         self.snap_right = False 
         self.snap_left = False
         self.snap_top = False
         self.snap = False
 
+        self.setFixedHeight(fixed_height)
+
         self.layout = HorizontalBox()
         self.setStyleSheet(frame_style.titlebar)
 
-        self.icon = ButtonWidget(button_style.titlebar_icon, icon=QIcon("icon.svg"), parent=self)
-        self.title = LabelWidget(label_style.titlebar, "               Hive", parent=self)
-        self.minimizeBtn = ButtonWidget(button_style.titlebar_generic, icon=QIcon("app_view/icons/window-minimize.svg"), parent=self)
-        self.maximizeBtn = ButtonWidget(button_style.titlebar_generic, icon=QIcon("app_view/icons/window-maximize.svg"), parent=self)
-        self.closeBtn = ButtonWidget(button_style.titlebar_close, icon=QIcon("app_view/icons/window-close.svg"), parent=self)
+        self.content_layout = HorizontalBox(content_margins=[10,5,10,5], spacing=10)
+        self.layout.addLayout(self.content_layout)
 
-        self.layout.addWidget(self.icon)
-        self.layout.addStretch()
-        self.layout.addWidget(self.title)
-        self.layout.addStretch()
+        self.icon = ButtonWidget(button_style.titlebar_icon, icon=QIcon("icon.svg"), parent=self)
+        self.content_layout.addWidget(self.icon)
+
+        self.content_layout.addStretch()
+
+        self.title = LabelWidget(label_style.titlebar, "Commercial Services Hive", parent=self)
+        self.content_layout.addWidget(self.title)
+
+        self.content_layout.addStretch()
+
+        self.minimizeBtn = ButtonWidget(button_style.titlebar_generic, icon=QIcon("app_view/icons/window-minimize.svg"), fixed_height=fixed_height, fixed_width=fixed_height+5, parent=self)
         self.layout.addWidget(self.minimizeBtn)
+
+        self.maximizeBtn = ButtonWidget(button_style.titlebar_generic, icon=QIcon("app_view/icons/window-maximize.svg"), fixed_height=fixed_height, fixed_width=fixed_height+5, parent=self)
         self.layout.addWidget(self.maximizeBtn)
+
+        self.closeBtn = ButtonWidget(button_style.titlebar_close, icon=QIcon("app_view/icons/window-close.svg"), fixed_height=fixed_height, fixed_width=fixed_height+5, parent=self)
         self.layout.addWidget(self.closeBtn)
+
         self.setLayout(self.layout)
 
         self.minimizeBtn.clicked.connect(self.on_minimize)

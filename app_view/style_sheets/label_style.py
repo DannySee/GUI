@@ -17,6 +17,22 @@ label_template = Template(
     """
 )
 
+label_template2 = Template(
+    """
+    QLabel {
+        background-color: $background_color;
+        font-family: "Microsoft Sans Serif";
+        font-size: $text_size;
+        font-style: $text_style;
+        padding: $padding;
+        color: $text_color;
+        border-radius: $radius;
+        border: none;
+        text-align: $align;
+    }
+    """
+)
+
 combo = label_template.substitute(
     background_color="transparent",
     text_size="16px",
@@ -35,13 +51,14 @@ slicer = label_template.substitute(
     radius="0px",
 )
 
-titlebar = label_template.substitute(
+titlebar = label_template2.substitute(
     background_color="transparent",
     text_size="14px",
     text_style="normal",
     padding="0px",
     text_color=color.text_dark,
     radius="0px",
+    align="center",
 )
 
 header = label_template.substitute(

@@ -314,8 +314,9 @@ class Presenter:
 
     # ------------------------ model listeners ------------------------
     def changes_made(self) -> None:
-        self.view.set_save_status("Unsaved changes", "yellow")
-        self.view.toggle_save(True)
+        if self.table_model is not None:
+            self.view.set_save_status("Unsaved changes", "yellow")
+            self.view.toggle_save(True)
 
 
     # ------------------------ view bindings ------------------------

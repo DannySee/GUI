@@ -292,25 +292,28 @@ class View(QMainWindow):
     def construct_toolbar(self, parent: object, save_binding: callable, import_binding: callable, export_binding: callable) -> None:
 
         # create toolbar container
-        toolbar = FrameWidget(frame_style.toolbar, HorizontalBox(), fixed_height=26, parent=parent)
+        toolbar = FrameWidget(frame_style.toolbar, HorizontalBox(content_margins=[5,5,5,5]), fixed_height=35, parent=parent)
         parent.layout().addWidget(toolbar)
 
         # toolbar container to toggle visibility of buttons
-        self.toolbar_container = FrameWidget(universal_style.hidden, HorizontalBox(content_margins=[5,2,5,2], spacing=2,alignment=Qt.AlignmentFlag.AlignLeft), visible=False, parent=toolbar)
+        self.toolbar_container = FrameWidget(universal_style.hidden, HorizontalBox(spacing=2,alignment=Qt.AlignmentFlag.AlignLeft), visible=False, parent=parent)
         toolbar.layout().addWidget(self.toolbar_container)
 
         # save button
-        self.save_button = ButtonWidget(button_style.toolbar, text="Save", enabled=False, parent=self.toolbar_container)
+        self.save_button = ButtonWidget(button_style.toolbar, icon=QIcon("app_view/icons/save.svg"), text="Save", enabled=False, parent=self.toolbar_container)
+        #self.save_button = ButtonWidget(button_style.toolbar, icon=QIcon("")   text="Save", enabled=False, parent=self.toolbar_container)
         self.save_button.clicked.connect(save_binding)
         self.toolbar_container.layout().addWidget(self.save_button)
 
          # export button
-        self.export_button = ButtonWidget(button_style.toolbar, text="Check Out", enabled=False, parent=self.toolbar_container)
+        self.export_button = ButtonWidget(button_style.toolbar, icon=QIcon("app_view/icons/export.svg"), text="Export", enabled=False, parent=self.toolbar_container)
+        #self.export_button = ButtonWidget(button_style.toolbar, text="Check Out", enabled=False, parent=self.toolbar_container)
         self.export_button.clicked.connect(export_binding)
         self.toolbar_container.layout().addWidget(self.export_button)
 
         # import button
-        self.import_button = ButtonWidget(button_style.toolbar, text="Check In", parent=self.toolbar_container)
+        self.import_button = ButtonWidget(button_style.toolbar, icon=QIcon("app_view/icons/import.svg"), text="Import", parent=self.toolbar_container)
+        #self.import_button = ButtonWidget(button_style.toolbar, text="Check In", parent=self.toolbar_container)
         self.import_button.clicked.connect(import_binding)
         self.toolbar_container.layout().addWidget(self.import_button)
 

@@ -20,6 +20,11 @@ button_template = Template(
         background-color: $background_color_hover;
         color: $text_color_hover;
     }
+    QToolTip {
+        background-color: transparent;
+        color: #BDBDBD;
+        border: None;
+    }
     """
 )
 
@@ -220,7 +225,7 @@ titlebar_close = button_template.substitute(
 
 titlebar_icon = button_template.substitute(
     background_color="transparent",
-    padding="0px 0px 0px 15px",
+    padding="0px 0px 0px 5px",
     border="none",
     text_color=color.text_dark,
     border_radius="0px",

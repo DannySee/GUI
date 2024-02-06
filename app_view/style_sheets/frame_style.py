@@ -22,6 +22,14 @@ filter = frame_template.substitute(
     bottom_border_color="1px solid " + color.background_bright,
 )
 
+titlebar_utility = frame_template.substitute(
+    background_color=color.background_light_1, 
+    border_color="1px solid " + color.background_light_2,
+    border_radius="6px",
+    top_border_color="1px solid " + color.background_light_2,
+    bottom_border_color="1px solid " + color.background_light_2,
+)
+
 toolbar = frame_template.substitute(
     background_color="transparent",
     border_color= "none",
