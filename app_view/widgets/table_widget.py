@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QTableView, QSizePolicy, QStyledItemDelegate, QLineEdit, QAbstractScrollArea, QComboBox
-from app_view.style_sheets import combo_box_style, table_style
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtWidgets import QTableView, QSizePolicy, QStyledItemDelegate, QLineEdit, QAbstractScrollArea, QComboBox, QDateEdit
+from app_view.style_sheets import combo_box_style, table_style, calendar_style
+from PyQt6.QtCore import Qt, QSize, QDate
 
 
 class TableWidget(QTableView):
@@ -50,21 +50,31 @@ class TableWidget(QTableView):
 
 
 class CustomDelegate(QStyledItemDelegate):
-    def __init__(self, options, hidden_columns=None):
+    def __init__(self, options=None, date_column=None, hidden_columns=None):
         super().__init__()
-        self.options = options
+        
+        self.options = options if options is not None else {}
+        self.date_column = date_column if date_column is not None else []
 
     def createEditor(self, parent, option, index):
 
         value = index.data(Qt.ItemDataRole.EditRole) or index.data(Qt.ItemDataRole.DisplayRole)
-        
-        if index.column() in self.options:
+
+        if index.column() in self.date_column:
+            editor = QDateEdit(parent)
+            editor.setCalendarPopup(False)
+            editor.setDateRange(QDate(1900, 1, 1), QDate(2099, 12, 31))  # Set your desired range
+            editor.setStyleSheet(calendar_style.calendar_style)
+            editor.setDisplayFormat("yyyy-MM-dd")
+            # set the date to the current value
+            editor.setDate(QDate.fromString(value, 'yyyy-MM-dd'))  # Adjust the format as needed
+
+        elif index.column() in self.options:
             drop_options = self.options[index.column()]
             editor = QComboBox(parent)
             editor.setEditable(False)
             editor.addItems(drop_options)
             editor.setStyleSheet(combo_box_style.table_combo)
-
             editor.setCurrentText(value)
 
         else:
@@ -76,14 +86,12 @@ class CustomDelegate(QStyledItemDelegate):
         return editor
 
     def setEditorData(self, editor, index):
-        if isinstance(editor, QComboBox):
-            text = index.model().data(index, Qt.ItemDataRole.EditRole)
-            idx = editor.findText(text)
-            #if idx >= 0:
-                #editor.setCurrentIndex(idx)
+        pass
 
     def setModelData(self, editor, model, index):  
         if isinstance(editor, QComboBox):
             model.setData(index, editor.currentText(), Qt.ItemDataRole.EditRole)
+        elif isinstance(editor, QDateEdit):
+            model.setData(index, editor.date().toString('yyyy-MM-dd'), Qt.ItemDataRole.EditRole)  # Adjust the format as needed
         else:
             super().setModelData(editor, model, index)

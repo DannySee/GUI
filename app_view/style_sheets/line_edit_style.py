@@ -28,6 +28,11 @@ line_edit_template = Template(
         font-family: "Microsoft Sans Serif";
         font-size: $font_size;
     }
+    QToolTip {
+        background-color: transparent;
+        color: #BDBDBD;
+        border: None;
+    }
     """
 )
 

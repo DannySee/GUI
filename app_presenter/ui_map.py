@@ -44,31 +44,37 @@ combo_map = {
     "SMS Agreements": {
         "sub_header": "SMS Agreements",
         "table": None,
+        "date": [],
         "hidden": [0]
     },
     "Costing": {
         "sub_header": "Costing",
         "table": None,
+        "date": [],
         "hidden": [0]
     },
     "Audit History": {
         "sub_header": "Audit History",
         "table": None,
+        "date": [],
         "hidden": [0]
     },
     "Account Assignments": {
         "sub_header": "Deviated Account Assignments",
         "table": "cal_account_assignments",
+        "date": [],
         "hidden": [0,18,19,20,21,22]
     },
     "REBA Tracker": {
         "sub_header": "REBA Tracker",
         "table": None,
+        "date": [],
         "hidden": [0]
     },
     "CIR Agreements": {
         "sub_header": "Agreements",
         "table": None,
+        "date": [],
         "hidden": [0]
     },
     "DPM Agreements": {
@@ -80,26 +86,31 @@ combo_map = {
     "Customer Profile": {
         "sub_header": "Customer Profile",
         "table": "cal_customer_profile", 
+        "date": [],
         "hidden": [0]
     },
     "Deviation Loads": {
         "sub_header": "Deviation Loads",
         "table": "cal_deviation_loads",
+        "date": [],
         "hidden": [0]
     },
     "DPM Org": {
         "sub_header": "Team Org",
         "table": "team_org",
+        "date": [],
         "hidden": [0]
     },
     "USDA Agreements": {
         "sub_header": "Agreements",
         "table": None,
+        "date": [],
         "hidden": [0]
     },
     "Bot Tracker": {
         "sub_header": "Bot Tracker",
         "table": None,
+        "date": [],
         "hidden": [0]
     },
     # STOPPED HERE - PICK BACK UP ON OPTIONS DROPDOWNS. ######################

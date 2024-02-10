@@ -624,6 +624,7 @@ class View(QMainWindow):
         # adjust navigation width and remove text 
         self.navigation.setMaximumWidth(sidebar_width)
         for navi_button in self.navigation.findChildren(ButtonWidget):
+            navi_button.setToolTip(navi_button.text())
             navi_button.setText("")
 
         # adjust menu width and remove text/visibility
@@ -649,6 +650,7 @@ class View(QMainWindow):
         # adjust navigation width and add text 
         self.navigation.setMaximumWidth(DEFAULT_MINIMUM_WIDTH + 100)
         for navi_button in self.navigation.findChildren(ButtonWidget):
+            navi_button.setToolTip("")
             navi_button.setText(self.navi_map[navi_button.objectName()]["text"])
 
         # adjust menu width and add text/visibility
@@ -746,9 +748,9 @@ class View(QMainWindow):
         self.sub_header.setText(text)
 
 
-    def populate_table(self, model: object, options: dict, hidden_columns: list[int]) -> None:
+    def populate_table(self, model: object, options: dict, date_column: list[int], hidden_columns: list[int]) -> None:
         self.table.setModel(model)
-        self.table.setItemDelegate(CustomDelegate(options))
+        self.table.setItemDelegate(CustomDelegate(options, date_column))
 
         for idx in range(self.table.model().columnCount(QModelIndex())):
             if idx in hidden_columns:
@@ -775,7 +777,7 @@ class View(QMainWindow):
         self.toolbox_container.setVisible(False)
 
 
-    def expand_filters(self, fields: list[str], filter_map: dict, binding: callable) -> None:
+    def expand_filters(self, fields: list[str], filter_map: dict, binding: callable, hidden_columns: list[int]) -> None:
             
         # update filter toggle style and icon
         self.filter_toggle.setStyleSheet(button_style.filter_highlight)
@@ -785,13 +787,16 @@ class View(QMainWindow):
         self.filter_grid = Grid(content_margins=[10,10,10,10], spacing=10)
         self.filter_container.layout().addLayout(self.filter_grid)
 
+        # drop indexes from fields list that exist in hidden_columns list
+        fields = [field for index, field in enumerate(fields) if index not in hidden_columns]
+
         # create filter fields (7 columns x however many rows necessary)
         row = 0
         for index, field in enumerate(fields):
 
             # create filter field + binding and add to grid
             value = filter_map[field] if field in filter_map else ""
-            filter = LineEditWidget(line_edit_style.input_box, field, value, parent=self.filter_container, debounce_event=binding)
+            filter = LineEditWidget(line_edit_style.input_box, field, value, parent=self.filter_container, debounce_event=binding, tooltip=True)
 
             # add widget to apprioriate grid cell
             if index % 7 == 0: row += 1

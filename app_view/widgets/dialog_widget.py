@@ -283,14 +283,14 @@ class UnsavedChangesDialog(QDialog):
 
 
 class FileDialog(QFileDialog):
-    def __init__(self, option: ["import", "export"]):
+    def __init__(self, option: ["import", "export"], user=None):
         super().__init__()
-        self.setDirectory(r'/Users/daniel/python_projects/GUI/app_view')
+        if user is not None: self.setDirectory(f'C:\\Users\\{user}')
 
         if option == "export":
             self.setFileMode(QFileDialog.FileMode.Directory)
             self.setOption(QFileDialog.Option.ShowDirsOnly)
         elif option == "import":
             self.setFileMode(QFileDialog.FileMode.AnyFile)
-            self.setNameFilter("*.csv")
+            self.setNameFilter("*.xlsx")
 

@@ -22,7 +22,7 @@ class Model(Protocol):
         ...
     def reset_user_profile(self, option: str) -> None:
         ...
-    def save_changes(self) -> bool:
+    def save_update(self) -> bool:
         ...
     def clear_changes(self) -> None:
         ...
@@ -75,9 +75,9 @@ class View(Protocol):
         ...
     def toggle_page_visibility(self, visible: bool) -> None:
         ...
-    def populate_table(self, model: object, options: dict, hidden_columns: list[int]) -> None:
+    def populate_table(self, model: object, options: dict, date_column: list[int], hidden_columns: list[int]) -> None:
         ...
-    def expand_filters(self, fields: list[str], filter_map: dict, binding: callable) -> None:
+    def expand_filters(self, fields: list[str], filter_map: dict, binding: callable, hidden_columns: list[int]) -> None:
         ...
     def collapse_filters(self) -> None:
         ...
@@ -242,7 +242,7 @@ class Presenter:
         self.table_model.dataChanged.connect(self.changes_made)
 
         # update table
-        self.view.populate_table(self.table_model, self.table_options, self.combo_map['hidden'])
+        self.view.populate_table(self.table_model, self.table_options, self.combo_map['date'], self.combo_map['hidden'])
 
         # update status bar with row count
         self.view.set_table_status(f"Rows: {self.table_model.rowCount(0)}   Columns: {self.table_model.columnCount(0)}")
@@ -258,6 +258,10 @@ class Presenter:
         else:
             self.table_model = model
 
+
+    def import_data(self, file: str) -> None:
+        self.import_res = self.model.import_table_data(file)
+
         
     def save_table(self) -> None:
 
@@ -265,7 +269,7 @@ class Presenter:
         QTimer.singleShot(0, lambda: self.view.set_save_status("Saving changes...", "yellow"))
 
         # synch table changes to server
-        success = self.model.save_changes()
+        success = self.model.save_update()
 
         if success:
 
@@ -310,6 +314,41 @@ class Presenter:
         popup.setWindowTitle("Alert")
         popup.setText(message)
         popup.exec()
+
+
+    def lock_navigation(self):
+
+        # reset toolbox
+        if not self.toolbox_collapsed:
+            self.view.collapse_toolbox()
+            self.toolbox_collapsed = True
+
+        # hide ui elements
+        self.view.toggle_slicer_visibility(False)
+        self.view.toggle_toolbar_visibility(False)
+        self.view.toggle_export(False)
+        self.view.toggle_page_visibility(False)
+        self.view.toggle_combo_functionality(False)
+
+    
+    def unlock_naviagation(self):
+         
+        # ----------------------- update page visibility -----------------------
+        self.view.toggle_page_visibility(True)
+
+        # ------------------------ update toolbar --------------------------
+
+        self.view.toggle_toolbar_visibility(True)
+        self.view.toggle_export(True)
+
+        # ------------------------- update sidebar -------------------------
+
+        # update combo box style
+        self.view.toggle_combo_focus(True)
+        self.view.toggle_combo_functionality(True)
+
+        # populate slicers options and hide clear button
+        if not self.sidebar_collapsed: self.view.toggle_slicer_visibility(True)
 
 
     # ------------------------ model listeners ------------------------
@@ -466,7 +505,7 @@ class Presenter:
             self.binding_callable = True
 
 
-    def worker_callback(self):
+    def refresh_table_callback(self):
 
         # ----------------------- update page -----------------------
 
@@ -476,7 +515,7 @@ class Presenter:
         self.view.toggle_page_visibility(True)
 
         # populate table data
-        self.view.populate_table(self.table_model, self.table_options, self.combo_map['hidden'])
+        self.view.populate_table(self.table_model, self.table_options, self.combo_map['date'], self.combo_map['hidden'])
         self.view.set_table_status(f"Rows: {self.table_model.rowCount(0)}   Columns: {self.table_model.columnCount(0)}")
 
         # ------------------------ update toolbar --------------------------
@@ -508,21 +547,6 @@ class Presenter:
         self.binding_callable = True
 
 
-    def lock_navigation(self):
-
-        # reset toolbox
-        if not self.toolbox_collapsed:
-            self.view.collapse_toolbox()
-            self.toolbox_collapsed = True
-
-        # hide ui elements
-        self.view.toggle_slicer_visibility(False)
-        self.view.toggle_toolbar_visibility(False)
-        self.view.toggle_export(False)
-        self.view.toggle_page_visibility(False)
-        self.view.toggle_combo_functionality(False)
-
-
     def combo_binding(self):
         if self.binding_callable:
             self.binding_callable = False
@@ -539,7 +563,7 @@ class Presenter:
             self.view.start_spinner()          
 
             # Start the worker with the data operation
-            self.start_worker(self.set_table_data, callback=self.worker_callback)
+            self.start_worker(self.set_table_data, callback=self.refresh_table_callback)
 
 
     def slicer_binding(self, field: str, value: str) -> None:
@@ -632,6 +656,34 @@ class Presenter:
 
 
     def import_binding(self) -> None:
+
+        def callback():
+            self.view.stop_spinner()
+
+            if self.import_res == 'success':
+
+                # update status message with successful save message and then clear the status
+                QTimer.singleShot(500, lambda: self.view.set_save_status("Import complete!", "green"))
+                QTimer.singleShot(2000, self.view.reset_save_status)
+                
+                self.binding_callable = True
+                self.refresh_binding()
+            else:
+
+                self.alert(self.import_res)
+                self.unlock_naviagation()
+
+                if 'No changes' in self.import_res:
+                    QTimer.singleShot(500, lambda: self.view.set_save_status("No changes detected!", "yellow"))
+                else:
+                    # update status message with successful save message and then clear the status
+                    QTimer.singleShot(500, lambda: self.view.set_save_status("Import error!", "red"))
+
+                QTimer.singleShot(2000, self.view.reset_save_status)
+
+                self.binding_callable = True
+        
+
         if self.binding_callable:
             self.binding_callable = False
 
@@ -639,52 +691,59 @@ class Presenter:
             self.handle_unsaved_changes()
 
             # setup file dialog to prompt user for file path
-            file_dialog = FileDialog("import")
+            file_dialog = FileDialog("import", self.model.get_user_id())
             if file_dialog.exec() == 1:
-
-                # show updated stats
-                QTimer.singleShot(0, lambda: self.view.set_save_status("Importing...", "yellow"))
 
                 # export file to selected path
                 file = file_dialog.selectedFiles()[0]
-                res = self.model.import_table_data(file) 
-                
-                if res is not None: 
-                    self.alert(res)
 
-                    # update status message with successful save message and then clear the status
-                    QTimer.singleShot(500, lambda: self.view.set_save_status("Import error!", "red"))
-                    QTimer.singleShot(2000, self.view.reset_save_status)
-                else:
-                    self.set_table_data()
+                # update ui for processing
+                self.lock_navigation()
 
-                    # update status message with successful save message and then clear the status
-                    QTimer.singleShot(500, lambda: self.view.set_save_status("Import complete!", "green"))
-                    QTimer.singleShot(2000, self.view.reset_save_status)
+                # show updated stats
+                self.view.set_save_status("Importing...", "yellow")
+                self.view.start_spinner()
+
+                # start the worker thread with the data operation
+                self.start_worker(lambda: self.import_data(file), callback=callback)
+            else:
+                self.binding_callable = True
+
+
+    def export_binding(self) -> None:
+
+        def callback():
+            self.view.stop_spinner()  # Stop the spinner
+            self.unlock_naviagation()
+
+            # update status message with successful save message and then clear the status
+            QTimer.singleShot(500, lambda: self.view.set_save_status("Export complete!", "green"))
+            QTimer.singleShot(2000, self.view.reset_save_status)
 
             self.binding_callable = True
 
 
-    def export_binding(self) -> None:
         if self.binding_callable:
             self.binding_callable = False
 
             #setup file dialog to prompt user for file path
-            file_dialog = FileDialog("export")
+            file_dialog = FileDialog("export", self.model.get_user_id())
             if file_dialog.exec() == 1:
 
-                # show updated stats
-                QTimer.singleShot(0, lambda: self.view.set_save_status("Exporting...", "yellow"))
-
                 # export file to selected path
-                directory = file_dialog.selectedFiles()[0]
-                self.model.export_table_data(directory)
+                directory = file_dialog.selectedFiles()[0]    
 
-                # update status message with successful save message and then clear the status
-                QTimer.singleShot(500, lambda: self.view.set_save_status("Export complete!", "green"))
-                QTimer.singleShot(2000, self.view.reset_save_status)
+                # update ui for processing
+                self.lock_navigation()
 
-            self.binding_callable = True
+                # initiate loading indicators
+                self.view.set_save_status("Exporting...", "yellow")
+                self.view.start_spinner()
+
+                # start the worker thread with the data operation
+                self.start_worker(lambda: self.model.export_table_data(directory), callback=callback)
+            else:
+                self.binding_callable = True
 
 
     def filter_toggle_binding(self) -> None:
@@ -712,7 +771,7 @@ class Presenter:
 
                 # expand filters and populate filter fields
                 fields = self.model.get_table_data().columns.tolist()
-                self.view.expand_filters(fields, self.filter_map, self.filter_binding)
+                self.view.expand_filters(fields, self.filter_map, self.filter_binding, self.combo_map['hidden'])
 
                 # update ui state tracker
                 self.filters_collapsed = False
@@ -795,7 +854,7 @@ class Presenter:
             self.view.start_spinner()
 
             # Start the worker with the data operation
-            self.start_worker(self.set_table_data, callback=self.worker_callback)
+            self.start_worker(self.set_table_data, callback=self.refresh_table_callback)
 
             self.binding_callable = True
 

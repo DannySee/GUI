@@ -11,6 +11,7 @@ from app_model import connections as db
 from sqlalchemy import text
 import pyodbc
 from typing import Protocol
+import csv
 
 
 # TEMPORARY
@@ -99,7 +100,7 @@ class Model:
 
         with engine.connect() as connection:
             data_query = text(f"SELECT * FROM {table}")
-            data = pd.read_sql(data_query, connection)
+            data = pd.read_sql(data_query, connection).fillna("")
 
             options_query = text(f"""
                 SELECT * FROM table_options
@@ -147,7 +148,7 @@ class Model:
         return self.model
     
 
-    def save_changes(self) -> bool:
+    def save_update(self) -> bool:
 
         with db.sql_server() as sql_server:  # This opens the connection
             try:
@@ -155,8 +156,6 @@ class Model:
                     updates = ", ".join([f"{col} = ?" for col in self.table_changes[row]])
                     query = f"UPDATE {self.table} SET {updates} WHERE PRIMARY_KEY = ?"
                     params = list(self.table_changes[row].values()) + [row]
-                    print(updates)
-                    print( params)
                     sql_server.execute(query, params)
 
                 # If all updates are successful, commit the transaction
@@ -173,18 +172,60 @@ class Model:
                 # Handle or raise the exception as needed
                 print(f"Update failed: {e}")
                 return False
-                    
-        # commenting out for now - this is how the local CSV is saved, but I want to see how the server will handle this
-        #df = pd.read_csv(f"app_model/session_data/{self.table}.csv")
-
-        #for row in self.table_changes:
-        #    for col in self.table_changes[row]:
-        #        df.loc[row, col] = self.table_changes[row][col]
-        #        
-        #df.to_csv(f"app_model/session_data/{self.table}.csv", index=False)
 
         # This is perminent
-        self.clear_changes()
+        self.table_changes = {}
+
+        return True
+    
+
+    def save_insert(self, columns: str, values: list[str]) -> bool:
+
+        with db.sql_server() as sql_server:  # This opens the connection
+            try:
+                for row in values:
+                    query = f"INSERT INTO {self.table} ({columns}) VALUES ({row})"
+                    sql_server.execute(query)
+
+                # If all updates are successful, commit the transaction
+                sql_server.commit()
+
+            except pyodbc.DataError as e:
+                sql_server.rollback()
+                print("Upload Failed: Data Error")
+                return False
+
+            except Exception as e:
+                # If an error occurs, rollback the transaction
+                sql_server.rollback()
+                # Handle or raise the exception as needed
+                print(f"Insert failed: {e}")
+                return False
+
+        return True
+    
+
+    def save_delete(self, primary_key: str) -> bool:
+
+        with db.sql_server() as sql_server:  # This opens the connection
+            try:
+                query = f"DELETE FROM {self.table} WHERE PRIMARY_KEY IN ({primary_key})"
+                sql_server.execute(query)
+
+                # If all updates are successful, commit the transaction
+                sql_server.commit()
+
+            except pyodbc.DataError as e:
+                sql_server.rollback()
+                print("Delete Failed: Data Error")
+                return False
+
+            except Exception as e:
+                # If an error occurs, rollback the transaction
+                sql_server.rollback()
+                # Handle or raise the exception as needed
+                print(f"Delete failed: {e}")
+                return False
 
         return True
 
@@ -201,48 +242,66 @@ class Model:
         self.table_changes = {}
 
 
-    def export_table_data(self, directory: str) -> None:
-        for file in os.listdir(f"app_model/session_data/exports/"):
-            if self.table in file: os.remove(f"app_model/session_data/exports/{file}")
+    def to_xlsx(self, df: pd.DataFrame, filepath: str) -> None:
+        with pd.ExcelWriter(filepath, engine='xlsxwriter') as writer:
+            self.table_data.to_excel(writer, sheet_name=self.table, index=False)
+            workbook = writer.book
+            worksheet = writer.sheets[self.table]
+            text_format = workbook.add_format({'num_format': '@'})
+            column_range = f"A:{chr(65 + len(self.table_data.columns) - 1)}"
+            worksheet.set_column(column_range, None, text_format)
 
+
+    def export_table_data(self, directory: str) -> None:
+
+        # remove any existing export files
+        for file in os.listdir(f"app_model/export_data/"):
+            if self.table in file: os.remove(f"app_model/export_data/{file}")
+
+        # create unique id for export file
         id = str(hash(f"{self.user}{datetime.now()}"))[-6:]
-        self.table_data.to_csv(f"app_model/session_data/exports/{self.table}%{id}.csv", index=False)
-        self.table_data.to_csv(f"{directory}/{self.table}%{id}.csv", index=False)
+
+        # create export file both in system and user directories
+        self.to_xlsx(self.table_data, f"app_model/export_data/{self.table}%{id}.xlsx")
+        shutil.copy(f"app_model/export_data/{self.table}%{id}.xlsx", f"{directory}/{self.table}%{id}.xlsx")
 
 
     def import_update(self, import_table: pd.DataFrame, export_table: pd.DataFrame) -> int:
-        import_table = import_table[import_table.index.isin(export_table.index)] 
-        export_table = export_table[export_table.index.isin(import_table.index)]
+        import_table = import_table[import_table.index.isin(export_table.index)].sort_index()
+        export_table = export_table[export_table.index.isin(import_table.index)].sort_index()
         updates = export_table.compare(import_table, keep_equal=False)
-        if len(updates) > 0: 
-            updates = updates.xs('other', axis=1, level=1)
 
-            # to be replaced by server actions
-            with open (f"app_model/session_data/{self.table}.csv", "r") as file:
-                table_data = pd.read_csv(file, index_col="PRIMARY_KEY")
+        if len(updates) > 0: 
+
+            # create dictionary of updates
+            updates = updates.xs('other', axis=1, level=1)
+            self.table_changes = {}
 
             for primary_key, row in updates.iterrows():
+                self.table_changes[primary_key] = {}
                 for column in row.index:
-                    if pd.notna(row[column]): table_data.loc[primary_key, column] = row[column]
+                    if pd.notna(row[column]): self.table_changes[primary_key][column] = row[column]
 
-            table_data.to_csv(f"app_model/session_data/{self.table}.csv", index=True)
-
+            # send changes to server
+            self.save_update()
+            
         return len(updates)
 
 
     def import_insert(self, import_table: pd.DataFrame) -> int:
-        import_table = import_table[import_table.index == ""]
+        import_table = import_table[import_table.index.isna() == True]
         if len(import_table) > 0:
 
-            with open (f"app_model/session_data/{self.table}.csv", "r") as file:
-                table_data = pd.read_csv(file, index_col="PRIMARY_KEY")   
+            # create nested list of column names and values
+            columns = ", ".join(import_table.columns)
+            values = []
+            for row in import_table.iterrows():
+                value = [f"'{val}'" if pd.notna(val) else "NULL" for val in row[1]]
+                values.append(", ".join(value))
 
-            # insert row in table_data for each row in import_table
-            for row in import_table.index:
-                table_data.loc[row] = import_table.loc[row]
+            # send changes to server
+            self.save_insert(columns, values)
 
-            table_data.to_csv(f"app_model/session_data/{self.table}.csv", index=True)
-            
         return len(import_table)
 
 
@@ -250,15 +309,11 @@ class Model:
         export_table = export_table[export_table.index.isin(import_table.index) == False]
         if len(export_table) > 0:
 
-            primary_keys = export_table.index.tolist()
-            with open (f"app_model/session_data/{self.table}.csv", "r") as file:
-                table_data = pd.read_csv(file, index_col="PRIMARY_KEY")
+            primary_key = ", ".join([f"{key}" for key in export_table.index])
 
-            for row in export_table.index:
-                table_data.drop(row, inplace=True)
+            # send changes to server
+            self.save_delete(primary_key)
 
-            table_data.to_csv(f"app_model/session_data/{self.table}.csv", index=True)
-            
         return len(export_table)
 
     
@@ -267,15 +322,15 @@ class Model:
         # ensure import table matches current table
         import_table = file.split("/")[-1].split("%")[0]
         if import_table != self.table: 
-            return f"Error: Import table '{import_table}' does not match current table '{self.table}'"
+            return f"Error: Import file format '{import_table}' does not match active table format '{self.table}'"
 
         # check if import data exists in export directory
         import_file = file.split('/')[-1]
-        if os.path.exists(f"app_model/session_data/exports/{import_file}"): 
-            import_data = pd.read_csv(file, index_col="PRIMARY_KEY")
-            export_data = pd.read_csv(f"app_model/session_data/exports/{import_file}", index_col="PRIMARY_KEY")
+        if os.path.exists(f"app_model/export_data/{import_file}"): 
+            import_data = pd.read_excel(file, index_col="PRIMARY_KEY").astype(str)
+            export_data = pd.read_excel(f"app_model/export_data/{import_file}", index_col="PRIMARY_KEY").astype(str)
 
-            ############# update database (this is a temporary mesaure - perminent will be to perform CRUD operations on database) #############
+            # send crud operations to server
             updates = self.import_update(import_data, export_data)
             print(updates)
             inserts = self.import_insert(import_data)
@@ -284,8 +339,13 @@ class Model:
             print(deletes)
 
             # kill export file
-            os.remove(f"app_model/session_data/exports/{import_file}")
+            os.remove(f"app_model/export_data/{import_file}")
             os.remove(file)
+
+            if updates + inserts + deletes == 0: 
+                return "No changes found in import file"
+            else:
+                return "success"
 
         else: 
             return f"Error: '{self.table}' has not been checked out. {import_file}"
